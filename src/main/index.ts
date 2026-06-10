@@ -71,24 +71,15 @@ import { createAiStore, maskApiKey, type AiStateStore } from './aiStore';
 import { createConversationStore, type ConversationStore } from './conversationStore';
 import { createGeminiService, type GeminiService } from './geminiService';
 import { createEnumerationMonitor, type EnumerationMonitor } from './enumerationMonitor';
-import {
-  buildVisionAugmentedUserText,
-  extractChartContextForRetrieval,
-} from '../shared/tuning/chartContext';
+import { createChatOrchestrator, type ChatOrchestrator } from './chatOrchestrator';
 import { loadDeepFingerprintManifest } from '../shared/firewall/deepFingerprints';
-import { fit as fitTokenBudget } from './tokenBudget';
-import {
-  DEFAULT_RETRIEVAL_K,
-  DEFAULT_RETRIEVAL_TOKEN_BUDGET,
-} from '../shared/knowledgeConstants';
-import { estimateKnowledgeContextTokens } from '../shared/knowledge/promptContext';
+import { DEFAULT_RETRIEVAL_TOKEN_BUDGET } from '../shared/knowledgeConstants';
 import {
   closeChatWindow,
   focusChatWindow,
   isChatWindowOpen,
   openChatWindow,
 } from './chatWindow';
-import { SCREENSHOTS_PER_TURN } from '../shared/aiConstants';
 import { getCurrentDisplays, isRegionStillValid } from './displayUtils';
 import {
   APP_VERSION,
@@ -182,13 +173,14 @@ let harnessWatcher: HarnessWatcher | null = null;
 let knowledgeStore: import('../shared/knowledgeTypes').KnowledgeStore | null = null;
 
 // Chunk 5
-let aiStore: AiStateStore | null = null;
 let conversationStore: ConversationStore | null = null;
 let geminiService: GeminiService | null = null;
 /** Per-session tuning/enumeration monitor (Phase 0 task 6). */
 let enumerationMonitor: EnumerationMonitor | null = null;
 /** AbortController for the in-flight chat send. Replaced on each `send`. */
-let chatInflight: AbortController | null = null;
+const chatInflightRef = { current: null as AbortController | null };
+/** Wired after Chunk 5 singletons are constructed inside `app.whenReady`. */
+let chatOrchestrator: ChatOrchestrator | null = null;
 /** Coarse FSM mirror so renderer pulls + IPC pushes stay consistent. */
 let chatState: ChatState = 'idle';
 /** Polls macOS while screen recording is not granted (stops once granted). */
@@ -423,7 +415,6 @@ void app.whenReady().then(async () => {
   // launch path stays fast. Model context is scoped via KnowledgeStore (task 3).
   // -------------------------------------------------------------------------
   const { wrapper: aiWrapper } = await createAiStore();
-  aiStore = aiWrapper;
   conversationStore = createConversationStore({ logger });
   enumerationMonitor = createEnumerationMonitor({ logger });
   if (knowledgeStore) {
@@ -452,6 +443,24 @@ void app.whenReady().then(async () => {
   } else {
     logger.warn('gemini.knowledgeStoreMissing', {
       reason: 'Knowledge store failed to initialize — chat sends will fail',
+    });
+  }
+
+  if (geminiService && knowledgeStore) {
+    chatOrchestrator = createChatOrchestrator({
+      logger,
+      aiStore: aiWrapper,
+      conversationStore,
+      geminiService,
+      knowledgeStore,
+      screenshotService,
+      enumerationMonitor,
+      chatInflight: chatInflightRef,
+      emit: {
+        turnAppended: emitTurnAppended,
+        stateChanged: setChatState,
+        error: emitChatError,
+      },
     });
   }
 
@@ -522,9 +531,9 @@ app.on('before-quit', () => {
   // Chunk 5 §8 contract: cancel any in-flight Gemini call BEFORE flushing
   // the harness/loop shutdown so no abandoned `gemini.callCompleted` line
   // races `app.quit`.
-  if (chatInflight) {
-    chatInflight.abort();
-    chatInflight = null;
+  if (chatInflightRef.current) {
+    chatInflightRef.current.abort();
+    chatInflightRef.current = null;
   }
   geminiService?.cancelAll();
   conversationStore?.endSession('shutdown');
@@ -1015,9 +1024,9 @@ function isWidgetPosition(v: unknown): v is WidgetPosition {
 // ---------------------------------------------------------------------------
 
 function onChatWindowClosed(): void {
-  if (chatInflight) {
-    chatInflight.abort();
-    chatInflight = null;
+  if (chatInflightRef.current) {
+    chatInflightRef.current.abort();
+    chatInflightRef.current = null;
   }
   conversationStore?.endSession('close');
   enumerationMonitor?.reset();
@@ -1081,210 +1090,19 @@ function emitTurnAppended(turn: ChatTurn): void {
 }
 
 /**
- * Drive one user turn end-to-end:
- *   1. Validate prerequisites (api key, harness)
- *   2. Run truncation if history > threshold
- *   3. Pull the most-recent screenshots
- *   4. Run the token-budget pass; trim or fail
- *   5. Append the user turn; transition state
- *   6. Call gemini.send; on success append assistant turn
- *   7. On error, surface the right ChatError variant
+ * Drive one user turn end-to-end. Implementation lives in
+ * `chatOrchestrator.ts` so the path is unit-testable (Milestone 0 T0.3).
  *
- * Wrapped in a single async function so cancel-on-close has one path to
- * abort. The caller (`IPC_CHAT_SEND` handler) does NOT await the returned
- * promise — `chat.send` resolves when the request is QUEUED, not when the
- * answer arrives (PRD §3.2).
+ * The caller (`IPC_CHAT_SEND` handler) does NOT await the returned promise —
+ * `chat.send` resolves when the request is QUEUED, not when the answer
+ * arrives (PRD §3.2).
  */
 async function runChatSend(
   text: string,
   requestedScreenshotIds?: readonly string[],
 ): Promise<void> {
-  const log = logger;
-  const ai = aiStore;
-  const conv = conversationStore;
-  const gemini = geminiService;
-  const store = knowledgeStore;
-  const captureService = screenshotService;
-  const monitor = enumerationMonitor;
-  if (!log || !ai || !conv || !gemini || !store || !captureService || !monitor) return;
-
-  log.info('chat.messageSent', { length: text.length });
-
-  // Prerequisite checks — fail fast and visibly.
-  if (ai.getApiKey() === null) {
-    emitChatError({ variant: 'no-api-key' });
-    return;
-  }
-
-  const history = conv.getHistory();
-  const enumeration = monitor.assessBeforeSend({ userText: text });
-  if (enumeration.blocked) {
-    log.warn('chat.enumerationThrottled', {
-      score: enumeration.score,
-      reasons: enumeration.reasons,
-      cooldownMs: enumeration.cooldownMs,
-    });
-    emitChatError({
-      variant: 'enumeration-throttled',
-      score: enumeration.score,
-      cooldownMs: enumeration.cooldownMs,
-    });
-    return;
-  }
-
-  const chartContext = extractChartContextForRetrieval(history, text);
-
-  let knowledgeChunks;
-  try {
-    knowledgeChunks = await store.retrieve({
-      text,
-      ...(chartContext !== undefined ? { chartContext } : {}),
-      k: DEFAULT_RETRIEVAL_K,
-      tokenBudget: DEFAULT_RETRIEVAL_TOKEN_BUDGET,
-    });
-  } catch (err) {
-    log.warn('chat.knowledgeRetrieveFailed', {
-      message: err instanceof Error ? err.message : String(err),
-    });
-    emitChatError({ variant: 'no-harness' });
-    return;
-  }
-  if (knowledgeChunks.length === 0) {
-    emitChatError({ variant: 'no-harness' });
-    return;
-  }
-
-  const knowledgeApproxTokens = estimateKnowledgeContextTokens(knowledgeChunks);
-
-  // Truncation pass before history is read.
-  await conv.maybeTruncate((older) => gemini.summarize(older));
-
-  // Pull screenshots for this turn. When the renderer queued explicit
-  // attachments (chat capture button), honor those; otherwise fall back to
-  // the N most-recent ring-buffer frames (PRD D9).
-  let screenshotsOldestFirst: readonly Screenshot[];
-  if (requestedScreenshotIds !== undefined && requestedScreenshotIds.length > 0) {
-    const resolved = requestedScreenshotIds
-      .slice(0, SCREENSHOTS_PER_TURN)
-      .map((id) => captureService.getById(id))
-      .filter((s): s is Screenshot => s !== null);
-    screenshotsOldestFirst = resolved;
-  } else {
-    const recentNewestFirst = captureService.getRecent(SCREENSHOTS_PER_TURN);
-    screenshotsOldestFirst = [...recentNewestFirst].reverse();
-  }
-
-  const fitResult = fitTokenBudget({
-    knowledgeApproxTokens,
-    history,
-    screenshots: screenshotsOldestFirst,
-    userText: text,
-  });
-
-  for (const trim of fitResult.trims) {
-    log.info('gemini.tokenBudgetTrim', {
-      what: trim.what,
-      id: trim.id,
-      reclaimedTokens: trim.reclaimedTokens,
-      remainingEstimate: trim.remainingEstimate,
-    });
-  }
-
-  if (!fitResult.ok) {
-    emitChatError({
-      variant: 'token-ceiling',
-      approxTokens: fitResult.estimatedTokens,
-      ceiling: fitResult.ceiling ?? 0,
-    });
-    return;
-  }
-
-  // Append the user turn locally. We want the user message to appear in
-  // the message list BEFORE the SDK call returns — the typing indicator
-  // takes over once `chatState` flips to `'awaiting'`.
-  const userTurn = conv.appendUser({
-    text,
-    attachedScreenshotIds: fitResult.screenshots.map((s) => s.id),
-    promptTokenEstimate: fitResult.estimatedTokens,
-  });
-  emitTurnAppended(userTurn);
-
-  setChatState('sending');
-  setChatState('awaiting');
-
-  monitor.recordSendStarted({ userText: text });
-
-  const modelUserText = buildVisionAugmentedUserText(
-    text,
-    fitResult.screenshots.length,
-    chartContext,
-  );
-
-  // New AbortController per send. The previous one is left to be GC'd —
-  // any in-flight call referencing it is already cancelled by the chat
-  // close path (toggleChatFromWidgetClick) before we'd reach here.
-  const ctrl = new AbortController();
-  chatInflight = ctrl;
-
-  let result;
-  try {
-    result = await gemini.send({
-      userText: modelUserText,
-      history,
-      screenshots: fitResult.screenshots,
-      knowledgeChunks,
-      signal: ctrl.signal,
-    });
-  } finally {
-    if (chatInflight === ctrl) chatInflight = null;
-  }
-
-  if (result.ok) {
-    const suggestionCount =
-      result.turn.structured?.suggested_parameter_changes.length ?? 0;
-    monitor.recordTuningResponse({ suggestionCount });
-    log.info('chat.tuningTurn', {
-      suggestionCount,
-      enumerationScore: monitor.getScore(),
-      screenshotCount: fitResult.screenshots.length,
-      chartContextUsed: chartContext !== undefined,
-    });
-    const assistantTurn = conv.appendAssistant({
-      text: result.turn.text,
-      ...(result.turn.structured !== undefined ? { structured: result.turn.structured } : {}),
-      latencyMs: result.latencyMs,
-      modelUsed: result.turn.modelUsed ?? '',
-    });
-    emitTurnAppended(assistantTurn);
-    setChatState('idle');
-    return;
-  }
-
-  // Error — drop the user turn so a retry doesn't double-append.
-  conv.dropTurn(userTurn.id);
-  switch (result.kind) {
-    case 'no-api-key':
-      emitChatError({ variant: 'no-api-key' });
-      return;
-    case 'aborted':
-      // User cancelled; quiet path. State has already been pushed to idle
-      // by the cancel handler.
-      setChatState('idle');
-      return;
-    case 'timeout':
-      emitChatError({ variant: 'transient', reason: 'timeout', retryable: true });
-      return;
-    case 'transient':
-      emitChatError({ variant: 'transient', reason: result.reason, retryable: true });
-      return;
-    case 'fatal':
-      emitChatError({
-        variant: 'fatal',
-        reason: result.reason,
-        ...(result.detail !== undefined ? { detail: result.detail } : {}),
-      });
-      return;
-  }
+  if (!chatOrchestrator) return;
+  return chatOrchestrator.runChatSend(text, requestedScreenshotIds);
 }
 
 /** Format a `SuggestedParameterChange` for the clipboard (schema v2). */
@@ -1367,9 +1185,9 @@ function registerChatAndAiIpc(
   );
 
   ipcMain.handle(IPC_CHAT_CANCEL, async (): Promise<void> => {
-    if (chatInflight) {
-      chatInflight.abort();
-      chatInflight = null;
+    if (chatInflightRef.current) {
+      chatInflightRef.current.abort();
+      chatInflightRef.current = null;
       log.info('chat.cancelled');
     }
     setChatState('idle');

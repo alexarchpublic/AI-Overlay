@@ -40,8 +40,12 @@ export function createGeminiAbstractionAdapter(options?: {
   return {
     async generate({ systemPrompt, userPrompt, signal }) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
-      const onAbort = (): void => controller.abort();
+      const timeout = setTimeout(() => {
+        controller.abort();
+      }, GENERATION_TIMEOUT_MS);
+      const onAbort = (): void => {
+        controller.abort();
+      };
       signal?.addEventListener('abort', onAbort);
 
       const generativeModel = client.getGenerativeModel({

@@ -21,11 +21,13 @@ describe('no full-bundle injection in live serving path', () => {
   });
 
   it('runChatSend retrieves scoped knowledge instead of harness metadata tokens', () => {
-    const source = readFileSync(path.join(process.cwd(), 'src/main/index.ts'), 'utf8');
-    const runChatSend = source.slice(source.indexOf('async function runChatSend'));
-    expect(runChatSend.includes('store.retrieve(')).toBe(true);
-    expect(runChatSend.includes('harnessApproxTokens')).toBe(false);
-    expect(runChatSend.includes('knowledgeApproxTokens')).toBe(true);
-    expect(runChatSend.includes('loader.getMetadata()')).toBe(false);
+    const source = readFileSync(
+      path.join(process.cwd(), 'src/main/chatOrchestrator.ts'),
+      'utf8',
+    );
+    expect(source.includes('store.retrieve(')).toBe(true);
+    expect(source.includes('harnessApproxTokens')).toBe(false);
+    expect(source.includes('knowledgeApproxTokens')).toBe(true);
+    expect(source.includes('loader.getMetadata()')).toBe(false);
   });
 });
