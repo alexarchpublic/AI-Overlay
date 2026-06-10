@@ -8,11 +8,14 @@ import { describe, it, expect } from 'vitest';
 import { createTestSafeStorage } from '../src/main/knowledgeCrypto';
 import {
   ENCRYPTED_SECRET_PREFIX,
+  SecretEncryptionUnavailableError,
+  createUnavailableSafeStorage,
   decryptSecret,
   encryptSecret,
   isEncryptedSecret,
   migratePlaintextSecret,
   readStoredSecret,
+  resolveSafeStorage,
   writeStoredSecret,
 } from '../src/main/secretsStore';
 
@@ -59,6 +62,34 @@ describe('secretsStore', () => {
     expect(readStoredSecret(stored, safeStorage)).toBe('AIzaXYZ');
 
     writeStoredSecret('ai.apiKey', '', safeStorage, store);
+    expect(store.data['ai.apiKey']).toBeUndefined();
+  });
+
+  it('resolveSafeStorage fails closed in production mode', () => {
+    const storage = resolveSafeStorage({ allowFallback: false });
+    expect(storage.isEncryptionAvailable()).toBe(false);
+    expect(() => encryptSecret('key', storage)).toThrow(SecretEncryptionUnavailableError);
+  });
+
+  it('resolveSafeStorage allows explicit test double injection', () => {
+    const storage = resolveSafeStorage(createTestSafeStorage('explicit-test-key-32-bytes!'));
+    expect(encryptSecret('key', storage)).toContain(ENCRYPTED_SECRET_PREFIX);
+  });
+
+  it('writeStoredSecret refuses to persist when encryption is unavailable', () => {
+    const store = {
+      data: {} as Record<string, unknown>,
+      set(key: string, value: unknown) {
+        this.data[key] = value;
+      },
+      delete(key: string) {
+        delete this.data[key];
+      },
+    };
+    const unavailable = createUnavailableSafeStorage();
+    expect(() => writeStoredSecret('ai.apiKey', 'AIzaXYZ', unavailable, store)).toThrow(
+      SecretEncryptionUnavailableError,
+    );
     expect(store.data['ai.apiKey']).toBeUndefined();
   });
 

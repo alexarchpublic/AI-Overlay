@@ -68,6 +68,7 @@ import {
   type ScreenshotService,
 } from './screenshotService';
 import { createAiStore, maskApiKey, type AiStateStore } from './aiStore';
+import { SecretEncryptionUnavailableError } from './secretsStore';
 import { createConversationStore, type ConversationStore } from './conversationStore';
 import { createGeminiService, type GeminiService } from './geminiService';
 import { createEnumerationMonitor, type EnumerationMonitor } from './enumerationMonitor';
@@ -191,9 +192,24 @@ let permissionPollDeps: {
   permissions: PermissionsHelper;
 } | null = null;
 
+function registerProcessTraps(log: AppLogger): void {
+  process.on('unhandledRejection', (reason) => {
+    log.error('process.unhandledRejection', {
+      message: reason instanceof Error ? reason.message : String(reason),
+    });
+  });
+  process.on('uncaughtException', (err) => {
+    log.error('process.uncaughtException', {
+      message: err.message,
+      stack: err.stack,
+    });
+  });
+}
+
 void app.whenReady().then(async () => {
   logger = createAppLogger({ baseDir: app.getPath('userData') });
   registerRendererLogBridge(logger);
+  registerProcessTraps(logger);
 
   logger.info('app.ready', {
     appVersion: APP_VERSION,
@@ -1237,11 +1253,19 @@ function registerChatAndAiIpc(
         log.info('ai.apiKeyUpdated', { cleared: true });
         return;
       }
-      ai.setApiKey(trimmed);
-      // The redaction rule in `logger.ts` masks any `apiKey` field, so
-      // including the value here is safe — it never reaches the JSON
-      // line. The contract is locked in PRD D28 + Chunk 6 §8.
-      log.info('ai.apiKeyUpdated', { apiKey: trimmed, cleared: false });
+      try {
+        ai.setApiKey(trimmed);
+      } catch (err) {
+        if (err instanceof SecretEncryptionUnavailableError) {
+          log.error('secrets.encryptionUnavailable', {
+            operation: 'setApiKey',
+            message: err.message,
+          });
+          return;
+        }
+        throw err;
+      }
+      log.info('ai.apiKeyUpdated', { cleared: false, masked: maskApiKey(trimmed) });
     },
   );
 

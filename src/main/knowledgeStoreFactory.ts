@@ -6,11 +6,8 @@
  */
 import path from 'node:path';
 import type { AppLogger } from './logger';
-import {
-  createElectronSafeStorage,
-  createTestSafeStorage,
-  type SafeStorageLike,
-} from './knowledgeCrypto';
+import type { SafeStorageLike } from './knowledgeCrypto';
+import { resolveSafeStorage } from './secretsStore';
 import {
   createLocalEncryptedKnowledgeStore,
   createRemoteKnowledgeStoreStub,
@@ -46,13 +43,6 @@ export function resolveKnowledgeBundleDir(isDev: boolean, cwd = process.cwd()): 
   return path.join(process.resourcesPath, KNOWLEDGE_BUNDLES_DIR);
 }
 
-function resolveSafeStorage(override?: SafeStorageLike): SafeStorageLike {
-  if (override) return override;
-  const electron = createElectronSafeStorage();
-  if (electron) return electron;
-  return createTestSafeStorage();
-}
-
 /**
  * Create and initialize the configured KnowledgeStore backend.
  * Throws when `backend: 'remote'` — stub exists for interface conformance only.
@@ -62,7 +52,8 @@ export async function createKnowledgeStore(
 ): Promise<KnowledgeStore> {
   const backend = options.backend ?? DEFAULT_KNOWLEDGE_BACKEND;
   const bundleDir = options.bundleDir ?? resolveKnowledgeBundleDir(options.isDev);
-  const safeStorage = resolveSafeStorage(options.safeStorage);
+  const safeStorage =
+    options.safeStorage ?? resolveSafeStorage({ allowFallback: false });
 
   const store =
     backend === 'remote'

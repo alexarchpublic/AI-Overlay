@@ -14,10 +14,42 @@ import {
 /** Prefix marking safeStorage-encrypted values persisted in electron-store. */
 export const ENCRYPTED_SECRET_PREFIX = 'ss:v1:';
 
+/** Thrown when production callers attempt to persist without OS keychain. */
+export class SecretEncryptionUnavailableError extends Error {
+  readonly code = 'SECRET_ENCRYPTION_UNAVAILABLE' as const;
+
+  constructor(message = 'OS keychain encryption unavailable — secret not saved') {
+    super(message);
+    this.name = 'SecretEncryptionUnavailableError';
+  }
+}
+
+export interface ResolveSafeStorageOptions {
+  /** Explicit storage for tests — never falls back when provided. */
+  override?: SafeStorageLike;
+  /**
+   * When false (production default), unavailable Electron safeStorage yields a
+   * fail-closed stub instead of the deterministic test double.
+   */
+  allowFallback?: boolean;
+}
+
+/** Fail-closed stub — reads report unavailable; writes throw. */
+export function createUnavailableSafeStorage(): SafeStorageLike {
+  const unavailable = (): never => {
+    throw new SecretEncryptionUnavailableError();
+  };
+  return {
+    isEncryptionAvailable: () => false,
+    encryptString: unavailable,
+    decryptString: unavailable,
+  };
+}
+
 /** Encrypt a UTF-8 secret for at-rest persistence. */
 export function encryptSecret(plainText: string, safeStorage: SafeStorageLike): string {
   if (!safeStorage.isEncryptionAvailable()) {
-    throw new Error('Secret encryption unavailable — safeStorage not ready');
+    throw new SecretEncryptionUnavailableError();
   }
   const encrypted = safeStorage.encryptString(plainText);
   return `${ENCRYPTED_SECRET_PREFIX}${encrypted.toString('base64')}`;
@@ -29,7 +61,9 @@ export function decryptSecret(stored: string, safeStorage: SafeStorageLike): str
     throw new Error('Stored secret is not in encrypted format');
   }
   if (!safeStorage.isEncryptionAvailable()) {
-    throw new Error('Secret decryption unavailable — safeStorage not ready');
+    throw new SecretEncryptionUnavailableError(
+      'Secret decryption unavailable — safeStorage not ready',
+    );
   }
   const payload = Buffer.from(stored.slice(ENCRYPTED_SECRET_PREFIX.length), 'base64');
   return safeStorage.decryptString(payload);
@@ -41,14 +75,27 @@ export function isEncryptedSecret(stored: string): boolean {
 }
 
 /**
- * Resolve safeStorage for production or tests. Falls back to the deterministic
- * test double when Electron is unavailable (Vitest, CI).
+ * Resolve safeStorage for production or tests. Production callers pass
+ * `{ allowFallback: false }`; tests inject `createTestSafeStorage()` explicitly.
  */
-export function resolveSafeStorage(override?: SafeStorageLike): SafeStorageLike {
-  if (override) return override;
+export function resolveSafeStorage(
+  options: ResolveSafeStorageOptions | SafeStorageLike = {},
+): SafeStorageLike {
+  if ('isEncryptionAvailable' in options && typeof options.isEncryptionAvailable === 'function') {
+    return options;
+  }
+
+  const opts = options as ResolveSafeStorageOptions;
+  if (opts.override) return opts.override;
+
   const electron = createElectronSafeStorage();
   if (electron) return electron;
-  return createTestSafeStorage();
+
+  if (opts.allowFallback !== false) {
+    return createTestSafeStorage();
+  }
+
+  return createUnavailableSafeStorage();
 }
 
 /**
@@ -62,12 +109,12 @@ export function readStoredSecret(
   if (typeof raw !== 'string' || raw.length === 0) return null;
 
   if (isEncryptedSecret(raw)) {
-    return decryptSecret(raw, safeStorage);
-  }
-
-  // Legacy plaintext (pre task 7) — migrate in-place when encryption is ready.
-  if (safeStorage.isEncryptionAvailable()) {
-    return raw;
+    try {
+      return decryptSecret(raw, safeStorage);
+    } catch (err) {
+      if (err instanceof SecretEncryptionUnavailableError) return null;
+      throw err;
+    }
   }
 
   return raw;

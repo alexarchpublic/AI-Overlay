@@ -70,6 +70,33 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     text: string,
     requestedScreenshotIds?: readonly string[],
   ): Promise<void> {
+    const pendingUserTurnId: { value: string | null } = { value: null };
+
+    try {
+      await runChatSendInner(text, requestedScreenshotIds, (turn) => {
+        pendingUserTurnId.value = turn.id;
+      });
+    } catch (err) {
+      if (pendingUserTurnId.value !== null) {
+        conv.dropTurn(pendingUserTurnId.value);
+      }
+      log.error('chat.orchestratorFatal', {
+        message: err instanceof Error ? err.message : String(err),
+      });
+      emit.error({
+        variant: 'fatal',
+        reason: 'orchestrator',
+        detail: { message: err instanceof Error ? err.message : String(err) },
+      });
+      emit.stateChanged('idle');
+    }
+  }
+
+  async function runChatSendInner(
+    text: string,
+    requestedScreenshotIds: readonly string[] | undefined,
+    onUserTurnAppended: (turn: ChatTurn) => void,
+  ): Promise<void> {
     log.info('chat.messageSent', { length: text.length });
 
     if (ai.getApiKey() === null) {
@@ -77,7 +104,7 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
       return;
     }
 
-    const history = conv.getHistory();
+    const preTruncateHistory = conv.getHistory();
     const enumeration = monitor.assessBeforeSend({ userText: text });
     if (enumeration.blocked) {
       log.warn('chat.enumerationThrottled', {
@@ -93,7 +120,7 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
       return;
     }
 
-    const chartContext = extractChartContextForRetrieval(history, text);
+    const chartContext = extractChartContextForRetrieval(preTruncateHistory, text);
 
     let knowledgeChunks;
     try {
@@ -118,6 +145,8 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     const knowledgeApproxTokens = estimateKnowledgeContextTokens(knowledgeChunks);
 
     await conv.maybeTruncate((older) => gemini.summarize(older));
+
+    const history = conv.getHistory();
 
     let screenshotsOldestFirst: readonly Screenshot[];
     if (requestedScreenshotIds !== undefined && requestedScreenshotIds.length > 0) {
@@ -161,6 +190,7 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
       attachedScreenshotIds: fitResult.screenshots.map((s) => s.id),
       promptTokenEstimate: fitResult.estimatedTokens,
     });
+    onUserTurnAppended(userTurn);
     emit.turnAppended(userTurn);
 
     emit.stateChanged('sending');
@@ -181,7 +211,7 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     try {
       result = await gemini.send({
         userText: modelUserText,
-        history,
+        history: fitResult.history,
         screenshots: fitResult.screenshots,
         knowledgeChunks,
         signal: ctrl.signal,

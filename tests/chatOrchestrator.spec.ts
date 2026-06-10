@@ -1,10 +1,9 @@
 /**
  * @file tests/chatOrchestrator.spec.ts
  *
- * Milestone 0 T0.3 — characterization tests for `createChatOrchestrator`.
- * Pins current behavior, including the known H1/H2 defects (untrimmed and
- * pre-truncation history sent to `gemini.send`). Milestone 1 flips these
- * assertions after the fixes land.
+ * Milestone 0 T0.3 + Milestone 1 — tests for `createChatOrchestrator`.
+ * Covers trimmed/post-truncation history sent to `gemini.send`, error variants,
+ * and FSM recovery when a dependency throws.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -199,7 +198,7 @@ function makeHarness(overrides: {
   };
 }
 
-describe('chatOrchestrator characterization (Milestone 0)', () => {
+describe('chatOrchestrator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -268,8 +267,8 @@ describe('chatOrchestrator characterization (Milestone 0)', () => {
     expect(h.states[h.states.length - 1]).toBe('idle');
   });
 
-  describe('known defect H1 — token-budget trims logged but not sent', () => {
-    it('passes the pre-trim history snapshot to gemini.send', async () => {
+  describe('H1 fix — token-budget trims applied to send', () => {
+    it('passes fitResult.history (trimmed) to gemini.send', async () => {
       const longText = 'x'.repeat(40_000);
       const history: ChatTurn[] = [];
       for (let i = 0; i < 20; i++) {
@@ -280,12 +279,13 @@ describe('chatOrchestrator characterization (Milestone 0)', () => {
       const knowledgeChunks = [
         {
           ...SAMPLE_CHUNKS[0],
-          text: 'k'.repeat(100),
+          // ~800k tokens once formatted — forces history trims past the soft ceiling.
+          text: 'k'.repeat(3_200_000),
         },
       ];
       const knowledgeApproxTokens = estimateKnowledgeContextTokens(knowledgeChunks);
       const fitResult = fitTokenBudget({
-        knowledgeApproxTokens: SOFT_CEILING_TOKENS - 100_000,
+        knowledgeApproxTokens,
         history,
         screenshots: [],
         userText: 'go',
@@ -315,14 +315,13 @@ describe('chatOrchestrator characterization (Milestone 0)', () => {
       await h.run('go');
 
       expect(h.sendCalls).toHaveLength(1);
-      // Defect: send receives the full pre-trim history, not fitResult.history.
-      expect(h.sendCalls[0]?.history.length).toBe(history.length);
-      expect(h.sendCalls[0]?.history.length).toBeGreaterThan(fitResult.history.length);
+      expect(h.sendCalls[0]?.history.length).toBe(fitResult.history.length);
+      expect(h.sendCalls[0]?.history.length).toBeLessThan(history.length);
     });
   });
 
-  describe('known defect H2 — stale pre-truncation history sent', () => {
-    it('passes the pre-maybeTruncate history snapshot to gemini.send', async () => {
+  describe('H2 fix — post-truncation history sent', () => {
+    it('passes post-maybeTruncate history to gemini.send', async () => {
       const h = makeHarness({
         summarize: async (older) => `summary of ${String(older.length)} turns`,
       });
@@ -350,9 +349,43 @@ describe('chatOrchestrator characterization (Milestone 0)', () => {
       expect(postSendHistory.length).toBeLessThan(preSendHistory.length);
 
       expect(h.sendCalls).toHaveLength(1);
-      // Defect: send still carries the stale pre-truncation snapshot.
-      expect(h.sendCalls[0]?.history.length).toBe(preSendHistory.length);
-      expect(h.sendCalls[0]?.history[0]?.role).toBe('user');
+      // Send uses pre-append history (this turn's user + assistant are not included).
+      const historyAtSendTime = postSendHistory.length - 2;
+      expect(h.sendCalls[0]?.history.length).toBeLessThanOrEqual(historyAtSendTime);
+      expect(h.sendCalls[0]?.history[0]?.role).toBe('system-summary');
+    });
+  });
+
+  describe('H4 fix — orchestrator never wedges the FSM', () => {
+    it('surfaces fatal and returns to idle when gemini.send throws', async () => {
+      const h = makeHarness({
+        sendResult: async () => {
+          throw new Error('unexpected sdk failure');
+        },
+      });
+      await h.run('hello');
+      expect(h.errors).toEqual([
+        {
+          variant: 'fatal',
+          reason: 'orchestrator',
+          detail: { message: 'unexpected sdk failure' },
+        },
+      ]);
+      expect(h.states[h.states.length - 1]).toBe('idle');
+      expect(h.deps.conversationStore.getHistory()).toHaveLength(0);
+    });
+
+    it('surfaces fatal when screenshot resolution throws before send', async () => {
+      const h = makeHarness({
+        screenshots: [fakeScreenshot('cap-1')],
+      });
+      h.deps.screenshotService.getRecent = () => {
+        throw new Error('capture service failed');
+      };
+      await h.run('hello');
+      expect(h.errors[0]?.variant).toBe('fatal');
+      expect(h.states[h.states.length - 1]).toBe('idle');
+      expect(h.sendCalls).toHaveLength(0);
     });
   });
 

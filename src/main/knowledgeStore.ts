@@ -203,14 +203,23 @@ export function createLocalEncryptedKnowledgeStore(
       return;
     }
 
-    await persistEncrypted(bundleState);
     state = bundleState;
-    deps.logger.info('knowledge.reindexed', {
-      backend: 'local',
-      contentHash: bundleState.contentHash,
-      chunkCount: bundleState.chunks.length,
-      bundlePath,
-    });
+    if (deps.safeStorage.isEncryptionAvailable()) {
+      await persistEncrypted(bundleState);
+      deps.logger.info('knowledge.reindexed', {
+        backend: 'local',
+        contentHash: bundleState.contentHash,
+        chunkCount: bundleState.chunks.length,
+        bundlePath,
+      });
+    } else {
+      deps.logger.error('knowledge.encryptionUnavailable', {
+        backend: 'local',
+        contentHash: bundleState.contentHash,
+        chunkCount: bundleState.chunks.length,
+        bundlePath,
+      });
+    }
   }
 
   return {

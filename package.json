@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.20.0",
-    "chokidar": "^3.6.0",
+    "chokidar": "^4.0.3",
     "electron-store": "^10.0.0",
     "pino": "^9.0.0",
     "react": "^18.3.0",
@@ -37,7 +37,7 @@
     "remark-gfm": "^4.0.1",
     "sharp": "^0.33.5",
     "ulid": "^2.3.0",
-    "zustand": "^4.5.0"
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.3.0",
@@ -47,8 +47,8 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.19",
-    "electron": "^31.0.0",
-    "electron-builder": "^24.13.0",
+    "electron": "^40.0.0",
+    "electron-builder": "^25.1.8",
     "esbuild": "^0.21.0",
     "eslint": "^9.3.0",
     "eslint-plugin-react": "^7.35.0",

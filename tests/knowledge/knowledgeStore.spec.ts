@@ -9,6 +9,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { buildKnowledgeBundle } from '../../src/shared/knowledge/bundleBuilder';
 import { createTestSafeStorage } from '../../src/main/knowledgeCrypto';
+import { createUnavailableSafeStorage } from '../../src/main/secretsStore';
 import {
   createLocalEncryptedKnowledgeStore,
   createNodeKnowledgeFs,
@@ -125,6 +126,42 @@ describe('LocalEncryptedKnowledgeStore', () => {
     await createLocalEncryptedKnowledgeStore(opts).init();
     const metaAfter = await readFile(metaPath, 'utf8');
     expect(metaAfter).toBe(metaBefore);
+  });
+
+  it('serves from memory without writing encrypted cache when encryption is unavailable', async () => {
+    const logs: { event: string; payload: unknown }[] = [];
+    const logger = {
+      debug: () => {},
+      info: (event: string, payload?: unknown) => {
+        logs.push({ event, payload });
+      },
+      warn: () => {},
+      error: (event: string, payload?: unknown) => {
+        logs.push({ event, payload });
+      },
+      child: () => logger,
+      raw: {} as never,
+    };
+
+    const store = createLocalEncryptedKnowledgeStore({
+      logger,
+      userDataDir,
+      bundleDir,
+      fs: createNodeKnowledgeFs(),
+      safeStorage: createUnavailableSafeStorage(),
+    });
+
+    await store.init();
+    const chunks = await store.retrieve({ text: 'behavioral summary', k: 2 });
+    expect(chunks.length).toBeGreaterThan(0);
+
+    const encPath = path.join(
+      userDataDir,
+      KNOWLEDGE_USERDATA_SUBDIR,
+      KNOWLEDGE_ENCRYPTED_INDEX_FILENAME,
+    );
+    await expect(readFile(encPath)).rejects.toThrow();
+    expect(logs.some((l) => l.event === 'knowledge.encryptionUnavailable')).toBe(true);
   });
 
   it('never reads deep-tier paths — only bundleDir servable artifacts', async () => {

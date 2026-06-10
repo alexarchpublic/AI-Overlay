@@ -15,7 +15,11 @@ import {
   wrapAiStore,
 } from '../src/main/aiStore';
 import { createTestSafeStorage } from '../src/main/knowledgeCrypto';
-import { isEncryptedSecret } from '../src/main/secretsStore';
+import {
+  SecretEncryptionUnavailableError,
+  createUnavailableSafeStorage,
+  isEncryptedSecret,
+} from '../src/main/secretsStore';
 import {
   AI_STORE_KEY_API_KEY,
   AI_STORE_KEY_MODEL,
@@ -152,6 +156,13 @@ describe('wrapAiStore — facade', () => {
     expect(wrapper.getApiKey()).toBe('legacy-plain-key');
     const stored = store.raw[AI_STORE_KEY_API_KEY];
     expect(isEncryptedSecret(stored as string)).toBe(true);
+  });
+
+  it('refuses to persist api keys when encryption is unavailable', () => {
+    const unavailable = createUnavailableSafeStorage();
+    const locked = wrapAiStore(store, { safeStorage: unavailable });
+    expect(() => locked.setApiKey('AIzaXYZ123')).toThrow(SecretEncryptionUnavailableError);
+    expect(store.raw[AI_STORE_KEY_API_KEY]).toBeUndefined();
   });
 
   it('appends call records and computes rolling stats', () => {

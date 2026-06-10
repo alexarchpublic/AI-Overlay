@@ -122,7 +122,8 @@ export function pruneStatsCalls(
  * dependency injection in tests; production calls `createAiStore()`.
  */
 export function wrapAiStore(store: StoreLike, options: WrapAiStoreOptions = {}): AiStateStore {
-  const safeStorage = resolveSafeStorage(options.safeStorage);
+  const safeStorage =
+    options.safeStorage ?? resolveSafeStorage({ allowFallback: false });
 
   function readCalls(): RecordedCall[] {
     const raw = store.get(AI_STORE_KEY_STATS_CALLS);
