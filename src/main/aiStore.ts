@@ -3,7 +3,7 @@
  *
  * Why it exists: PRD §3.4 — owns the `ai.*` namespace inside the same
  * `electron-store` config file Chunks 2 / 3 / 4 already share. Mirrors the
- * `widgetState.ts` / `captureStore.ts` / `harnessStore.ts` pattern: pure
+ * `widgetState.ts` / `captureStore.ts` pattern: pure
  * `wrapAiStore` adapter for tests, plus a `createAiStore()` factory that
  * dynamically imports the ESM-only `electron-store` v10.
  *

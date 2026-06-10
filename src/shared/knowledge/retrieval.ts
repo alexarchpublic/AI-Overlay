@@ -10,12 +10,10 @@ import {
   DEFAULT_RETRIEVAL_TOKEN_BUDGET,
 } from '../knowledgeConstants';
 import type { AbstractionChunk, RetrievalQuery } from '../knowledgeTypes';
-
-const CHARS_PER_TOKEN = 4;
+import { estimateTokensFromChars } from '../tokenEstimate';
 
 export function estimateChunkTokens(text: string): number {
-  if (text.length <= 0) return 0;
-  return Math.ceil(text.length / CHARS_PER_TOKEN);
+  return estimateTokensFromChars(text.length);
 }
 
 const STOP_WORDS = new Set([

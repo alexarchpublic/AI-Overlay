@@ -60,9 +60,13 @@ import {
   GEMINI_MAX_AUTO_RETRIES,
   GEMINI_RETRY_BACKOFF_MS,
   GEMINI_TIMEOUT_MS,
+  PER_IMAGE_TOKEN_ESTIMATE,
   SUMMARY_MAX_OUTPUT_TOKENS,
   SUMMARY_MODEL,
 } from '../shared/aiConstants';
+import {
+  estimateTokensFromChars,
+} from '../shared/tokenEstimate';
 import {
   JSON_RETRY_REMINDER,
   OUTPUT_SCHEMA,
@@ -851,15 +855,12 @@ function estimatePromptTokens(args: {
   imageCount: number;
   userText: string;
 }): number {
-  // Mirror tokenBudget's char-based estimate so logs and budgeting agree.
-  const CHARS_PER_TOKEN = 3.8;
-  const PER_IMAGE_TOKEN_ESTIMATE = 2_000;
-  const sysT = Math.ceil(args.systemPrompt.length / CHARS_PER_TOKEN);
+  const sysT = estimateTokensFromChars(args.systemPrompt.length);
   const histT = args.history.reduce(
-    (sum, t) => sum + Math.ceil(t.text.length / CHARS_PER_TOKEN),
+    (sum, t) => sum + estimateTokensFromChars(t.text.length),
     0,
   );
-  const userT = Math.ceil(args.userText.length / CHARS_PER_TOKEN);
+  const userT = estimateTokensFromChars(args.userText.length);
   const imgT = args.imageCount * PER_IMAGE_TOKEN_ESTIMATE;
   return sysT + histT + userT + imgT;
 }

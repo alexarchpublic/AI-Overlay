@@ -3,27 +3,18 @@
 /**
  * @file src/renderer/env.d.ts
  *
- * Why it exists: Declares the `window.api` surface exposed by the preload
- * contextBridge so the renderer gets type-safe access without reaching into
- * `src/preload/index.ts` (which is compiled into a separate process bundle).
- * Keep this in sync with `src/preload/index.ts`:
- *   - Chunk 2 added `widget` and `perms` namespaces + the D5 `setInteractive` seam
- *   - Chunk 3 added `capture` and `region` namespaces per PRD §3.2
- *   - Chunk 4 added `harness` per PRD §3.2
- *   - Chunk 5 added `chat` and `ai` per PRD §3.2
+ * Declares the `window.api` surface exposed by the preload contextBridge.
+ * Keep in sync with `src/preload/index.ts`.
  */
 
 import type {
   ApiKeyPresence,
-  Bounds,
   CaptureLoopState,
   CaptureRegion,
   ChatError,
   ChatState,
   ChatTurn,
   GeminiCallStats,
-  HarnessLoadErrorPayload,
-  HarnessMetadata,
   LogContext,
   PermissionState,
   Screenshot,
@@ -46,9 +37,6 @@ declare global {
         setStatus: (next: WidgetStatus) => Promise<void>;
         reportPosition: (pos: WidgetPosition) => void;
         openContextMenu: (at: { x: number; y: number }) => void;
-        emitClick: (payload: { at: { x: number; y: number }; bounds: Bounds; ts: number }) => void;
-        setInteractive: (on: boolean) => void;
-        moveBy: (delta: { dx: number; dy: number }) => void;
         onStatusChanged: (cb: (status: WidgetStatus) => void) => () => void;
       };
       perms: {
@@ -71,23 +59,11 @@ declare global {
         getRegion: () => Promise<CaptureRegion | null>;
         openPicker: () => Promise<CaptureRegion | null>;
         clearRegion: () => Promise<void>;
-        /** Picker-internal — only callable from the picker window. */
         _pickerConfirm: (payload: {
           displayId: number;
           rect: { x: number; y: number; w: number; h: number };
         }) => void;
-        /** Picker-internal — only callable from the picker window. */
         _pickerCancel: () => void;
-      };
-      harness: {
-        getMetadata: () => Promise<HarnessMetadata>;
-        getBundleText: () => Promise<string>;
-        getRootPath: () => Promise<string>;
-        setRootPath: (path: string) => Promise<HarnessMetadata>;
-        reload: () => Promise<HarnessMetadata>;
-        browseRoot: () => Promise<string | null>;
-        onReloaded: (cb: (m: HarnessMetadata) => void) => () => void;
-        onLoadError: (cb: (e: HarnessLoadErrorPayload) => void) => () => void;
       };
       chat: {
         open: () => Promise<void>;

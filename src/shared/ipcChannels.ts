@@ -8,7 +8,7 @@
  * everywhere else.
  *
  * Naming rule: `'{namespace}:{verb}'`. Namespaces so far: `log`, `widget`,
- * `perms`, `capture`, `region`, `harness`, `chat`, `ai`. Keep verbs imperative
+ * `perms`, `capture`, `region`, `chat`, `ai`. Keep verbs imperative
  * (`get`, `set`, `open`, `emit`, `report`).
  */
 
@@ -22,16 +22,6 @@ export const IPC_WIDGET_GET_STATUS = 'widget:getStatus';
 export const IPC_WIDGET_SET_STATUS = 'widget:setStatus';
 export const IPC_WIDGET_REPORT_POSITION = 'widget:reportPosition';
 export const IPC_WIDGET_OPEN_CONTEXT_MENU = 'widget:openContextMenu';
-export const IPC_WIDGET_EMIT_CLICK = 'widget:emitClick';
-/**
- * D5 implementation seam. Toggles main-side `setIgnoreMouseEvents` so the 4px
- * halo stays click-through while the 48x48 pill body remains interactive.
- * Expands §3.2's locked surface by one channel — flagged in the Chunk 2
- * session handoff so the next PRD amendment can either formalize or revert it.
- */
-export const IPC_WIDGET_SET_INTERACTIVE = 'widget:setInteractive';
-/** Renderer → main: move the overlay window by a screen-space delta (pointer drag). */
-export const IPC_WIDGET_MOVE_BY = 'widget:moveBy';
 
 /** main → renderer: widget status mutations (e.g., permission flip) */
 export const IPC_WIDGET_STATUS_CHANGED = 'widget:statusChanged';
@@ -82,26 +72,6 @@ export const IPC_REGION_CLEAR = 'region:clear';
  */
 export const IPC_REGION_PICKER_CONFIRM = 'region:pickerConfirm';
 export const IPC_REGION_PICKER_CANCEL = 'region:pickerCancel';
-
-// ---------------------------------------------------------------------------
-// Harness channels (Chunk 4 — PRD §3.2 locked surface)
-// ---------------------------------------------------------------------------
-
-export const IPC_HARNESS_GET_METADATA = 'harness:getMetadata';
-export const IPC_HARNESS_GET_BUNDLE_TEXT = 'harness:getBundleText';
-export const IPC_HARNESS_GET_ROOT_PATH = 'harness:getRootPath';
-export const IPC_HARNESS_SET_ROOT_PATH = 'harness:setRootPath';
-export const IPC_HARNESS_RELOAD = 'harness:reload';
-/** main → renderer push: a successful (re)load completed. Payload: HarnessMetadata. */
-export const IPC_HARNESS_RELOADED = 'harness:reloaded';
-/** main → renderer push: a load attempt failed. Payload: HarnessLoadErrorPayload. */
-export const IPC_HARNESS_LOAD_ERROR = 'harness:loadError';
-/**
- * main → renderer pull: open the native folder-picker dialog so the user
- * can choose a new harness root. Returns the chosen path or `null` on cancel.
- * Pulled out of `setRootPath` so the renderer can validate via UI.
- */
-export const IPC_HARNESS_BROWSE_ROOT = 'harness:browseRoot';
 
 // ---------------------------------------------------------------------------
 // Chat channels (Chunk 5 — PRD §3.2 locked surface)

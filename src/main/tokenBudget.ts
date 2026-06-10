@@ -30,19 +30,17 @@
 
 import type { ChatTurn, Screenshot } from '../shared/types';
 import {
-  CHARS_PER_TOKEN,
   HARD_CEILING_TOKENS,
   OUTPUT_HEADROOM_TOKENS,
   PER_IMAGE_TOKEN_ESTIMATE,
   SOFT_CEILING_TOKENS,
 } from '../shared/aiConstants';
 import { PERSONA_TOKEN_ESTIMATE } from '../shared/persona';
+import {
+  estimateTokensFromChars,
+} from '../shared/tokenEstimate';
 
-/** Cheap char-based token estimate. Mirrors the harness loader's heuristic. */
-export function estimateTokensFromChars(charCount: number): number {
-  if (charCount <= 0) return 0;
-  return Math.ceil(charCount / CHARS_PER_TOKEN);
-}
+export { estimateTokensFromChars };
 
 /** Sum the per-turn text estimates. Both user and assistant text counted. */
 export function historyTokens(history: readonly ChatTurn[]): number {

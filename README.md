@@ -18,33 +18,10 @@ npm install
 npm run dev
 ```
 
-The transparent always-on-top widget should appear in the top-right of your
-primary display. Right-click for the context menu (Capture now / Toggle
-auto-capture / Set capture region…). On first launch macOS will prompt for
-screen-recording permission — grant it, then *Set capture region…* and draw
-a rect over your TradingView window.
-
-### Sharp install on Apple Silicon
-
-If you see `Could not load the "sharp" module using the darwin-arm64 runtime`
-(typical when `package-lock.json` was generated on a different platform — the
-sandbox environment used for AI development is Linux), pull the macOS native
-binary explicitly:
-
-```bash
-npm install --os=darwin --cpu=arm64 sharp
-```
-
-Or do a full clean reinstall:
-
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-This is a known sharp 0.33+ behavior — sharp ships platform-specific subpackages
-(`@img/sharp-{darwin,linux,win32}-{arm64,x64}`) as optional deps, and a lockfile
-generated on one platform won't list the others.
+The chat window opens as the primary surface. Right-click the chat header for
+capture controls (Capture now / Toggle auto-capture / Set capture region…).
+On first launch macOS will prompt for screen-recording permission — grant it,
+then set a capture region over your TradingView window via the context menu.
 
 ## Scripts
 

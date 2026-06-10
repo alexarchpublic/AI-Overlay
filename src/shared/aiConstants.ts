@@ -5,8 +5,14 @@
  * tunable lives in one place so reviewers can audit (and operators can
  * adjust) the behavior without spelunking through `geminiService.ts` or
  * `tokenBudget.ts`. Mirrors the discipline established by
- * `shared/constants.ts` (capture) and `shared/harnessConstants.ts` (harness).
+ * `shared/constants.ts` (capture) and `shared/tokenEstimate.ts` (token math).
  */
+import {
+  CHARS_PER_TOKEN as TOKEN_CHARS_PER_TOKEN,
+  PER_IMAGE_TOKEN_ESTIMATE as TOKEN_PER_IMAGE_ESTIMATE,
+} from './tokenEstimate';
+
+export { TOKEN_CHARS_PER_TOKEN as CHARS_PER_TOKEN };
 
 // ---------------------------------------------------------------------------
 // Models (PRD §0 D1 / D2 — Gemini 3 lineup)
@@ -66,7 +72,7 @@ export const SCREENSHOTS_PER_TURN = 3;
  * use a conservative flat estimate. Tunable here without touching the
  * budget math.
  */
-export const PER_IMAGE_TOKEN_ESTIMATE = 2_000;
+export const PER_IMAGE_TOKEN_ESTIMATE = TOKEN_PER_IMAGE_ESTIMATE;
 
 // ---------------------------------------------------------------------------
 // Conversation memory (PRD §0 D11 / D12)
@@ -101,8 +107,7 @@ export const SOFT_CEILING_TOKENS = 900_000;
 
 /**
  * Hard ceiling. Above this we fail with `<ChatError variant="token-ceiling" />`
- * BEFORE making the call. Matches `HARNESS_TOKEN_CEILING` (PRD §3.8 / Chunk 4
- * D8) so a harness that fits will never trip the chat-side guard alone.
+ * BEFORE making the call.
  */
 export const HARD_CEILING_TOKENS = 1_500_000;
 
@@ -111,13 +116,6 @@ export const HARD_CEILING_TOKENS = 1_500_000;
  * `tokenBudget.fit()` — request + headroom must stay under the ceilings.
  */
 export const OUTPUT_HEADROOM_TOKENS = 4_000;
-
-/**
- * Char/token ratio for cheap text estimation. Mirrors
- * `harnessConstants.HARNESS_CHARS_PER_TOKEN` so all token math in the
- * project uses the same denominator.
- */
-export const CHARS_PER_TOKEN = 3.8;
 
 // ---------------------------------------------------------------------------
 // Network / latency (PRD §0 D20 / D21)
