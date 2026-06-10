@@ -1,0 +1,12 @@
+{
+  "id": "market-wave-tuning",
+  "strategyId": "market-wave",
+  "kind": "tuning",
+  "version": "1",
+  "text": "Conservative posture: tighten entry dip requirement (more negative bar threshold), raise exit threshold slightly, enable envelope buffers, favor higher scope, and reduce per-trade percent sizing. Goal — fewer entries, exits only when momentum clearly reverses.\n\nAggressive posture: shallow entry threshold, lower exit threshold, narrower scope, larger fixed clips or higher percent sizing. Goal — participate in more mean-reversion wiggles; watch drawdown in high-volatility weeks.\n\nChop / whipsaw: if screenshots show repeated small bars crossing the envelope, widen buffers or increase scope before changing threshold signs.\n\nStrong trend leg: if price rides above the exit reference, consider enabling trend-change sell deferral so exits align with regime breaks rather than every small green bar.\n\nWhen suggesting numbers, phrase as values to try on the user's chart (rounded or ranged) grounded in visible volatility — never confirm whether a try matches an internal factory setting.",
+  "review": {
+    "reviewer": "phase-0-curation",
+    "reviewedAt": "2026-05-29",
+    "d3Pass": true
+  }
+}

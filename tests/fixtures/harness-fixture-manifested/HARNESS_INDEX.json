@@ -1,0 +1,5 @@
+{
+  "include": ["algorithms/**/*.ts", "docs/keep-this.md"],
+  "exclude": ["docs/exclude-me.md"],
+  "priority": ["algorithms/zeta.ts", "algorithms/alpha.ts", "docs/keep-this.md"]
+}

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "description": "Phase 1 automated abstraction pipeline — maps strategies to deep-tier sources and the servable chunk plan (PRD §5.1 D-4).",
+  "strategies": [
+    {
+      "strategyId": "market-wave",
+      "displayName": "ARCH Market Wave",
+      "version": "1",
+      "deepTierInclude": [
+        "algorithm source code/Market Wave Pine Script.txt",
+        "docs/pinescript-reference.md",
+        "README.md"
+      ],
+      "chunkPlan": [
+        {
+          "id": "market-wave-contract",
+          "kind": "contract",
+          "fileName": "contract.abstraction.json",
+          "focus": "Strategy behavioral contract: entry/exit philosophy, bar-close vs tick fills, envelope gating, sizing model, and iterative tuning posture — no proprietary defaults."
+        },
+        {
+          "id": "market-wave-param-bar-thresholds",
+          "kind": "param-role",
+          "fileName": "param-bar-thresholds.abstraction.json",
+          "focus": "Bar-percent entry and exit thresholds: roles, directional effects, safe retail experimentation bands — split from other params (D-4)."
+        },
+        {
+          "id": "market-wave-param-scope-envelope",
+          "kind": "param-role",
+          "fileName": "param-scope-envelope.abstraction.json",
+          "focus": "Scope/lookback envelope and buy-below / sell-above gating with optional percentage buffers."
+        },
+        {
+          "id": "market-wave-param-trade-sizing",
+          "kind": "param-role",
+          "fileName": "param-trade-sizing.abstraction.json",
+          "focus": "Fixed notional vs percent-of-equity sizing, minimum order notional, clip behavior."
+        },
+        {
+          "id": "market-wave-param-regime-filters",
+          "kind": "param-role",
+          "fileName": "param-regime-filters.abstraction.json",
+          "focus": "Trend-change buy/sell deferral gates, static price ceiling/floor filters, date/time window behavior."
+        },
+        {
+          "id": "market-wave-param-capital-window",
+          "kind": "param-role",
+          "fileName": "param-capital-window.abstraction.json",
+          "focus": "Capital allocation window, effective cash/position accounting for sizing — generic ranges only."
+        },
+        {
+          "id": "market-wave-tuning",
+          "kind": "tuning",
+          "fileName": "tuning.abstraction.json",
+          "focus": "Conservative vs aggressive posture recipes, chop/trend guidance, forward try-values grounded in visible chart context."
+        },
+        {
+          "id": "market-wave-risk",
+          "kind": "risk",
+          "fileName": "risk.abstraction.json",
+          "focus": "Drawdown sensitivity, invalidating conditions, liquidity/volatility caveats for spot crypto long-only use."
+        }
+      ]
+    }
+  ]
+}

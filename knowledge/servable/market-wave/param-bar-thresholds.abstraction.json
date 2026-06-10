@@ -1,0 +1,12 @@
+{
+  "id": "market-wave-param-bar-thresholds",
+  "strategyId": "market-wave",
+  "kind": "param-role",
+  "version": "1",
+  "text": "Bar-percent entry threshold (long trigger): negative percentage move bar-over-bar required before a buy signal arms on a confirmed bar. More negative (stricter dip) → fewer entries, typically higher conviction per fill. Typical retail experimentation band roughly −0.5% to −4%; very shallow values increase churn in chop.\n\nBar-percent exit threshold (exit trigger): positive percentage move bar-over-bar required before a sell signal arms. Higher positive threshold → holds longer through grind-up legs; lower → faster profit-taking. Typical band roughly +0.5% to +4%.\n\nThese thresholds interact with envelope gates: a strong dip can still be blocked if price sits above the entry reference when \"only buy below\" is enabled.",
+  "review": {
+    "reviewer": "phase-0-curation",
+    "reviewedAt": "2026-05-29",
+    "d3Pass": true
+  }
+}

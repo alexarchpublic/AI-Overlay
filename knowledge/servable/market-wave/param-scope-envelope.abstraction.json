@@ -1,0 +1,12 @@
+{
+  "id": "market-wave-param-scope-envelope",
+  "strategyId": "market-wave",
+  "kind": "param-role",
+  "version": "1",
+  "text": "Scope (lookback speed): user-facing dial from micro to macro that lengthens or shortens the moving averages of lows/highs used as entry/exit references. Lower scope → faster reaction, more signals in noisy sessions; higher scope → smoother envelope, fewer whipsaws. Usable retail range on the dial is roughly 0.5–10 with half-step granularity.\n\nOnly buy below / only sell above: when enabled, entries must print under the low-based reference and exits above the high-based reference, reducing trades taken through the middle of the range.\n\nBuy buffer / sell buffer (%): optional offsets that require price to clear the reference by an extra margin before firing — widens the dead zone and reduces marginal fills hugging the envelope.",
+  "review": {
+    "reviewer": "phase-0-curation",
+    "reviewedAt": "2026-05-29",
+    "d3Pass": true
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "tier": "deep",
+  "description": "Build-time-only raw IP. Never loaded into servable bundles or runtime retrieval.",
+  "resolvedRoot": "arch-public-harness",
+  "relativePathFromRepo": "../arch-public-harness"
+}

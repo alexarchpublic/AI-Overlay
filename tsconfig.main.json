@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "rootDir": "src",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "sourceMap": true,
+    "declaration": false,
+    "paths": {}
+  },
+  // `src/preload/**` is intentionally excluded from this config — it is
+  // bundled by `scripts/build-preload.mjs` (esbuild) so the sandboxed
+  // preload ends up with no external relative requires. Type-checking for
+  // preload lives in `tsconfig.preload.json`, which `npm run typecheck`
+  // also invokes.
+  "include": ["src/main/**/*.ts", "src/shared/**/*.ts"]
+}

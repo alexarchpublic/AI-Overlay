@@ -1,0 +1,44 @@
+# electron-builder.yml
+# Minimal dev-only config for Chunk 1. Full macOS .dmg + entitlements land in
+# Chunk 7 (Packaging, Permissions & Demo Polish). Keep this file small so the
+# Chunk 7 PRD owns the real packaging story end-to-end.
+
+appId: com.archpublic.ai-overlay
+productName: Arch Public AI Overlay
+
+directories:
+  output: release
+  buildResources: build
+
+# `files` overrides electron-builder's defaults, so node_modules is listed
+# explicitly here — without it native deps (sharp, libvips) are dropped.
+files:
+  - dist/**/*
+  - package.json
+  - node_modules/**/*
+
+asar: true
+
+# `sharp` ships a native `.node` binding plus the `@img/sharp-libvips-*`
+# package that contains `libvips-cpp.42.dylib`. macOS's dynamic loader
+# cannot resolve dylibs from inside an asar archive, so we keep both paths
+# unpacked. Without these the packaged app crashes with:
+#   "Library not loaded: @rpath/libvips-cpp.42.dylib"
+#
+# The trailing `/**/*` is required — `node_modules/sharp/**` does NOT match
+# files inside the directory in some electron-builder versions, only the
+# directory entry itself, leaving the actual .node + .dylib stuck in asar.
+asarUnpack:
+  - "node_modules/sharp/**/*"
+  - "node_modules/@img/**/*"
+
+mac:
+  category: public.app-category.finance
+  target:
+    - dir
+
+extraResources:
+  - from: knowledge/bundles
+    to: knowledge/bundles
+    filter:
+      - "**/*"

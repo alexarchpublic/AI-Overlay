@@ -1,0 +1,12 @@
+{
+  "id": "market-wave-param-regime-filters",
+  "strategyId": "market-wave",
+  "kind": "param-role",
+  "version": "1",
+  "text": "Trend-change buy gate: when enabled, a long signal that occurred during a down-regime can be deferred until an up-regime breakout bar, reducing buys straight into active sell regimes.\n\nTrend-change sell gate: when enabled, exit signals that occurred during an up-regime can be deferred until a down-regime breakdown bar, helping avoid selling the first green bar of a fresh rally leg.\n\nStatic price filter — buy ceiling: optional cap that blocks new buys if price is above a user-set level (useful when defending overhead supply).\n\nStatic price filter — sell floor: optional floor that blocks sells until price clears a user-set level (useful when avoiding exits into illiquid dips).\n\nDate/time window: backtest and live behavior respect user start/end timestamps; outside the window signals do not arm.",
+  "review": {
+    "reviewer": "phase-0-curation",
+    "reviewedAt": "2026-05-29",
+    "d3Pass": true
+  }
+}

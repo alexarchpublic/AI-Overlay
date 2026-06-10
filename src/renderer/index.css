@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Palette tokens — PRD Chunk 1 §0 D7.
+ * All renderer components should consume these via `var(--token)` or the
+ * Tailwind aliases (`bg-ap-bg`, `text-ap-fg`, etc.) rather than hard-coding
+ * the hex values. Design can retune these in one place without touching
+ * component code.
+ *
+ * Widget tokens — PRD Chunk 2 §0 D1/D5/D9.
+ */
+:root {
+  --bg: #0b1220;
+  --bg-elevated: #111a2e;
+  --bg-muted: #161f33;
+  --bg-user-bubble: #132a24;
+  --bg-green-action: #128f5f;
+  --bg-warning: #3d3218;
+  --bg-error: #3d1818;
+  --fg: #e6edf5;
+  --accent-green: #16c784;
+  --accent-gold: #e6b84a;
+  --accent-amber: #f59e0b;
+
+  --widget-size: 48px;
+  --widget-halo: 4px;
+  --widget-window-size: 56px; /* size + halo * 2 — must match WIDGET_WINDOW_SIZE */
+  --pulse-duration: 2000ms;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Helvetica,
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * The overlay window body must be transparent so the widget's rounded pill
+ * is the only thing the user sees. The settings window resets these in its
+ * own shell so its body is opaque.
+ */
+html.view-widget,
+html.view-widget body,
+html.view-widget #root {
+  background: transparent !important;
+  background-color: rgba(0, 0, 0, 0) !important;
+  color: var(--fg);
+  overflow: hidden;
+}
+
+html.view-widget body,
+html.view-widget #root {
+  width: var(--widget-window-size);
+  height: var(--widget-window-size);
+}
+
+html.view-settings,
+html.view-settings body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+html.view-settings #root {
+  min-height: 100vh;
+}
+
+/*
+ * Region picker (Chunk 3 — PRD §0 D6). Fullscreen frameless transparent
+ * window; the React component owns the dim scrim and the draw rect, the
+ * body just needs to stay out of the way.
+ */
+html.view-regionPicker,
+html.view-regionPicker body,
+html.view-regionPicker #root {
+  background: transparent;
+  color: var(--fg);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/*
+ * Chat window (Chunk 5 — PRD §3.5 / D15). Frameless 480×640 transparent
+ * window whose body fills the viewport so the panel's flex layout sizes
+ * against the BrowserWindow chrome. The slide-in animation is implemented
+ * as a one-shot CSS transform on #root so main does not have to drive the
+ * animation frame-by-frame; close-side fade lives on body via the
+ * `.is-closing` class set by ChatPanel before triggering window.close.
+ */
+html.view-chat,
+html.view-chat body,
+html.view-chat #root {
+  background: transparent;
+  color: var(--fg);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+html.view-chat #root {
+  animation: chat-slide-in 220ms ease-out both;
+}
+
+@keyframes chat-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -1,0 +1,2 @@
+Momentum is a cross-sectional signal. Combine with a trend filter
+in a regime-switching wrapper to reduce drawdowns.

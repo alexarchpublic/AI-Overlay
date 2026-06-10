@@ -1,0 +1,12 @@
+{
+  "include": [
+    "docs/pinescript-reference.md",
+    "algorithm source code/**/*.txt",
+    "README.md"
+  ],
+  "priority": [
+    "docs/pinescript-reference.md",
+    "algorithm source code/Market Wave Pine Script.txt",
+    "README.md"
+  ]
+}

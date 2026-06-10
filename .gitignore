@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+release/
+
+# Logs
+logs/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Harness — proprietary, gitignored except its README and the
+# (commented) curation-manifest example. The real `HARNESS_INDEX.json`
+# is gitignored alongside the algorithm source.
+arch-public-harness/*
+!arch-public-harness/README.md
+!arch-public-harness/HARNESS_INDEX.json.example
+!arch-public-harness/docs/
+arch-public-harness/docs/*
+!arch-public-harness/docs/pinescript-reference.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Knowledge bundles (regenerate via npm run build:knowledge)
+knowledge/bundles/*.json
+!knowledge/bundles/.gitkeep
+
+# Pipeline esbuild cache
+scripts/.cache/
+
+# Coverage / caches
+coverage/
+.vite/
+*.log

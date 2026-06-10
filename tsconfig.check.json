@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.main.json",
+  "compilerOptions": {
+    "rootDir": "src/main",
+    "outDir": "dist/main"
+  },
+  "include": ["src/main/checkScreenPerm.ts"]
+}

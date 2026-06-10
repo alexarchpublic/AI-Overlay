@@ -1,0 +1,3 @@
+ATR  Average True Range
+SMA  Simple Moving Average
+RSI  Relative Strength Index
