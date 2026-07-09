@@ -9,6 +9,7 @@ import {
   KNOWLEDGE_STORE_KEY_BACKEND,
   type KnowledgeBackend,
 } from '../shared/knowledgeConstants';
+import { importESM } from './importESM';
 
 export interface KnowledgeStateStore {
   getBackend(): KnowledgeBackend;
@@ -37,17 +38,11 @@ interface ElectronStoreModule {
   default: new (opts: ElectronStoreOptions) => StoreLike;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-implied-eval
-const importESM: (specifier: string) => Promise<unknown> = new Function(
-  'specifier',
-  'return import(specifier);',
-) as (specifier: string) => Promise<unknown>;
-
 export async function createKnowledgeStoreState(): Promise<{
   store: StoreLike;
   wrapper: KnowledgeStateStore;
 }> {
-  const mod = (await importESM('electron-store')) as ElectronStoreModule;
+  const mod = await importESM<ElectronStoreModule>('electron-store');
   const store: StoreLike = new mod.default({
     name: 'config',
     defaults: {

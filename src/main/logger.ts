@@ -11,8 +11,8 @@
  * and the redaction paths so Chunk 5 (Gemini integration) and Chunk 6 (rich
  * logging / handoff) inherit a stable format without retrofitting.
  *
- * Phase 0 task 7 extends redaction: model-output fields (`rawSnippet`, etc.)
- * pass through the deterministic firewall gate via `sanitizeLogContext`.
+ * Model-output fields in log context are truncated before write to keep JSONL
+ * lines bounded.
  */
 
 import fs from 'node:fs';
@@ -24,8 +24,15 @@ import {
   LOG_FILENAME_FORMAT,
   REDACT_PLACEHOLDER,
 } from '../shared/constants';
-import { redactLogSnippet } from '../shared/firewall/deterministicGate';
 import type { LogContext, LogLevel, RendererLogMessage } from '../shared/types';
+
+const LOG_SNIPPET_MAX_CHARS = 240;
+
+/** Truncate long model-output snippets before they land in JSONL logs. */
+export function truncateLogSnippet(text: string, maxChars = LOG_SNIPPET_MAX_CHARS): string {
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, maxChars)}…[truncated]`;
+}
 
 /**
  * Project-wide logging contract: `(event, context)` rather than raw pino calls.
@@ -66,10 +73,10 @@ export const REDACT_PATHS: readonly string[] = [
 ];
 
 /**
- * Context keys whose string values may carry model output — sanitized via the
- * deterministic firewall gate before the record is written (PRD §5.8).
+ * Context keys whose string values may carry model output — truncated before
+ * the record is written.
  */
-export const LOG_FIREWALL_SANITIZE_KEYS: readonly string[] = [
+export const LOG_TRUNCATE_KEYS: readonly string[] = [
   'rawSnippet',
   'firstSnippet',
   'secondSnippet',
@@ -80,17 +87,17 @@ export const LOG_FIREWALL_SANITIZE_KEYS: readonly string[] = [
   'detail.secondSnippet',
 ];
 
-const FIREWALL_SANITIZE_KEY_SET = new Set(LOG_FIREWALL_SANITIZE_KEYS);
+const TRUNCATE_KEY_SET = new Set(LOG_TRUNCATE_KEYS);
 
-/** Walk log context and firewall-sanitize known model-output string fields. */
+/** Walk log context and truncate known model-output string fields. */
 export function sanitizeLogContext(context: LogContext | undefined): LogContext {
   if (!context) return {};
 
   const out: LogContext = { ...context };
 
   for (const [key, value] of Object.entries(out)) {
-    if (typeof value === 'string' && FIREWALL_SANITIZE_KEY_SET.has(key)) {
-      out[key] = redactLogSnippet(value);
+    if (typeof value === 'string' && TRUNCATE_KEY_SET.has(key)) {
+      out[key] = truncateLogSnippet(value);
       continue;
     }
 
@@ -98,8 +105,8 @@ export function sanitizeLogContext(context: LogContext | undefined): LogContext 
       const detail = { ...(value as Record<string, unknown>) };
       for (const [detailKey, detailValue] of Object.entries(detail)) {
         const path = `detail.${detailKey}`;
-        if (typeof detailValue === 'string' && FIREWALL_SANITIZE_KEY_SET.has(path)) {
-          detail[detailKey] = redactLogSnippet(detailValue);
+        if (typeof detailValue === 'string' && TRUNCATE_KEY_SET.has(path)) {
+          detail[detailKey] = truncateLogSnippet(detailValue);
         }
       }
       out.detail = detail;

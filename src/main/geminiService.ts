@@ -72,15 +72,7 @@ import {
   OUTPUT_SCHEMA,
   OUTPUT_SCHEMA_INSTRUCTIONS,
 } from '../shared/aiSchema';
-import { FIREWALL_RETRY_REMINDER } from '../shared/firewall/constants';
-import type { DeepFingerprintManifest } from '../shared/firewall/deepFingerprints';
-import {
-  inspectAnalysisResponse,
-  inspectFirewallText,
-  redactLogSnippet,
-  rewriteBlockedAnalysisResponse,
-} from '../shared/firewall/deterministicGate';
-import type { FirewallAction } from '../shared/types';
+import { truncateLogSnippet } from './logger';
 
 // ---------------------------------------------------------------------------
 // Public surface
@@ -141,10 +133,7 @@ export interface GeminiServiceDeps {
     latencyMs: number;
     promptTokenEstimate: number;
     jsonOk: boolean;
-    firewallAction?: FirewallAction;
   }): void;
-  /** Deep-tier verbatim fingerprints for the deterministic gate (Phase 0 task 5). */
-  deepFingerprints?: DeepFingerprintManifest | null;
   /** Injected for deterministic ULIDs in tests. */
   newId?: () => string;
   /** Injected for deterministic timestamps in tests. */
@@ -596,7 +585,7 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
       deps.logger.warn('gemini.jsonParseFailed', {
         promptHash,
         attempt: 1,
-        rawSnippet: redactLogSnippet(firstRawText),
+        rawSnippet: truncateLogSnippet(firstRawText),
       });
       const reminderText = `${args.userText}\n\n${JSON_RETRY_REMINDER}`;
       const second = await runWithRetry(reminderText);
@@ -616,7 +605,7 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
         deps.logger.error('gemini.jsonParseFailed', {
           promptHash,
           attempt: 2,
-          rawSnippet: redactLogSnippet(secondText),
+          rawSnippet: truncateLogSnippet(secondText),
         });
         deps.recordCall({
           ts: startTs,
@@ -629,72 +618,12 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
           kind: 'fatal',
           reason: 'invalid-json',
           detail: {
-            firstSnippet: redactLogSnippet(firstRawText),
-            secondSnippet: redactLogSnippet(secondText),
+            firstSnippet: truncateLogSnippet(firstRawText),
+            secondSnippet: truncateLogSnippet(secondText),
           },
           latencyMs: now() - startTs,
         };
       }
-    }
-
-    let firewallAction: FirewallAction = 'allow';
-    let firewallRetried = false;
-    const deepFingerprints = deps.deepFingerprints ?? null;
-
-    function gateAnalysis(candidate: AnalysisResponse): AnalysisResponse | 'retry' {
-      const verdict = inspectAnalysisResponse(candidate, { deepFingerprints });
-      if (verdict.action === 'allow') return candidate;
-      deps.logger.warn('firewall.blocked', {
-        rules: verdict.hits.map((h) => h.rule),
-        promptHash,
-      });
-      return 'retry';
-    }
-
-    let gated = gateAnalysis(parsed);
-    if (gated === 'retry') {
-      firewallRetried = true;
-      const reminderText = `${args.userText}\n\n${FIREWALL_RETRY_REMINDER}`;
-      const third = await runWithRetry(reminderText);
-      if (!isContentResult(third)) {
-        deps.recordCall({
-          ts: startTs,
-          latencyMs: 'latencyMs' in third ? third.latencyMs : now() - startTs,
-          promptTokenEstimate,
-          jsonOk: false,
-          firewallAction: 'block',
-        });
-        return third;
-      }
-      raw = third;
-      const thirdText = rawTextOf(third);
-      const reparsed = parseAnalysis(thirdText);
-      if (reparsed === null) {
-        deps.recordCall({
-          ts: startTs,
-          latencyMs: now() - startTs,
-          promptTokenEstimate,
-          jsonOk: false,
-          firewallAction: 'block',
-        });
-        return {
-          ok: false,
-          kind: 'fatal',
-          reason: 'invalid-json',
-          detail: { firewallRetry: true },
-          latencyMs: now() - startTs,
-        };
-      }
-      gated = gateAnalysis(reparsed);
-      if (gated === 'retry') {
-        const verdict = inspectAnalysisResponse(reparsed, { deepFingerprints });
-        parsed = rewriteBlockedAnalysisResponse(reparsed, verdict.hits);
-        firewallAction = 'rewrite';
-      } else {
-        parsed = gated;
-      }
-    } else {
-      parsed = gated;
     }
 
     const latencyMs = now() - startTs;
@@ -703,7 +632,6 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
       latencyMs,
       promptTokenEstimate,
       jsonOk: true,
-      firewallAction,
     });
     deps.logger.info('gemini.callCompleted', {
       model,
@@ -712,8 +640,6 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
       latencyMs,
       jsonOk: true,
       jsonRetryAttempted: attemptedJsonRetry,
-      firewallRetried,
-      firewallAction,
       suggestionCount: parsed.suggested_parameter_changes.length,
       confidenceScore: parsed.confidence_score,
     });
@@ -784,15 +710,6 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
       );
       const text = rawTextOf(result).trim();
       if (text.length === 0) return null;
-      const summaryVerdict = inspectFirewallText(text, {
-        deepFingerprints: deps.deepFingerprints ?? null,
-      });
-      if (summaryVerdict.action !== 'allow') {
-        deps.logger.warn('firewall.summaryBlocked', {
-          rules: summaryVerdict.hits.map((h) => h.rule),
-        });
-        return null;
-      }
       return text;
     } catch (err) {
       deps.logger.warn('gemini.summaryFailed', {

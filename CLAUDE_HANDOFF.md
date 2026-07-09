@@ -537,3 +537,43 @@ meaningful work. Entries are chronological, newest at the bottom.
 - Renderer chat tree is a fresh sibling of `widget/` and `settings/`. Mounted via the same `?view=` mechanism Chunks 1–3 already use.
 - Vitest now uses `esbuild.jsx: 'automatic'` so `.spec.tsx` files don't need `import React`. Tested against the existing pure `.spec.ts` files; no regressions.
 - One new dev dep (`jsdom`) was needed for the React render smoke test. The default test environment is still `node`; only `chatPanel.smoke.spec.tsx` opts into jsdom via the `// @vitest-environment jsdom` comment.
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-09-ARCH-PIVOT-P0P1
+**Timestamp:** 2026-07-09T13:55:00-05:00 (CDT)
+**Model:** Composer
+**Focus Area:** Internal co-pilot pivot — Phase 0 preflight + Phase 1 security-harness teardown (D-P1)
+
+### Decisions Made
+- Created branch `pivot/internal-copilot` from `dev` (uncommitted local changes carried forward).
+- Removed the entire IP-protection stack per D-P1: deterministic firewall, enumeration monitor, D-3 validator, abstraction generation pipeline, red-team suite/CI step, and servable/deep knowledge artifacts. Kept `knowledgeCrypto.ts` + `secretsStore.ts` (API-key keychain hygiene).
+- Simplified `bundleBuilder.ts` to a minimal servable bundle builder (no D-3 gate, no deep fingerprints) so existing knowledge-store tests keep working until Phase 2 replaces it with the docs-corpus pipeline.
+- Replaced firewall log sanitization with length-based truncation (`truncateLogSnippet`) — operational hygiene only, not a disclosure gate.
+- Model output now renders directly: `geminiService.send()` retains JSON-parse retry only; no post-model gate.
+
+### Files Modified / Created
+- Deleted: `src/shared/firewall/**`, `src/main/enumerationMonitor.ts`, abstraction/D-3 pipeline files, `scripts/{red-team-smoke,generate-abstractions,build-knowledge-bundle}.mjs`, `tests/{firewall,redteam}/**`, enumeration + abstraction test specs, `knowledge/{deep,servable,deep-fingerprints.json,bundles/servable-*}`, `RED_TEAM.md`
+- Edited: `chatOrchestrator.ts`, `bootstrap.ts`, `appContext.ts`, `chatLifecycle.ts`, `geminiService.ts`, `logger.ts`, `aiStore.ts`, `types.ts`, `ChatError.tsx`, `bundleBuilder.ts`, `knowledgeTypes.ts`, `package.json`, `vitest.config.ts`, `.github/workflows/ci.yml`, and related test specs
+
+### Open Questions / Risks
+- **`npm run dev` will fail knowledge init** until Phase 2 lands a docs bundle — `knowledge/bundles/` is empty after servable artifact deletion. Expected; chat sends surface `no-harness`.
+- **`SCHEMA_V2_FORBIDDEN_FIELDS` remains** in `aiSchema.ts` until Phase 3 schema v3 work removes it (not part of Phase 1 grep contract).
+- Node 22 ran tests successfully despite `engines` requiring Node 20 — CI uses `.nvmrc`; local dev should prefer `nvm use`.
+
+### Verification Results
+- Phase 0 baseline (pre-teardown): **315 tests pass** on `dev` (`typecheck`, `lint`, `test` all green).
+- Phase 1 post-teardown: **236 tests pass** (`typecheck`, `lint`, `test` all green).
+- Grep contract: `git grep -iE "firewall|enumerationmonitor|d3pass|deep-fingerprints" -- src/ scripts/ tests/` → **empty**.
+
+### Recommended Next Steps for Next Claude Instance
+1. **Phase 2** — implement `scripts/ingest-docs.mjs` + `npm run ingest:docs`; rework knowledge layer to `DocChunk` / docs bundles per execution plan §Phase 2.
+2. Commit Phase 0+1 as separate commits on `pivot/internal-copilot` if the operator wants the one-commit-per-phase convention.
+3. Phase 3: persona v3, schema v3, prompt composition (remove `SCHEMA_V2_FORBIDDEN_FIELDS`).
+
+### Key Context Delta
+- Product direction pivots from client-facing zero-leakage demo to internal sales/CS co-pilot with full-fidelity docs (`PRD_Internal_Copilot_Pivot.md`).
+- Security harness PRD is superseded; `Context.md` still at v0.2.0 until Phase 5 doc reset.
+- Chat error taxonomy is now four variants (removed `enumeration-throttled`).
+- CI no longer runs `npm run red-team`; coverage thresholds target `chatOrchestrator` only.

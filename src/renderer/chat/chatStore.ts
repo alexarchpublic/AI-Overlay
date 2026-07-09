@@ -38,6 +38,7 @@ export interface ChatUiState {
 
   setTurns: (turns: ChatTurn[]) => void;
   appendTurn: (turn: ChatTurn) => void;
+  removeTurn: (turnId: string) => void;
   setState: (s: ChatState) => void;
   setError: (e: ChatError | null) => void;
   clear: () => void;
@@ -65,6 +66,9 @@ export const useChatStore = create<ChatUiState>((set) => ({
   },
   appendTurn: (turn) => {
     set((s) => ({ turns: [...s.turns, turn] }));
+  },
+  removeTurn: (turnId) => {
+    set((s) => ({ turns: s.turns.filter((t) => t.id !== turnId) }));
   },
   setState: (s) => {
     // Clear stale errors on any non-error transition.

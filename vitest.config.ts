@@ -7,6 +7,8 @@
  *
  * Chunk 5: enable the automatic JSX transform via esbuild so .spec.tsx files
  * can render renderer components without a `import React` shim.
+ *
+ * Milestone 3 (T3.2): coverage thresholds on the chat orchestrator.
  */
 
 import { defineConfig } from 'vitest/config';
@@ -23,6 +25,16 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.spec.ts', 'tests/**/*.spec.tsx'],
     reporters: ['default'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/main/chatOrchestrator.ts'],
+      reporter: ['text', 'json-summary', 'lcov'],
+      thresholds: {
+        'src/main/chatOrchestrator.ts': {
+          branches: 90,
+        },
+      },
+    },
   },
   esbuild: {
     jsx: 'automatic',

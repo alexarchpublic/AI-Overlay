@@ -22,6 +22,7 @@ import {
   CAPTURE_INTERVAL_MAX_MS,
   CAPTURE_INTERVAL_MIN_MS,
 } from '../shared/constants';
+import { importESM } from './importESM';
 
 const KEY_INTERVAL_MS = 'capture.intervalMs';
 const KEY_REGION = 'capture.region';
@@ -178,13 +179,6 @@ interface ElectronStoreModule {
   default: new (opts: ElectronStoreOptions) => StoreLike;
 }
 
-// Same dynamic-import dance as widgetState.ts — see that file for the why.
-// eslint-disable-next-line @typescript-eslint/no-implied-eval
-const importESM: (specifier: string) => Promise<unknown> = new Function(
-  'specifier',
-  'return import(specifier);',
-) as (specifier: string) => Promise<unknown>;
-
 /**
  * Open the `capture.*` slice of the shared `config` electron-store file.
  * Pulls a fresh handle (the same JSON file the widget store uses); both
@@ -195,7 +189,7 @@ export async function createCaptureStore(): Promise<{
   store: StoreLike;
   wrapper: CaptureStateStore;
 }> {
-  const mod = (await importESM('electron-store')) as ElectronStoreModule;
+  const mod = await importESM<ElectronStoreModule>('electron-store');
   const store: StoreLike = new mod.default({
     name: 'config',
     defaults: {

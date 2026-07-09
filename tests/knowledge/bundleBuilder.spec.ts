@@ -1,6 +1,6 @@
 /**
  * @file tests/knowledge/bundleBuilder.spec.ts
- * Phase 0 task 1 — servable bundle build, D-3 enforcement, content hash stability.
+ * Phase 0 task 1 — servable bundle build + content hash stability.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -19,7 +19,7 @@ const VALID_SOURCE = {
   kind: 'contract',
   version: '1',
   text: 'Long-only behavioral summary without code or paths.',
-  review: { reviewer: 'test', reviewedAt: '2026-05-29', d3Pass: true },
+  review: { reviewer: 'test', reviewedAt: '2026-05-29' },
 };
 
 describe('computeContentHash', () => {
@@ -53,7 +53,7 @@ describe('buildKnowledgeBundle', () => {
     await rm(tmp, { recursive: true, force: true });
   });
 
-  it('builds a bundle from reviewed servable sources', async () => {
+  it('builds a bundle from servable sources', async () => {
     const servable = path.join(tmp, 'servable');
     const out = path.join(tmp, 'bundles');
     await mkdir(path.join(servable, 'test-strategy'), { recursive: true });
@@ -72,55 +72,5 @@ describe('buildKnowledgeBundle', () => {
     };
     expect(onDisk.chunks[0].id).toBe('test-contract');
     expect(onDisk.chunks[0]).not.toHaveProperty('review');
-  });
-
-  it('rejects sources that fail D-3', async () => {
-    const servable = path.join(tmp, 'servable-bad');
-    const out = path.join(tmp, 'bundles-bad');
-    await mkdir(servable, { recursive: true });
-    await writeFile(
-      path.join(servable, 'bad.abstraction.json'),
-      `${JSON.stringify({
-        ...VALID_SOURCE,
-        id: 'bad',
-        text: 'The algorithm uses 99 for everything.',
-      })}\n`,
-    );
-
-    await expect(buildKnowledgeBundle({ servableRoot: servable, outputDir: out })).rejects.toThrow(
-      /D-3 failed/,
-    );
-  });
-
-  it('rejects sources without review.d3Pass', async () => {
-    const servable = path.join(tmp, 'servable-noreview');
-    const out = path.join(tmp, 'bundles-noreview');
-    await mkdir(servable, { recursive: true });
-    await writeFile(
-      path.join(servable, 'noreview.abstraction.json'),
-      `${JSON.stringify({
-        ...VALID_SOURCE,
-        review: { reviewer: 'x', reviewedAt: '2026-05-29', d3Pass: false },
-      })}\n`,
-    );
-
-    await expect(buildKnowledgeBundle({ servableRoot: servable, outputDir: out })).rejects.toThrow(
-      /d3Pass must be true/,
-    );
-  });
-});
-
-describe('market-wave servable corpus', () => {
-  it('all committed abstractions pass D-3', async () => {
-    const repoRoot = path.resolve(__dirname, '../..');
-    const servable = path.join(repoRoot, 'knowledge', 'servable');
-    const out = path.join(repoRoot, 'knowledge', 'bundles');
-    const result = await buildKnowledgeBundle({
-      servableRoot: servable,
-      outputDir: out,
-      deepTierRoot: path.join(repoRoot, 'arch-public-harness'),
-    });
-    expect(result.bundle.chunks.length).toBeGreaterThanOrEqual(7);
-    expect(result.bundle.manifest.strategyIds).toContain('market-wave');
   });
 });

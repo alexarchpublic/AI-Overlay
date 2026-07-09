@@ -60,7 +60,10 @@ Chunk plans live in `knowledge/deep/GENERATION_MANIFEST.json` (strategy → deep
 - `knowledge/bundles/servable-<hash>.json` — full bundle (`manifest` + `chunks`)
 - `knowledge/bundles/servable-<hash>.manifest.json` — manifest only
 
-Encryption at rest for the runtime index is Phase 0 task 2 (`LocalEncryptedKnowledgeStore`).
+The runtime store loads the servable bundle from `knowledge/bundles/` at init
+(see `LocalKnowledgeStore` in `src/main/knowledgeStore.ts`). One plaintext
+representation ships in the packaged app (`extraResources`); see security PRD
+§12 D-12 for the at-rest decision.
 
 `deep-fingerprints.json` (repo root under `knowledge/`) is produced by `npm run build:knowledge` from the deep tier. The runtime deterministic gate uses it to block verbatim source leaks (task 5).
 

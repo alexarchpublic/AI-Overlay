@@ -8,7 +8,6 @@ import { mkdtemp, rm, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { buildKnowledgeBundle } from '../../src/shared/knowledge/bundleBuilder';
-import { createTestSafeStorage } from '../../src/main/knowledgeCrypto';
 import {
   createKnowledgeStore,
   resolveKnowledgeBundleDir,
@@ -22,7 +21,7 @@ const VALID_SOURCE = {
   kind: 'contract',
   version: '1',
   text: 'Factory test behavioral contract without leakage shapes.',
-  review: { reviewer: 'test', reviewedAt: '2026-05-29', d3Pass: true },
+  review: { reviewer: 'test', reviewedAt: '2026-05-29' },
 };
 
 function makeSilentLogger() {
@@ -53,12 +52,10 @@ describe('resolveKnowledgeBundleDir', () => {
 describe('createKnowledgeStore', () => {
   let tmp: string;
   let bundleDir: string;
-  let userDataDir: string;
 
   beforeEach(async () => {
     tmp = await mkdtemp(path.join(os.tmpdir(), 'knowledge-factory-'));
     bundleDir = path.join(tmp, 'bundles');
-    userDataDir = path.join(tmp, 'userData');
     const servable = path.join(tmp, 'servable');
     await mkdir(path.join(servable, 'factory-strategy'), { recursive: true });
     await writeFile(
@@ -72,14 +69,12 @@ describe('createKnowledgeStore', () => {
     await rm(tmp, { recursive: true, force: true });
   });
 
-  it('selects local backend and initializes encrypted store', async () => {
+  it('selects local backend and initializes from the servable bundle', async () => {
     const store = await createKnowledgeStore({
       backend: 'local',
       logger: makeSilentLogger(),
-      userDataDir,
       isDev: true,
       bundleDir,
-      safeStorage: createTestSafeStorage('factory-local-key-32-bytes!!!'),
     });
     assertKnowledgeStoreInterface(store);
     expect(await store.version()).toMatch(/^[a-f0-9]{64}$/);
@@ -89,7 +84,6 @@ describe('createKnowledgeStore', () => {
     const store = await createKnowledgeStore({
       backend: 'remote',
       logger: makeSilentLogger(),
-      userDataDir,
       isDev: true,
       bundleDir,
     });

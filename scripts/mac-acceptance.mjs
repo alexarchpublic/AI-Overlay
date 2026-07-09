@@ -138,7 +138,7 @@ function auditSharp() {
     execSync('node -e "require(\'sharp\')"', { cwd: root, stdio: 'pipe' });
     console.log('✓ sharp loads on this machine');
     return true;
-  } catch (e) {
+  } catch {
     console.log('✗ sharp failed — run: npm install --os=darwin --cpu=arm64 sharp');
     return false;
   }

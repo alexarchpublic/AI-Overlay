@@ -9,7 +9,7 @@
 import { describe, it, expect } from 'vitest';
 import pino from 'pino';
 import { Writable } from 'node:stream';
-import { buildLoggerOptions, wrapPino, REDACT_PATHS, sanitizeLogContext, LOG_FIREWALL_SANITIZE_KEYS } from '../src/main/logger';
+import { buildLoggerOptions, wrapPino, REDACT_PATHS, sanitizeLogContext, LOG_TRUNCATE_KEYS } from '../src/main/logger';
 import { APP_NAME, REDACT_PLACEHOLDER } from '../src/shared/constants';
 
 function collectLogs(): { stream: Writable; records: () => Record<string, unknown>[] } {
@@ -107,22 +107,22 @@ describe('AppLogger — shape and redaction', () => {
     expect(record?.k).toBe('v');
   });
 
-  it('firewall-sanitizes model-output fields before write', () => {
+  it('truncates model-output fields before write', () => {
     const sink = collectLogs();
     const logger = wrapPino(pino(buildLoggerOptions(), sink.stream));
+    const longText = `${'x'.repeat(300)} sensitive tail`;
 
     logger.warn('gemini.jsonParseFailed', {
-      rawSnippet: 'The algorithm uses 2.0 for exits.',
-      detail: { firstSnippet: 'src/algo.ts:42 default is 2.0' },
+      rawSnippet: longText,
+      detail: { firstSnippet: longText },
     });
 
     const [record] = sink.records();
     const raw = JSON.stringify(record);
 
-    expect(record?.rawSnippet).toMatch(/firewall-redacted/);
-    expect((record?.detail as Record<string, unknown>)?.firstSnippet).toMatch(/firewall-redacted/);
-    expect(raw).not.toContain('src/algo.ts');
-    expect(raw).not.toContain('default is 2.0');
+    expect(record?.rawSnippet).toMatch(/\[truncated\]$/);
+    expect((record?.detail as Record<string, unknown>)?.firstSnippet).toMatch(/\[truncated\]$/);
+    expect(raw).not.toContain('sensitive tail');
   });
 
   it('sanitizeLogContext passes benign model suggestions through', () => {
@@ -130,8 +130,8 @@ describe('AppLogger — shape and redaction', () => {
     expect(out.rawSnippet).toBe('Try ~1.5× ATR on your chart.');
   });
 
-  it('exposes firewall sanitize keys for model-output log fields', () => {
-    expect(LOG_FIREWALL_SANITIZE_KEYS).toContain('rawSnippet');
-    expect(LOG_FIREWALL_SANITIZE_KEYS).toContain('detail.firstSnippet');
+  it('exposes truncate keys for model-output log fields', () => {
+    expect(LOG_TRUNCATE_KEYS).toContain('rawSnippet');
+    expect(LOG_TRUNCATE_KEYS).toContain('detail.firstSnippet');
   });
 });

@@ -16,7 +16,7 @@ export interface AbstractionChunk {
   id: string;
   strategyId: string;
   kind: AbstractionKind;
-  /** Natural-language abstraction text — must pass D-3 at publish time. */
+  /** Natural-language abstraction text. */
   text: string;
   version: string;
 }
@@ -25,8 +25,6 @@ export interface AbstractionChunk {
 export interface AbstractionReview {
   reviewer: string;
   reviewedAt: string;
-  /** Reviewer attests the document passes PRD D-3. */
-  d3Pass: true;
 }
 
 /**
@@ -57,19 +55,6 @@ export interface ServableBundleManifest {
 export interface ServableKnowledgeBundle {
   manifest: ServableBundleManifest;
   chunks: AbstractionChunk[];
-}
-
-/** Result of D-3 validation on abstraction text. */
-export interface D3ValidationHit {
-  rule: string;
-  message: string;
-  /** Character index where the match starts, if applicable. */
-  index?: number;
-}
-
-export interface D3ValidationResult {
-  ok: boolean;
-  hits: D3ValidationHit[];
 }
 
 /** Scoped retrieval request (PRD §7). */

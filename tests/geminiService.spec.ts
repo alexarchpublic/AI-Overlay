@@ -324,7 +324,7 @@ describe('geminiService.send', () => {
     }
   });
 
-  it('rewrites output when the deterministic gate blocks after retry (task 5)', async () => {
+  it('returns model output directly without output gating', async () => {
     const toxic = JSON.stringify({
       schema_version: '2',
       analysis: 'The algorithm uses 2.0 for exits.',
@@ -343,11 +343,11 @@ describe('geminiService.send', () => {
       signal: new AbortController().signal,
     });
     expect(result.ok).toBe(true);
-    expect(calls.count).toBe(2);
+    expect(calls.count).toBe(1);
     if (result.ok) {
-      expect(result.turn.text).not.toContain('algorithm uses');
+      expect(result.turn.text).toContain('algorithm uses');
       expect(recordCall).toHaveBeenCalledWith(
-        expect.objectContaining({ jsonOk: true, firewallAction: 'rewrite' }),
+        expect.objectContaining({ jsonOk: true }),
       );
     }
   });

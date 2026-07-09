@@ -3,8 +3,8 @@
  *
  * Phase 0 task 2 — `KnowledgeStore` implementations (PRD §5.2).
  *
- *   - `LocalEncryptedKnowledgeStore` — servable bundle imported once, encrypted
- *     at rest under userData via OS keychain-backed safeStorage (D-6).
+ *   - `LocalKnowledgeStore` — servable bundle loaded from the packaged
+ *     `knowledge/bundles/` extraResources directory (D-6, audit T3.3).
  *   - `RemoteKnowledgeStore` — interface stub for future server-side retrieval (D-1).
  *
  * Deep-tier paths are never read here — only pre-built servable bundles from
@@ -13,21 +13,10 @@
 import path from 'node:path';
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import type { AppLogger } from './logger';
-import {
-  decryptKnowledgePayload,
-  encryptKnowledgePayload,
-  type SafeStorageLike,
-} from './knowledgeCrypto';
 import { retrieveChunks } from '../shared/knowledge/retrieval';
-import {
-  KNOWLEDGE_ENCRYPTED_INDEX_FILENAME,
-  KNOWLEDGE_INDEX_META_FILENAME,
-  KNOWLEDGE_USERDATA_SUBDIR,
-  SERVABLE_BUNDLE_PREFIX,
-} from '../shared/knowledgeConstants';
+import { SERVABLE_BUNDLE_PREFIX } from '../shared/knowledgeConstants';
 import type {
   AbstractionChunk,
-  KnowledgeIndexMeta,
   KnowledgeStore,
   RetrievalQuery,
   ServableKnowledgeBundle,
@@ -76,14 +65,11 @@ export class KnowledgeStoreError extends Error {
   }
 }
 
-export interface LocalEncryptedKnowledgeStoreDeps {
+export interface LocalKnowledgeStoreDeps {
   logger: AppLogger;
-  userDataDir: string;
   /** Directory containing `servable-*.json` bundle artifacts. */
   bundleDir: string;
   fs?: KnowledgeFsLike;
-  safeStorage: SafeStorageLike;
-  now?: () => number;
 }
 
 interface LoadedState {
@@ -137,14 +123,13 @@ export async function resolveServableBundlePath(
   return path.join(bundleDir, newest);
 }
 
-export function createLocalEncryptedKnowledgeStore(
-  deps: LocalEncryptedKnowledgeStoreDeps,
-): KnowledgeStore {
+/**
+ * Load the D-3-reviewed servable bundle from disk into memory. The packaged
+ * app ships one plaintext representation under `extraResources/knowledge/bundles`
+ * (audit T3.3 / security-harness-PRD §12 D-12).
+ */
+export function createLocalKnowledgeStore(deps: LocalKnowledgeStoreDeps): KnowledgeStore {
   const fs = deps.fs ?? createNodeKnowledgeFs();
-  const now = deps.now ?? (() => Date.now());
-  const knowledgeDir = path.join(deps.userDataDir, KNOWLEDGE_USERDATA_SUBDIR);
-  const encryptedPath = path.join(knowledgeDir, KNOWLEDGE_ENCRYPTED_INDEX_FILENAME);
-  const metaPath = path.join(knowledgeDir, KNOWLEDGE_INDEX_META_FILENAME);
 
   let state: LoadedState | null = null;
   let initPromise: Promise<void> | null = null;
@@ -158,68 +143,16 @@ export function createLocalEncryptedKnowledgeStore(
     };
   }
 
-  async function persistEncrypted(next: LoadedState): Promise<void> {
-    const payload = JSON.stringify({ chunks: next.chunks });
-    const encrypted = encryptKnowledgePayload(payload, deps.safeStorage);
-    const meta: KnowledgeIndexMeta = {
-      schemaVersion: 1,
-      contentHash: next.contentHash,
-      chunkCount: next.chunks.length,
-      encryptedAt: new Date(now()).toISOString(),
-    };
-    await fs.mkdir(knowledgeDir);
-    await fs.writeFile(encryptedPath, encrypted);
-    await fs.writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`);
-  }
-
-  async function loadFromEncryptedIndex(expectedHash: string): Promise<LoadedState | null> {
-    if (!(await fs.exists(encryptedPath)) || !(await fs.exists(metaPath))) {
-      return null;
-    }
-    const metaRaw = await fs.readFile(metaPath, 'utf8');
-    const meta = JSON.parse(metaRaw) as KnowledgeIndexMeta;
-    if (meta.contentHash !== expectedHash) {
-      return null;
-    }
-    const encrypted = await fs.readFileBuffer(encryptedPath);
-    const plain = decryptKnowledgePayload(encrypted, deps.safeStorage);
-    const parsed = JSON.parse(plain) as { chunks: AbstractionChunk[] };
-    return { chunks: parsed.chunks, contentHash: meta.contentHash };
-  }
-
   async function doInit(): Promise<void> {
     const bundlePath = await resolveServableBundlePath(deps.bundleDir, fs);
-    const bundleState = await loadFromPlainBundle(bundlePath);
-
-    const cached = await loadFromEncryptedIndex(bundleState.contentHash);
-    if (cached) {
-      state = cached;
-      deps.logger.info('knowledge.loaded', {
-        backend: 'local',
-        contentHash: cached.contentHash,
-        chunkCount: cached.chunks.length,
-        source: 'encrypted-cache',
-      });
-      return;
-    }
-
-    state = bundleState;
-    if (deps.safeStorage.isEncryptionAvailable()) {
-      await persistEncrypted(bundleState);
-      deps.logger.info('knowledge.reindexed', {
-        backend: 'local',
-        contentHash: bundleState.contentHash,
-        chunkCount: bundleState.chunks.length,
-        bundlePath,
-      });
-    } else {
-      deps.logger.error('knowledge.encryptionUnavailable', {
-        backend: 'local',
-        contentHash: bundleState.contentHash,
-        chunkCount: bundleState.chunks.length,
-        bundlePath,
-      });
-    }
+    state = await loadFromPlainBundle(bundlePath);
+    deps.logger.info('knowledge.loaded', {
+      backend: 'local',
+      contentHash: state.contentHash,
+      chunkCount: state.chunks.length,
+      source: 'servable-bundle',
+      bundlePath,
+    });
   }
 
   return {
@@ -255,6 +188,12 @@ export function createLocalEncryptedKnowledgeStore(
     },
   };
 }
+
+/** @deprecated Use `createLocalKnowledgeStore` — encryption cache removed (T3.3). */
+export const createLocalEncryptedKnowledgeStore = createLocalKnowledgeStore;
+
+/** @deprecated Renamed to `LocalKnowledgeStoreDeps`. */
+export type LocalEncryptedKnowledgeStoreDeps = LocalKnowledgeStoreDeps;
 
 /** Future server-side backend — interface-ready stub (PRD §5.2, §8 item 2). */
 export class RemoteKnowledgeStoreNotImplementedError extends Error {

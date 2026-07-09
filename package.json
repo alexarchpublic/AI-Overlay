@@ -15,15 +15,12 @@
     "build:preload": "node scripts/build-preload.mjs",
     "package": "npm run build && electron-builder --dir",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "test:redteam": "vitest run tests/redteam",
-    "red-team": "node scripts/red-team-smoke.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.main.json && tsc --noEmit -p tsconfig.preload.json && tsc --noEmit -p tsconfig.renderer.json",
-    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" \"scripts/**/*.mjs\"",
     "format": "prettier --write .",
-    "check:screen-perm": "tsc -p tsconfig.check.json && env -u ELECTRON_RUN_AS_NODE electron dist/main/checkScreenPerm.js",
-    "build:knowledge": "node scripts/build-knowledge-bundle.mjs",
-    "generate:abstractions": "node scripts/generate-abstractions.mjs"
+    "check:screen-perm": "tsc -p tsconfig.check.json && env -u ELECTRON_RUN_AS_NODE electron dist/main/checkScreenPerm.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.20.0",
@@ -46,6 +43,7 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
+    "@vitest/coverage-v8": "^1.6.0",
     "autoprefixer": "^10.4.19",
     "electron": "^40.0.0",
     "electron-builder": "^25.1.8",

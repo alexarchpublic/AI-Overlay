@@ -107,18 +107,6 @@ export default function ChatErrorView(props: ChatErrorProps): ReactElement {
           )}
         </div>
       );
-    case 'enumeration-throttled':
-      return (
-        <div role="alert" className={baseClass}>
-          <div className="font-semibold">Tuning paused briefly.</div>
-          <div className="mt-1 text-amber-50/80">
-            This session hit the enumeration safety limit (score{' '}
-            {error.score}). Wait about {Math.ceil(error.cooldownMs / 1000)}s, then
-            continue with chart-focused questions — or close and reopen chat to
-            start fresh.
-          </div>
-        </div>
-      );
   }
 }
 

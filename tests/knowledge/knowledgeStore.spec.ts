@@ -1,26 +1,19 @@
 /**
  * @file tests/knowledge/knowledgeStore.spec.ts
- * Phase 0 task 2 — LocalEncryptedKnowledgeStore encryption, cache, retrieval scope.
+ * Phase 0 task 2 — LocalKnowledgeStore bundle load + retrieval scope.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { buildKnowledgeBundle } from '../../src/shared/knowledge/bundleBuilder';
-import { createTestSafeStorage } from '../../src/main/knowledgeCrypto';
-import { createUnavailableSafeStorage } from '../../src/main/secretsStore';
 import {
-  createLocalEncryptedKnowledgeStore,
+  createLocalKnowledgeStore,
   createNodeKnowledgeFs,
   resolveServableBundlePath,
   type KnowledgeFsLike,
 } from '../../src/main/knowledgeStore';
-import {
-  KNOWLEDGE_ENCRYPTED_INDEX_FILENAME,
-  KNOWLEDGE_INDEX_META_FILENAME,
-  KNOWLEDGE_USERDATA_SUBDIR,
-} from '../../src/shared/knowledgeConstants';
 
 const VALID_SOURCE = {
   id: 'test-contract',
@@ -28,7 +21,7 @@ const VALID_SOURCE = {
   kind: 'contract',
   version: '1',
   text: 'Behavioral summary without code paths or proprietary defaults.',
-  review: { reviewer: 'test', reviewedAt: '2026-05-29', d3Pass: true },
+  review: { reviewer: 'test', reviewedAt: '2026-05-29' },
 };
 
 function makeSilentLogger() {
@@ -59,15 +52,13 @@ describe('resolveServableBundlePath', () => {
   });
 });
 
-describe('LocalEncryptedKnowledgeStore', () => {
+describe('LocalKnowledgeStore', () => {
   let tmp: string;
   let bundleDir: string;
-  let userDataDir: string;
 
   beforeEach(async () => {
     tmp = await mkdtemp(path.join(os.tmpdir(), 'knowledge-store-'));
     bundleDir = path.join(tmp, 'bundles');
-    userDataDir = path.join(tmp, 'userData');
     const servable = path.join(tmp, 'servable');
     await mkdir(path.join(servable, 'test-strategy'), { recursive: true });
     await writeFile(
@@ -81,13 +72,11 @@ describe('LocalEncryptedKnowledgeStore', () => {
     await rm(tmp, { recursive: true, force: true });
   });
 
-  it('encrypts bundle at rest and serves scoped retrieval', async () => {
-    const store = createLocalEncryptedKnowledgeStore({
+  it('loads the servable bundle and serves scoped retrieval', async () => {
+    const store = createLocalKnowledgeStore({
       logger: makeSilentLogger(),
-      userDataDir,
       bundleDir,
       fs: createNodeKnowledgeFs(),
-      safeStorage: createTestSafeStorage('test-key-for-knowledge-store!!'),
     });
 
     await store.init();
@@ -97,38 +86,9 @@ describe('LocalEncryptedKnowledgeStore', () => {
     const chunks = await store.retrieve({ text: 'behavioral summary', k: 2 });
     expect(chunks.length).toBeGreaterThan(0);
     expect(chunks.every((c) => c.strategyId === 'test-strategy')).toBe(true);
-
-    const encPath = path.join(userDataDir, KNOWLEDGE_USERDATA_SUBDIR, KNOWLEDGE_ENCRYPTED_INDEX_FILENAME);
-    const rawEnc = await readFile(encPath);
-    expect(rawEnc.toString('utf8')).not.toContain('Behavioral summary');
   });
 
-  it('reuses encrypted cache when content hash matches', async () => {
-    const fs = createNodeKnowledgeFs();
-    const safeStorage = createTestSafeStorage('cache-test-key-32-chars!!!!!');
-    const logger = makeSilentLogger();
-    const opts = {
-      logger,
-      userDataDir,
-      bundleDir,
-      fs,
-      safeStorage,
-    };
-
-    await createLocalEncryptedKnowledgeStore(opts).init();
-    const metaPath = path.join(
-      userDataDir,
-      KNOWLEDGE_USERDATA_SUBDIR,
-      KNOWLEDGE_INDEX_META_FILENAME,
-    );
-    const metaBefore = await readFile(metaPath, 'utf8');
-
-    await createLocalEncryptedKnowledgeStore(opts).init();
-    const metaAfter = await readFile(metaPath, 'utf8');
-    expect(metaAfter).toBe(metaBefore);
-  });
-
-  it('serves from memory without writing encrypted cache when encryption is unavailable', async () => {
+  it('logs knowledge.loaded with servable-bundle source on init', async () => {
     const logs: { event: string; payload: unknown }[] = [];
     const logger = {
       debug: () => {},
@@ -136,32 +96,21 @@ describe('LocalEncryptedKnowledgeStore', () => {
         logs.push({ event, payload });
       },
       warn: () => {},
-      error: (event: string, payload?: unknown) => {
-        logs.push({ event, payload });
-      },
+      error: () => {},
       child: () => logger,
       raw: {} as never,
     };
 
-    const store = createLocalEncryptedKnowledgeStore({
+    const store = createLocalKnowledgeStore({
       logger,
-      userDataDir,
       bundleDir,
       fs: createNodeKnowledgeFs(),
-      safeStorage: createUnavailableSafeStorage(),
     });
 
     await store.init();
-    const chunks = await store.retrieve({ text: 'behavioral summary', k: 2 });
-    expect(chunks.length).toBeGreaterThan(0);
-
-    const encPath = path.join(
-      userDataDir,
-      KNOWLEDGE_USERDATA_SUBDIR,
-      KNOWLEDGE_ENCRYPTED_INDEX_FILENAME,
-    );
-    await expect(readFile(encPath)).rejects.toThrow();
-    expect(logs.some((l) => l.event === 'knowledge.encryptionUnavailable')).toBe(true);
+    const loaded = logs.find((l) => l.event === 'knowledge.loaded');
+    expect(loaded).toBeDefined();
+    expect((loaded?.payload as { source?: string }).source).toBe('servable-bundle');
   });
 
   it('never reads deep-tier paths — only bundleDir servable artifacts', async () => {
@@ -182,12 +131,10 @@ describe('LocalEncryptedKnowledgeStore', () => {
       },
     };
 
-    const store = createLocalEncryptedKnowledgeStore({
+    const store = createLocalKnowledgeStore({
       logger: makeSilentLogger(),
-      userDataDir,
       bundleDir,
       fs: trackingFs,
-      safeStorage: createTestSafeStorage(),
     });
     await store.init();
     await store.retrieve({ text: 'test' });

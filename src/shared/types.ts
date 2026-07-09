@@ -274,15 +274,13 @@ export type ChatState = 'idle' | 'sending' | 'awaiting' | 'error';
  * - `token-ceiling`         — pre-send budget exceeds the hard ceiling (D22).
  * - `transient`             — timeout / 5xx / network; carries a Retry button.
  * - `fatal`                 — 4xx / safety / parse-fail-after-retry; no retry.
- * - `enumeration-throttled` — per-session probe/rate limit (PRD §6 D-13).
  */
 export type ChatError =
   | { variant: 'no-api-key' }
   | { variant: 'no-harness' }
   | { variant: 'token-ceiling'; approxTokens: number; ceiling: number }
   | { variant: 'transient'; reason: string; retryable: true }
-  | { variant: 'fatal'; reason: string; detail?: Record<string, unknown> }
-  | { variant: 'enumeration-throttled'; cooldownMs: number; score: number };
+  | { variant: 'fatal'; reason: string; detail?: Record<string, unknown> };
 
 /**
  * Rolling 7-day stats surfaced in the AI Settings panel. Field set is
@@ -315,15 +313,9 @@ export interface ApiKeyPresence {
  * detail. Anything we add here must land in the renderer settings panel
  * preview too, so keep additions deliberate.
  */
-export type FirewallAction = 'allow' | 'block' | 'rewrite';
-
 export interface RecordedCall {
   ts: number;
   latencyMs: number;
   promptTokenEstimate: number;
   jsonOk: boolean;
-  /** Deterministic gate outcome when set (PRD §7 — Phase 0 task 5). */
-  firewallAction?: FirewallAction;
-  /** Session enumeration score at call time (PRD §7 — Phase 0 task 6). */
-  enumerationScore?: number;
 }

@@ -6,10 +6,8 @@
  */
 import path from 'node:path';
 import type { AppLogger } from './logger';
-import type { SafeStorageLike } from './knowledgeCrypto';
-import { resolveSafeStorage } from './secretsStore';
 import {
-  createLocalEncryptedKnowledgeStore,
+  createLocalKnowledgeStore,
   createRemoteKnowledgeStoreStub,
   type KnowledgeFsLike,
 } from './knowledgeStore';
@@ -23,13 +21,11 @@ import type { KnowledgeStore } from '../shared/knowledgeTypes';
 export interface CreateKnowledgeStoreOptions {
   backend?: KnowledgeBackend;
   logger: AppLogger;
-  userDataDir: string;
   /** When true, bundle dir resolves from repo cwd; else from `process.resourcesPath`. */
   isDev: boolean;
   /** Override bundle directory (tests). */
   bundleDir?: string;
   fs?: KnowledgeFsLike;
-  safeStorage?: SafeStorageLike;
 }
 
 /**
@@ -52,18 +48,14 @@ export async function createKnowledgeStore(
 ): Promise<KnowledgeStore> {
   const backend = options.backend ?? DEFAULT_KNOWLEDGE_BACKEND;
   const bundleDir = options.bundleDir ?? resolveKnowledgeBundleDir(options.isDev);
-  const safeStorage =
-    options.safeStorage ?? resolveSafeStorage({ allowFallback: false });
 
   const store =
     backend === 'remote'
       ? createRemoteKnowledgeStoreStub()
-      : createLocalEncryptedKnowledgeStore({
+      : createLocalKnowledgeStore({
           logger: options.logger,
-          userDataDir: options.userDataDir,
           bundleDir,
           fs: options.fs,
-          safeStorage,
         });
 
   if (backend === 'local') {

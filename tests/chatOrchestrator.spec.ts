@@ -126,7 +126,6 @@ function makeHarness(overrides: {
   knowledgeStore?: KnowledgeStore;
   sendResult?: GeminiSendResult | ((args: GeminiSendArgs) => Promise<GeminiSendResult>);
   summarize?: (turns: readonly ChatTurn[]) => Promise<string | null>;
-  enumerationBlocked?: boolean;
   screenshots?: readonly Screenshot[];
 } = {}): Harness {
   const logger = makeLogger();
@@ -163,21 +162,12 @@ function makeHarness(overrides: {
       getRecent: () => overrides.screenshots ?? [],
       getById: (id) => overrides.screenshots?.find((s) => s.id === id) ?? null,
     } as ChatOrchestratorDeps['screenshotService'],
-    enumerationMonitor: {
-      assessBeforeSend: () =>
-        overrides.enumerationBlocked
-          ? { blocked: true, score: 80, reasons: ['probe'], cooldownMs: 60_000 }
-          : { blocked: false, score: 0, reasons: [], cooldownMs: 0 },
-      recordSendStarted: vi.fn(),
-      recordTuningResponse: vi.fn(),
-      getScore: () => 0,
-      reset: vi.fn(),
-    },
     chatInflight: { current: null },
     emit: {
       turnAppended: (t) => {
         turns.push(t);
       },
+      turnDropped: () => {},
       stateChanged: (s) => {
         states.push(s);
       },
@@ -210,13 +200,46 @@ describe('chatOrchestrator', () => {
     expect(h.sendCalls).toHaveLength(0);
   });
 
-  it('surfaces enumeration-throttled when the monitor blocks', async () => {
-    const h = makeHarness({ enumerationBlocked: true });
+  it('passes chartContext to knowledge retrieve after a tuning turn', async () => {
+    const retrieveSpy = vi.fn(async () => [...SAMPLE_CHUNKS]);
+    const h = makeHarness({
+      knowledgeStore: makeKnowledgeStore(SAMPLE_CHUNKS, retrieveSpy),
+    });
+    h.deps.conversationStore.appendAssistant({
+      text: 'Try tightening the stop.',
+      structured: {
+        schema_version: '2',
+        analysis: 'Volatility is elevated.',
+        suggested_parameter_changes: [
+          {
+            parameter: 'stop',
+            direction: 'tighten',
+            suggested_value: '1.5× ATR',
+            chart_context: 'Wide bands on the last three sessions.',
+            rationale: 'Reduce risk.',
+          },
+        ],
+        confidence_score: 0.7,
+        risk_notes: 'None.',
+      },
+      latencyMs: 10,
+      modelUsed: 'test',
+    });
+    await h.run('I applied the change — screenshot attached');
+    expect(retrieveSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chartContext: expect.stringContaining('Wide bands') as string,
+      }),
+    );
+  });
+
+  it('completes when structured output is absent', async () => {
+    const h = makeHarness({
+      sendResult: async () => makeSuccessSendResult('plain reply without structured block'),
+    });
     await h.run('hello');
-    expect(h.errors).toEqual([
-      { variant: 'enumeration-throttled', score: 80, cooldownMs: 60_000 },
-    ]);
-    expect(h.sendCalls).toHaveLength(0);
+    expect(h.errors).toHaveLength(0);
+    expect(h.turns).toHaveLength(2);
   });
 
   it('surfaces no-harness when knowledge retrieve throws', async () => {
@@ -357,13 +380,49 @@ describe('chatOrchestrator', () => {
   });
 
   describe('H4 fix — orchestrator never wedges the FSM', () => {
+    it('surfaces fatal and returns to idle when gemini.send throws a non-Error value', async () => {
+      const dropped: string[] = [];
+      const h = makeHarness({
+        sendResult: async () => {
+          throw 'string failure';
+        },
+      });
+      h.deps.emit.turnDropped = (id) => {
+        dropped.push(id);
+      };
+      await h.run('hello');
+      expect(dropped).toHaveLength(1);
+      expect(h.errors).toEqual([
+        {
+          variant: 'fatal',
+          reason: 'orchestrator',
+          detail: { message: 'string failure' },
+        },
+      ]);
+    });
+
+    it('surfaces no-harness when knowledge retrieve throws a non-Error value', async () => {
+      const h = makeHarness({
+        knowledgeStore: makeKnowledgeStore(SAMPLE_CHUNKS, async () => {
+          throw 'disk missing';
+        }),
+      });
+      await h.run('hello');
+      expect(h.errors).toEqual([{ variant: 'no-harness' }]);
+    });
+
     it('surfaces fatal and returns to idle when gemini.send throws', async () => {
+      const dropped: string[] = [];
       const h = makeHarness({
         sendResult: async () => {
           throw new Error('unexpected sdk failure');
         },
       });
+      h.deps.emit.turnDropped = (id) => {
+        dropped.push(id);
+      };
       await h.run('hello');
+      expect(dropped).toHaveLength(1);
       expect(h.errors).toEqual([
         {
           variant: 'fatal',
@@ -453,6 +512,61 @@ describe('chatOrchestrator', () => {
         },
       ]);
     });
+
+    it('surfaces fatal without detail when omitted', async () => {
+      const h = makeHarness({
+        sendResult: async () => ({
+          ok: false,
+          kind: 'fatal',
+          reason: 'safety',
+          latencyMs: 200,
+        }),
+      });
+      await h.run('hello');
+      expect(h.errors).toEqual([{ variant: 'fatal', reason: 'safety' }]);
+    });
+  });
+
+  it('logs tuning metrics when structured suggestions are returned', async () => {
+    const h = makeHarness({
+      sendResult: async () => ({
+        ...makeSuccessSendResult(),
+        turn: {
+          ...makeSuccessSendResult().turn,
+          structured: {
+            schema_version: '2',
+            analysis: 'Try ~1.5× ATR on your chart.',
+            suggested_parameter_changes: [
+              {
+                parameter: 'stop',
+                direction: 'tighten',
+                suggested_value: '1.5× ATR',
+                chart_context: 'Wide bands visible.',
+                rationale: 'Reduce risk.',
+              },
+            ],
+            confidence_score: 0.8,
+            risk_notes: 'None.',
+          },
+        },
+      }),
+    });
+    await h.run('tighten stop');
+    expect(h.turns).toHaveLength(2);
+  });
+
+  it('broadcasts turnDropped when send fails after the user turn was appended', async () => {
+    const dropped: string[] = [];
+    const h = makeHarness({
+      sendResult: async () => ({ ok: false, kind: 'timeout', latencyMs: 30_000 }),
+    });
+    h.deps.emit.turnDropped = (id) => {
+      dropped.push(id);
+    };
+    await h.run('hello');
+    expect(dropped).toHaveLength(1);
+    expect(h.turns).toHaveLength(1);
+    expect(h.deps.conversationStore.getHistory()).toHaveLength(0);
   });
 
   it('honors explicit screenshot attachments over the ring buffer', async () => {

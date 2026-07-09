@@ -11,7 +11,6 @@ import type { AiStateStore } from './aiStore';
 import type { ConversationStore } from './conversationStore';
 import type { GeminiService } from './geminiService';
 import type { ScreenshotService } from './screenshotService';
-import type { EnumerationMonitor } from './enumerationMonitor';
 import type { KnowledgeStore } from '../shared/knowledgeTypes';
 import {
   buildVisionAugmentedUserText,
@@ -28,6 +27,7 @@ import type { ChatError, ChatState, ChatTurn, Screenshot } from '../shared/types
 
 export interface ChatOrchestratorEmit {
   turnAppended(turn: ChatTurn): void;
+  turnDropped(turnId: string): void;
   stateChanged(state: ChatState): void;
   error(err: ChatError): void;
 }
@@ -39,7 +39,6 @@ export interface ChatOrchestratorDeps {
   geminiService: GeminiService;
   knowledgeStore: KnowledgeStore;
   screenshotService: ScreenshotService;
-  enumerationMonitor: EnumerationMonitor;
   emit: ChatOrchestratorEmit;
   /** Mutable ref shared with the IPC cancel handler. */
   chatInflight: { current: AbortController | null };
@@ -61,7 +60,6 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     geminiService: gemini,
     knowledgeStore: store,
     screenshotService: captureService,
-    enumerationMonitor: monitor,
     emit,
     chatInflight,
   } = deps;
@@ -79,6 +77,7 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     } catch (err) {
       if (pendingUserTurnId.value !== null) {
         conv.dropTurn(pendingUserTurnId.value);
+        emit.turnDropped(pendingUserTurnId.value);
       }
       log.error('chat.orchestratorFatal', {
         message: err instanceof Error ? err.message : String(err),
@@ -105,21 +104,6 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     }
 
     const preTruncateHistory = conv.getHistory();
-    const enumeration = monitor.assessBeforeSend({ userText: text });
-    if (enumeration.blocked) {
-      log.warn('chat.enumerationThrottled', {
-        score: enumeration.score,
-        reasons: enumeration.reasons,
-        cooldownMs: enumeration.cooldownMs,
-      });
-      emit.error({
-        variant: 'enumeration-throttled',
-        score: enumeration.score,
-        cooldownMs: enumeration.cooldownMs,
-      });
-      return;
-    }
-
     const chartContext = extractChartContextForRetrieval(preTruncateHistory, text);
 
     let knowledgeChunks;
@@ -196,8 +180,6 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     emit.stateChanged('sending');
     emit.stateChanged('awaiting');
 
-    monitor.recordSendStarted({ userText: text });
-
     const modelUserText = buildVisionAugmentedUserText(
       text,
       fitResult.screenshots.length,
@@ -223,10 +205,8 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     if (result.ok) {
       const suggestionCount =
         result.turn.structured?.suggested_parameter_changes.length ?? 0;
-      monitor.recordTuningResponse({ suggestionCount });
       log.info('chat.tuningTurn', {
         suggestionCount,
-        enumerationScore: monitor.getScore(),
         screenshotCount: fitResult.screenshots.length,
         chartContextUsed: chartContext !== undefined,
       });
@@ -242,6 +222,7 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     }
 
     conv.dropTurn(userTurn.id);
+    emit.turnDropped(userTurn.id);
     switch (result.kind) {
       case 'no-api-key':
         emit.error({ variant: 'no-api-key' });

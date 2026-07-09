@@ -16,6 +16,7 @@ import {
 import {
   IPC_CHAT_ERROR,
   IPC_CHAT_HISTORY_CLEARED,
+  IPC_CHAT_TURN_DROPPED,
   IPC_CHAT_STATE_CHANGED,
   IPC_CHAT_TURN_APPENDED,
 } from '../shared/ipcChannels';
@@ -26,6 +27,7 @@ export interface ChatLifecycle {
   setChatState(next: ChatState): void;
   emitChatError(err: ChatError): void;
   emitTurnAppended(turn: ChatTurn): void;
+  emitTurnDropped(turnId: string): void;
 }
 
 export function createChatLifecycle(
@@ -54,13 +56,16 @@ export function createChatLifecycle(
     broadcastToAllWindows(IPC_CHAT_TURN_APPENDED, turn);
   }
 
+  function emitTurnDropped(turnId: string): void {
+    broadcastToAllWindows(IPC_CHAT_TURN_DROPPED, turnId);
+  }
+
   function onChatWindowClosed(): void {
     if (ctx.chatInflight.current) {
       ctx.chatInflight.current.abort();
       ctx.chatInflight.current = null;
     }
     ctx.conversationStore.endSession('close');
-    ctx.enumerationMonitor.reset();
     broadcastToAllWindows(IPC_CHAT_HISTORY_CLEARED, undefined);
     setChatState('idle');
   }
@@ -91,6 +96,7 @@ export function createChatLifecycle(
     setChatState,
     emitChatError,
     emitTurnAppended,
+    emitTurnDropped,
   };
 }
 

@@ -38,6 +38,7 @@ import {
   resolveSafeStorage,
   writeStoredSecret,
 } from './secretsStore';
+import { importESM } from './importESM';
 
 export interface WrapAiStoreOptions {
   safeStorage?: SafeStorageLike;
@@ -192,19 +193,11 @@ export function wrapAiStore(store: StoreLike, options: WrapAiStoreOptions = {}):
 function isRecordedCall(v: unknown): v is RecordedCall {
   if (typeof v !== 'object' || v === null) return false;
   const o = v as Record<string, unknown>;
-  const firewallOk =
-    o.firewallAction === undefined ||
-    o.firewallAction === 'allow' ||
-    o.firewallAction === 'block' ||
-    o.firewallAction === 'rewrite';
-  const enumOk = o.enumerationScore === undefined || typeof o.enumerationScore === 'number';
   return (
     typeof o.ts === 'number' &&
     typeof o.latencyMs === 'number' &&
     typeof o.promptTokenEstimate === 'number' &&
-    typeof o.jsonOk === 'boolean' &&
-    firewallOk &&
-    enumOk
+    typeof o.jsonOk === 'boolean'
   );
 }
 
@@ -222,12 +215,6 @@ interface ElectronStoreModule {
   default: new (opts: ElectronStoreOptions) => StoreLike;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-implied-eval
-const importESM: (specifier: string) => Promise<unknown> = new Function(
-  'specifier',
-  'return import(specifier);',
-) as (specifier: string) => Promise<unknown>;
-
 export interface CreateAiStoreOptions {
   safeStorage?: SafeStorageLike;
 }
@@ -243,7 +230,7 @@ export async function createAiStore(
   store: StoreLike;
   wrapper: AiStateStore;
 }> {
-  const mod = (await importESM('electron-store')) as ElectronStoreModule;
+  const mod = await importESM<ElectronStoreModule>('electron-store');
   const store: StoreLike = new mod.default({
     name: 'config',
     defaults: {

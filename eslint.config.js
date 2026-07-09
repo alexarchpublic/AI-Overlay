@@ -16,6 +16,8 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
+const TYPED_FILES = ['src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx}'];
+
 export default tseslint.config(
   {
     ignores: [
@@ -23,14 +25,21 @@ export default tseslint.config(
       'release/**',
       'node_modules/**',
       'logs/**',
+      'scripts/.cache/**',
       '**/*.d.ts',
-      'scripts/**',
     ],
   },
   js.configs.recommended,
-  ...tseslint.configs.strictTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
+  ...tseslint.configs.strictTypeChecked.map((config) => ({
+    ...config,
+    files: TYPED_FILES,
+  })),
+  ...tseslint.configs.stylisticTypeChecked.map((config) => ({
+    ...config,
+    files: TYPED_FILES,
+  })),
   {
+    files: TYPED_FILES,
     languageOptions: {
       parserOptions: {
         // `tsconfig.preload.json` is included so `src/preload/**` parses
@@ -76,6 +85,19 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
+    },
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
 );

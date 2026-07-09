@@ -97,6 +97,8 @@ export const IPC_CHAT_STATE_CHANGED = 'chat:stateChanged';
 export const IPC_CHAT_ERROR = 'chat:error';
 /** main → renderer push: conversationStore was cleared (typically on close). */
 export const IPC_CHAT_HISTORY_CLEARED = 'chat:historyCleared';
+/** main → renderer push: a turn was removed after a failed send (keeps UI in sync). */
+export const IPC_CHAT_TURN_DROPPED = 'chat:turnDropped';
 
 // ---------------------------------------------------------------------------
 // AI channels (Chunk 5 — PRD §3.2 locked surface)

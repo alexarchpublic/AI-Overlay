@@ -19,6 +19,7 @@
  */
 
 import type { PersistedWidgetState, WidgetPosition, WidgetStatus } from '../shared/types';
+import { importESM } from './importESM';
 
 /**
  * Minimal slice of electron-store's surface we actually use. Defined here so
@@ -133,14 +134,8 @@ interface ElectronStoreModule {
   default: new (opts: ElectronStoreOptions) => StoreLike;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-implied-eval
-const importESM: (specifier: string) => Promise<unknown> = new Function(
-  'specifier',
-  'return import(specifier);',
-) as (specifier: string) => Promise<unknown>;
-
 export async function createWidgetStateStore(): Promise<WidgetStateStore> {
-  const mod = (await importESM('electron-store')) as ElectronStoreModule;
+  const mod = await importESM<ElectronStoreModule>('electron-store');
   const store: StoreLike = new mod.default({
     name: 'config',
     defaults: {

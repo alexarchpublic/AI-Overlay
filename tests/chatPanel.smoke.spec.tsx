@@ -76,16 +76,6 @@ describe('<ChatError /> variants render', () => {
     expect(screen.getByText(/Response blocked by safety filter/)).toBeTruthy();
     expect(screen.getByText(/blockReason/)).toBeTruthy();
   });
-
-  it('renders enumeration-throttled with cooldown guidance', () => {
-    render(
-      <ChatErrorView
-        error={{ variant: 'enumeration-throttled', score: 72, cooldownMs: 45_000 }}
-      />,
-    );
-    expect(screen.getByText(/Tuning paused briefly/)).toBeTruthy();
-    expect(screen.getByText(/score 72/)).toBeTruthy();
-  });
 });
 
 describe('<AssistantMessage /> happy path', () => {

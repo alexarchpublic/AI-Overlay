@@ -9,7 +9,6 @@ import type { ChatOrchestrator } from './chatOrchestrator';
 import type { AiStateStore } from './aiStore';
 import type { CaptureStateStore } from './captureStore';
 import type { ConversationStore } from './conversationStore';
-import type { EnumerationMonitor } from './enumerationMonitor';
 import type { GeminiService } from './geminiService';
 import type { AppLogger } from './logger';
 import type { PermissionsHelper } from './permissions';
@@ -27,7 +26,6 @@ export interface AppContext {
   knowledgeStore: KnowledgeStore | null;
   conversationStore: ConversationStore;
   geminiService: GeminiService | null;
-  enumerationMonitor: EnumerationMonitor;
   aiStore: AiStateStore;
   chatOrchestrator: ChatOrchestrator | null;
   chatInflight: { current: AbortController | null };

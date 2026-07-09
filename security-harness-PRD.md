@@ -329,7 +329,8 @@ This is a primary, valued use of the product. Sequence:
 
 **Locked decisions:**
 
-- **D-1 / Deployment:** Phase 0 is **local-only, encrypted, abstraction-only**; architecture supports a future server-side swap via the `KnowledgeStore` interface and config flag. Production may go server-side later.
+- **D-1 / Deployment:** Phase 0 is **local-only, abstraction-only**; architecture supports a future server-side swap via the `KnowledgeStore` interface and config flag. Production may go server-side later.
+- **D-12 / At-rest knowledge representation (2026-06-10, audit T3.3):** The packaged app ships **one** at-rest representation of the servable tier: the plaintext `servable-*.json` bundle under `extraResources/knowledge/bundles`. Chunks pass D-3 review and contain behavioral abstractions only — not raw IP. A redundant AES-GCM copy under `userData` was removed because an attacker with disk access can read the bundle from app Resources anyway; encrypting the same non-IP payload twice added cost without reducing the threat-model surface. **API keys** remain encrypted via OS keychain (D-11). If a future build must hide abstractions from casual disk browsing, use encrypt-at-build / decrypt-on-init of the bundle artifact — not a second runtime cache beside the shipped plaintext.
 - **Build scope:** phased — **Minimum Viable Secure** in Phase 0; guard-model, canaries, automated pipeline, and full CI red-team in Phase 1+.
 
 **Open items to resolve during the build:**

@@ -17,7 +17,6 @@ import { createCaptureStore, migrateAutoCaptureKey } from './captureStore';
 import { closeChatWindow, createChatLifecycle } from './chatLifecycle';
 import { createChatOrchestrator } from './chatOrchestrator';
 import { createConversationStore } from './conversationStore';
-import { createEnumerationMonitor } from './enumerationMonitor';
 import { createGeminiService } from './geminiService';
 import { createKnowledgeStore } from './knowledgeStoreFactory';
 import { createKnowledgeStoreState } from './knowledgeStoreState';
@@ -29,7 +28,6 @@ import { createWidgetStateStore } from './widgetState';
 import { flashWidgetCapturing } from './widgetFlash';
 import { registerCoreIpc } from './ipc/registerCoreIpc';
 import { registerChatAiIpc } from './ipc/registerChatAiIpc';
-import { loadDeepFingerprintManifest } from '../shared/firewall/deepFingerprints';
 import { getCurrentDisplays, isRegionStillValid } from './displayUtils';
 import { APP_VERSION, CAPTURE_TEMP_SUBDIR, VITE_DEV_SERVER_PORT } from '../shared/constants';
 import {
@@ -103,7 +101,6 @@ export async function bootstrapApp(
 
   const chatInflight = { current: null as AbortController | null };
   const conversationStore = createConversationStore({ logger });
-  const enumerationMonitor = createEnumerationMonitor({ logger });
   const { wrapper: aiStore } = await createAiStore();
 
   const capturesDir = path.join(app.getPath('temp'), CAPTURE_TEMP_SUBDIR);
@@ -162,7 +159,6 @@ export async function bootstrapApp(
     knowledgeStore: null,
     conversationStore,
     geminiService: null,
-    enumerationMonitor,
     aiStore,
     chatOrchestrator: null,
     chatInflight,
@@ -204,7 +200,6 @@ export async function bootstrapApp(
     ctx.knowledgeStore = await createKnowledgeStore({
       backend: knowledgeStoreWrapper.getBackend(),
       logger,
-      userDataDir: app.getPath('userData'),
       isDev,
     });
     logger.info('knowledge.ready', { contentHash: await ctx.knowledgeStore.version() });
@@ -215,27 +210,14 @@ export async function bootstrapApp(
   }
 
   if (ctx.knowledgeStore) {
-    const deepFingerprintPath = path.join(app.getAppPath(), 'knowledge', 'deep-fingerprints.json');
-    const deepFingerprints = await loadDeepFingerprintManifest(deepFingerprintPath);
-    if (deepFingerprints) {
-      logger.info('firewall.deepFingerprintsLoaded', {
-        spanCount: deepFingerprints.spans.length,
-      });
-    } else {
-      logger.warn('firewall.deepFingerprintsMissing', { path: deepFingerprintPath });
-    }
     ctx.geminiService = createGeminiService({
       logger,
       knowledgeStore: ctx.knowledgeStore,
       getApiKey: () => aiStore.getApiKey(),
       getModel: () => aiStore.getModel(),
       recordCall: (rec) => {
-        aiStore.appendCall({
-          ...rec,
-          enumerationScore: enumerationMonitor.getScore(),
-        });
+        aiStore.appendCall(rec);
       },
-      deepFingerprints,
     });
   } else {
     logger.warn('gemini.knowledgeStoreMissing', {
@@ -253,11 +235,13 @@ export async function bootstrapApp(
       geminiService: ctx.geminiService,
       knowledgeStore: ctx.knowledgeStore,
       screenshotService,
-      enumerationMonitor,
       chatInflight,
       emit: {
         turnAppended: (turn) => {
           chatLifecycle.emitTurnAppended(turn);
+        },
+        turnDropped: (turnId) => {
+          chatLifecycle.emitTurnDropped(turnId);
         },
         stateChanged: (next) => {
           chatLifecycle.setChatState(next);

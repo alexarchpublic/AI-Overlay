@@ -14,15 +14,6 @@ export const DEFAULT_KNOWLEDGE_BACKEND: KnowledgeBackend = 'local';
 /** Repo-relative bundle directory produced by `npm run build:knowledge`. */
 export const KNOWLEDGE_BUNDLES_DIR = 'knowledge/bundles';
 
-/** Subdirectory under electron `userData` for the encrypted runtime index. */
-export const KNOWLEDGE_USERDATA_SUBDIR = 'knowledge';
-
-/** Encrypted servable-tier index blob (safeStorage-wrapped JSON). */
-export const KNOWLEDGE_ENCRYPTED_INDEX_FILENAME = 'servable-index.enc';
-
-/** Sidecar metadata — content hash + schema for cache invalidation (plaintext). */
-export const KNOWLEDGE_INDEX_META_FILENAME = 'servable-index.meta.json';
-
 /** Default top-k when `RetrievalQuery.k` is omitted. */
 export const DEFAULT_RETRIEVAL_K = 4;
 

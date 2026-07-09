@@ -25,6 +25,7 @@ export default function ChatPanel(): ReactElement {
   const model = useChatStore((s) => s.model);
   const setTurns = useChatStore((s) => s.setTurns);
   const appendTurn = useChatStore((s) => s.appendTurn);
+  const removeTurn = useChatStore((s) => s.removeTurn);
   const setState = useChatStore((s) => s.setState);
   const setError = useChatStore((s) => s.setError);
   const setModel = useChatStore((s) => s.setModel);
@@ -77,6 +78,9 @@ export default function ChatPanel(): ReactElement {
     const offTurn = window.api.chat.onTurnAppended((t: ChatTurn) => {
       appendTurn(t);
     });
+    const offDropped = window.api.chat.onTurnDropped((turnId: string) => {
+      removeTurn(turnId);
+    });
     const offState = window.api.chat.onStateChanged((s) => {
       setState(s);
     });
@@ -88,11 +92,12 @@ export default function ChatPanel(): ReactElement {
     });
     return () => {
       offTurn();
+      offDropped();
       offState();
       offError();
       offCleared();
     };
-  }, [appendTurn, setState, setError, clear]);
+  }, [appendTurn, removeTurn, setState, setError, clear]);
 
   // Track api-key + knowledge readiness so the gate dynamically dismisses
   // once the user fixes them in another window.

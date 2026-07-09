@@ -46,6 +46,7 @@ import {
   IPC_CHAT_GET_HISTORY,
   IPC_CHAT_GET_KNOWLEDGE_READY,
   IPC_CHAT_HISTORY_CLEARED,
+  IPC_CHAT_TURN_DROPPED,
   IPC_CHAT_IS_OPEN,
   IPC_CHAT_OPEN,
   IPC_CHAT_OPEN_SETTINGS,
@@ -208,6 +209,7 @@ interface ChatApi {
   openSettings(): Promise<void>;
   getKnowledgeReady(): Promise<boolean>;
   onTurnAppended(cb: (turn: ChatTurn) => void): () => void;
+  onTurnDropped(cb: (turnId: string) => void): () => void;
   onStateChanged(cb: (s: ChatState) => void): () => void;
   onError(cb: (e: ChatError) => void): () => void;
   onHistoryCleared(cb: () => void): () => void;
@@ -234,6 +236,15 @@ const chat: ChatApi = {
     ipcRenderer.on(IPC_CHAT_TURN_APPENDED, listener);
     return () => {
       ipcRenderer.removeListener(IPC_CHAT_TURN_APPENDED, listener);
+    };
+  },
+  onTurnDropped: (cb) => {
+    const listener = (_e: Electron.IpcRendererEvent, turnId: string): void => {
+      cb(turnId);
+    };
+    ipcRenderer.on(IPC_CHAT_TURN_DROPPED, listener);
+    return () => {
+      ipcRenderer.removeListener(IPC_CHAT_TURN_DROPPED, listener);
     };
   },
   onStateChanged: (cb) => {

@@ -76,6 +76,7 @@ declare global {
         openSettings: () => Promise<void>;
         getKnowledgeReady: () => Promise<boolean>;
         onTurnAppended: (cb: (turn: ChatTurn) => void) => () => void;
+        onTurnDropped: (cb: (turnId: string) => void) => () => void;
         onStateChanged: (cb: (s: ChatState) => void) => () => void;
         onError: (cb: (e: ChatError) => void) => () => void;
         onHistoryCleared: (cb: () => void) => () => void;
