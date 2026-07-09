@@ -1,25 +1,21 @@
 /**
  * @file src/main/knowledgeStore.ts
  *
- * Phase 0 task 2 — `KnowledgeStore` implementations (PRD §5.2).
+ * `KnowledgeStore` implementations for the docs-corpus bundle (PRD D-P11).
  *
- *   - `LocalKnowledgeStore` — servable bundle loaded from the packaged
- *     `knowledge/bundles/` extraResources directory (D-6, audit T3.3).
- *   - `RemoteKnowledgeStore` — interface stub for future server-side retrieval (D-1).
- *
- * Deep-tier paths are never read here — only pre-built servable bundles from
- * `knowledge/bundles/` (offline pipeline output).
+ *   - `LocalKnowledgeStore` — `docs-*.json` from packaged `knowledge/bundles/`
+ *   - `RemoteKnowledgeStore` — interface stub for future server-side retrieval
  */
 import path from 'node:path';
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import type { AppLogger } from './logger';
 import { retrieveChunks } from '../shared/knowledge/retrieval';
-import { SERVABLE_BUNDLE_PREFIX } from '../shared/knowledgeConstants';
+import { DOCS_BUNDLE_PREFIX } from '../shared/knowledgeConstants';
 import type {
-  AbstractionChunk,
+  DocChunk,
+  DocsKnowledgeBundle,
   KnowledgeStore,
   RetrievalQuery,
-  ServableKnowledgeBundle,
 } from '../shared/knowledgeTypes';
 
 // ---------------------------------------------------------------------------
@@ -67,41 +63,42 @@ export class KnowledgeStoreError extends Error {
 
 export interface LocalKnowledgeStoreDeps {
   logger: AppLogger;
-  /** Directory containing `servable-*.json` bundle artifacts. */
+  /** Directory containing `docs-*.json` bundle artifacts. */
   bundleDir: string;
   fs?: KnowledgeFsLike;
 }
 
 interface LoadedState {
-  chunks: AbstractionChunk[];
+  chunks: DocChunk[];
   contentHash: string;
+  totalTokenEstimate: number;
+  pageCount: number;
+  fetchedAt: string;
 }
 
-function isServableKnowledgeBundle(value: unknown): value is ServableKnowledgeBundle {
+function isDocsKnowledgeBundle(value: unknown): value is DocsKnowledgeBundle {
   if (!value || typeof value !== 'object') return false;
   const record = value as Record<string, unknown>;
   const manifest = record.manifest;
   if (!manifest || typeof manifest !== 'object') return false;
-  return (
-    (manifest as Record<string, unknown>).tier === 'servable' && Array.isArray(record.chunks)
-  );
+  return (manifest as Record<string, unknown>).tier === 'docs' && Array.isArray(record.chunks);
 }
 
-function parseBundle(raw: string, sourcePath: string): ServableKnowledgeBundle {
+function parseBundle(raw: string, sourcePath: string): DocsKnowledgeBundle {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw) as unknown;
   } catch {
     throw new KnowledgeStoreError('BUNDLE_INVALID_JSON', `Invalid bundle JSON: ${sourcePath}`);
   }
-  if (!isServableKnowledgeBundle(parsed)) {
-    throw new KnowledgeStoreError('BUNDLE_INVALID', `Not a servable bundle: ${sourcePath}`);
+  if (!isDocsKnowledgeBundle(parsed)) {
+    throw new KnowledgeStoreError('BUNDLE_INVALID', `Not a docs bundle: ${sourcePath}`);
   }
   return parsed;
 }
 
-/** Pick the newest `servable-*.json` full bundle under `bundleDir`. */
-export async function resolveServableBundlePath(
+/** Pick the newest `docs-*.json` full bundle under `bundleDir`. */
+export async function resolveDocsBundlePath(
   bundleDir: string,
   fs: KnowledgeFsLike,
 ): Promise<string> {
@@ -110,23 +107,24 @@ export async function resolveServableBundlePath(
   }
   const names = await fs.readdir(bundleDir);
   const candidates = names
-    .filter((n) => n.startsWith(SERVABLE_BUNDLE_PREFIX) && n.endsWith('.json'))
-    .filter((n) => !n.endsWith('.manifest.json'))
+    .filter((n) => n.startsWith(DOCS_BUNDLE_PREFIX) && n.endsWith('.json'))
     .sort();
   if (candidates.length === 0) {
-    throw new KnowledgeStoreError('BUNDLE_NOT_FOUND', `No servable bundle under ${bundleDir}`);
+    throw new KnowledgeStoreError('BUNDLE_NOT_FOUND', `No docs bundle under ${bundleDir}`);
   }
   const newest = candidates[candidates.length - 1];
   if (!newest) {
-    throw new KnowledgeStoreError('BUNDLE_NOT_FOUND', `No servable bundle under ${bundleDir}`);
+    throw new KnowledgeStoreError('BUNDLE_NOT_FOUND', `No docs bundle under ${bundleDir}`);
   }
   return path.join(bundleDir, newest);
 }
 
+/** @deprecated Use `resolveDocsBundlePath`. */
+export const resolveServableBundlePath = resolveDocsBundlePath;
+
 /**
- * Load the D-3-reviewed servable bundle from disk into memory. The packaged
- * app ships one plaintext representation under `extraResources/knowledge/bundles`
- * (audit T3.3 / security-harness-PRD §12 D-12).
+ * Load the docs-corpus bundle from disk into memory. The packaged app ships
+ * one plaintext representation under `extraResources/knowledge/bundles`.
  */
 export function createLocalKnowledgeStore(deps: LocalKnowledgeStoreDeps): KnowledgeStore {
   const fs = deps.fs ?? createNodeKnowledgeFs();
@@ -140,17 +138,23 @@ export function createLocalKnowledgeStore(deps: LocalKnowledgeStoreDeps): Knowle
     return {
       chunks: bundle.chunks,
       contentHash: bundle.manifest.contentHash,
+      totalTokenEstimate: bundle.manifest.totalTokenEstimate,
+      pageCount: bundle.manifest.pages.length,
+      fetchedAt: bundle.manifest.fetchedAt,
     };
   }
 
   async function doInit(): Promise<void> {
-    const bundlePath = await resolveServableBundlePath(deps.bundleDir, fs);
+    const bundlePath = await resolveDocsBundlePath(deps.bundleDir, fs);
     state = await loadFromPlainBundle(bundlePath);
     deps.logger.info('knowledge.loaded', {
       backend: 'local',
       contentHash: state.contentHash,
       chunkCount: state.chunks.length,
-      source: 'servable-bundle',
+      pageCount: state.pageCount,
+      totalTokenEstimate: state.totalTokenEstimate,
+      fetchedAt: state.fetchedAt,
+      source: 'docs-bundle',
       bundlePath,
     });
   }
@@ -165,7 +169,7 @@ export function createLocalKnowledgeStore(deps: LocalKnowledgeStoreDeps): Knowle
       return initPromise;
     },
 
-    async retrieve(query: RetrievalQuery): Promise<AbstractionChunk[]> {
+    async retrieve(query: RetrievalQuery): Promise<DocChunk[]> {
       await this.init();
       if (!state) {
         throw new KnowledgeStoreError('NOT_INITIALIZED', 'Knowledge store failed to initialize');
@@ -175,6 +179,7 @@ export function createLocalKnowledgeStore(deps: LocalKnowledgeStoreDeps): Knowle
         queryLength: query.text.length,
         returned: chunks.length,
         chunkIds: chunks.map((c) => c.id),
+        activeAlgorithm: query.activeAlgorithm,
       });
       return chunks;
     },
@@ -189,18 +194,18 @@ export function createLocalKnowledgeStore(deps: LocalKnowledgeStoreDeps): Knowle
   };
 }
 
-/** @deprecated Use `createLocalKnowledgeStore` — encryption cache removed (T3.3). */
+/** @deprecated Use `createLocalKnowledgeStore`. */
 export const createLocalEncryptedKnowledgeStore = createLocalKnowledgeStore;
 
 /** @deprecated Renamed to `LocalKnowledgeStoreDeps`. */
 export type LocalEncryptedKnowledgeStoreDeps = LocalKnowledgeStoreDeps;
 
-/** Future server-side backend — interface-ready stub (PRD §5.2, §8 item 2). */
+/** Future server-side backend — interface-ready stub. */
 export class RemoteKnowledgeStoreNotImplementedError extends Error {
   readonly code = 'REMOTE_KNOWLEDGE_NOT_IMPLEMENTED';
 
   constructor() {
-    super('RemoteKnowledgeStore is not implemented in Phase 0 — set knowledge.backend to "local"');
+    super('RemoteKnowledgeStore is not implemented — set knowledge.backend to "local"');
     this.name = 'RemoteKnowledgeStoreNotImplementedError';
   }
 }

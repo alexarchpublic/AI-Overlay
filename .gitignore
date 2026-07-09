@@ -32,9 +32,9 @@ Thumbs.db
 !.vscode/extensions.json
 .idea/
 
-# Knowledge bundles (regenerate via npm run build:knowledge)
-knowledge/bundles/*.json
-!knowledge/bundles/.gitkeep
+# Knowledge bundles: commit docs-*.json from `npm run ingest:docs` (PRD D-P3).
+# Keep the directory present even when empty.
+knowledge/bundles/.gitkeep
 
 # Pipeline esbuild cache
 scripts/.cache/

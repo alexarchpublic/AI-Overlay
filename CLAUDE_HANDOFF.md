@@ -577,3 +577,43 @@ meaningful work. Entries are chronological, newest at the bottom.
 - Security harness PRD is superseded; `Context.md` still at v0.2.0 until Phase 5 doc reset.
 - Chat error taxonomy is now four variants (removed `enumeration-throttled`).
 - CI no longer runs `npm run red-team`; coverage thresholds target `chatOrchestrator` only.
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-09-ARCH-PIVOT-P2
+**Timestamp:** 2026-07-09T14:05:00-05:00 (CDT)
+**Model:** Cursor Grok 4.5
+**Focus Area:** Internal co-pilot pivot — Phase 2 docs ingestion pipeline (D-P2, D-P3, D-P11)
+
+### Decisions Made
+- Replaced `AbstractionChunk` / servable bundles with `DocChunk` / `docs-*.json` across the knowledge layer; `KnowledgeStore.retrieve()` / `version()` interface unchanged.
+- Implemented pure ingest helpers in `docsIngest.ts` + orchestrator `runDocsIngest.ts`; CLI `scripts/ingest-docs.mjs` esbuilds the TS entry (same pattern as preload).
+- Raised retrieval defaults (k=12, budget=12k); added `MAX_CHUNK_TOKENS`, `ACTIVE_DOC_TOKEN_BUDGET`, `FULL_CORPUS_INJECTION_THRESHOLD`, algorithm page-slug map, and active-algorithm score boost.
+- Real ingest: **13 pages, 89 chunks, totalTokenEstimate=28703** → `USE_FULL_CORPUS_INJECTION=true` (≤50k). Bundle `docs-bbfecbdd4e1d.json`.
+- Stopped gitignoring `knowledge/bundles/*.json` so the docs bundle commits with the corpus snapshots (PRD D-P3).
+- Note: `llms.txt` already lists `.md` URLs; `ensureMarkdownUrl` still appends `.md` defensively.
+
+### Files Modified / Created
+- New: `scripts/ingest-docs.mjs`, `src/shared/knowledge/{docsIngest,runDocsIngest}.ts`, `tests/knowledge/docsIngest.spec.ts`, `tests/fixtures/docs-ingest/**`, `knowledge/docs-corpus/*.md` (13), `knowledge/bundles/docs-bbfecbdd4e1d.json`
+- Reworked: `knowledgeTypes.ts`, `knowledgeConstants.ts`, `retrieval.ts`, `bundleBuilder.ts`, `promptContext.ts`, `knowledgeStore.ts`, `knowledgeStoreFactory.ts`, `geminiService.ts` (DocChunk rename), `knowledge/README.md`, `.gitignore`, `package.json` (`ingest:docs`)
+- Tests updated for DocChunk; geminiService snapshot refreshed for `### PRODUCT DOCUMENTATION` opener
+
+### Open Questions / Risks
+- Phase 3 must wire `USE_FULL_CORPUS_INJECTION` / active-doc injection into `buildSystemPrompt()` — constant is set but prompt composition still uses scoped retrieval only.
+- Figcaptions on live Market Wave pages are mostly empty; `imageUrls` are hoisted for future multimodal use.
+- Node 22 used locally; engines still pin Node 20 for CI.
+
+### Verification Results
+- `npm run typecheck && npm run lint && npm test` — **247 tests pass**.
+- `npm run ingest:docs` — green; PRD §6.2 spot-checks OK ($5 minimum, seed-trade 3-days, both-edges-IN pinch caution, Input Reference Guide) in corpus + bundle.
+
+### Recommended Next Steps for Next Claude Instance
+1. **Phase 3** — persona v3, schema v3 (`talk_track`, `doc_ref`, `current_value`), prompt composition with active-doc / full-corpus injection, Flash default model + ~40k prompt ceiling.
+2. Pass `activeAlgorithm` from orchestrator into `RetrievalQuery` once Phase 4 picker lands (boost already implemented in retrieval).
+3. Phase 4 renderer (talk track, quick prompts, algorithm picker, Settings Knowledge panel).
+
+### Key Context Delta
+- Knowledge source of truth is now published docs at docs.archpublic.com (verbatim snapshots), not abstraction chunks.
+- `npm run ingest:docs` replaces removed `build:knowledge` / `generate:abstractions`.
+- Full-corpus injection mode is ON for current corpus size (28.7k tokens).

@@ -12,16 +12,19 @@ import { createGeminiService } from '../src/main/geminiService';
 import { PERSONA_PROMPT } from '../src/shared/persona';
 import { KNOWLEDGE_CONTEXT_OPENER } from '../src/shared/knowledgeConstants';
 import { OUTPUT_SCHEMA_INSTRUCTIONS } from '../src/shared/aiSchema';
-import type { AbstractionChunk, KnowledgeStore } from '../src/shared/knowledgeTypes';
+import type { DocChunk, KnowledgeStore } from '../src/shared/knowledgeTypes';
 import type { ChatTurn } from '../src/shared/types';
 
-const SAMPLE_CHUNKS: AbstractionChunk[] = [
+const SAMPLE_CHUNKS: DocChunk[] = [
   {
-    id: 'test-contract',
-    strategyId: 'test-strategy',
-    kind: 'contract',
+    id: 'test-about',
+    pageSlug: 'market-wave-algorithm-setup-guide',
+    pageTitle: 'Market Wave Algorithm Setup Guide',
+    sourceUrl: 'https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md',
+    sectionPath: ['Market Wave Algorithm Setup Guide', 'About This Guide'],
     text: 'Behavioral summary for gemini tests.',
-    version: '1',
+    imageUrls: [],
+    tokenEstimate: 20,
   },
 ];
 
@@ -44,7 +47,7 @@ function makeLogger(): {
   return make();
 }
 
-function makeKnowledgeStore(chunks: readonly AbstractionChunk[] = SAMPLE_CHUNKS): KnowledgeStore {
+function makeKnowledgeStore(chunks: readonly DocChunk[] = SAMPLE_CHUNKS): KnowledgeStore {
   return {
     init: async () => {
       await Promise.resolve();

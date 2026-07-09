@@ -1,135 +1,71 @@
 /**
  * @file src/shared/knowledge/bundleBuilder.ts
  *
- * Offline pipeline: servable-tier sources → versioned, content-hashed bundle.
- * Phase 2 replaces this with the docs-corpus ingest pipeline.
+ * Docs-corpus bundle helpers: content hash + write `docs-<hash>.json`.
+ * Page fetch / chunking lives in `docsIngest.ts`; the CLI orchestrates both.
  */
 /// <reference types="node" />
 
-import { createHash } from 'node:crypto';
-import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, readdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
-import type {
-  AbstractionChunk,
-  ServableAbstractionSource,
-  ServableKnowledgeBundle,
-} from '../knowledgeTypes';
+import { DOCS_BUNDLE_PREFIX } from '../knowledgeConstants';
+import type { DocChunk, DocsBundleManifest, DocsKnowledgeBundle } from '../knowledgeTypes';
+import { computeDocsContentHash } from './docsIngest';
 
-export interface BuildKnowledgeBundleOptions {
-  servableRoot: string;
+export { computeDocsContentHash as computeContentHash };
+
+export interface WriteDocsBundleOptions {
   outputDir: string;
+  chunks: readonly DocChunk[];
+  pages: DocsBundleManifest['pages'];
+  fetchedAt?: string;
+  /** When true, remove prior `docs-*.json` bundles in outputDir. */
+  pruneOld?: boolean;
 }
 
-export interface BuildKnowledgeBundleResult {
+export interface WriteDocsBundleResult {
   bundlePath: string;
-  manifestPath: string;
-  bundle: ServableKnowledgeBundle;
-}
-
-const ABSTRACTION_FILE = /\.abstraction\.json$/i;
-
-function toChunk(source: ServableAbstractionSource): AbstractionChunk {
-  return {
-    id: source.id,
-    strategyId: source.strategyId,
-    kind: source.kind,
-    text: source.text.trim(),
-    version: source.version,
-  };
-}
-
-function canonicalHashInput(chunks: readonly AbstractionChunk[]): string {
-  const ordered = [...chunks].sort((a, b) => a.id.localeCompare(b.id));
-  return ordered.map((c) => `${c.id}\0${c.version}\0${c.text}`).join('\n');
-}
-
-export function computeContentHash(chunks: readonly AbstractionChunk[]): string {
-  return createHash('sha256').update(canonicalHashInput(chunks)).digest('hex');
-}
-
-async function walkAbstractionFiles(dir: string): Promise<string[]> {
-  const out: string[] = [];
-  const entries = await readdir(dir, { withFileTypes: true });
-  for (const ent of entries) {
-    const full = path.join(dir, ent.name);
-    if (ent.isDirectory()) {
-      out.push(...(await walkAbstractionFiles(full)));
-    } else if (ent.isFile() && ABSTRACTION_FILE.test(ent.name)) {
-      out.push(full);
-    }
-  }
-  return out.sort();
-}
-
-function parseSource(raw: string, filePath: string): ServableAbstractionSource {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw) as unknown;
-  } catch {
-    throw new Error(`Invalid JSON in ${filePath}`);
-  }
-  if (!parsed || typeof parsed !== 'object') {
-    throw new Error(`Abstraction must be an object: ${filePath}`);
-  }
-  const o = parsed as Record<string, unknown>;
-  const required = ['id', 'strategyId', 'kind', 'version', 'text', 'review'] as const;
-  for (const key of required) {
-    if (!(key in o)) {
-      throw new Error(`Missing "${key}" in ${filePath}`);
-    }
-  }
-  const kinds = ['contract', 'param-role', 'tuning', 'risk'];
-  if (!kinds.includes(String(o.kind))) {
-    throw new Error(`Invalid kind in ${filePath}`);
-  }
-  return parsed as ServableAbstractionSource;
+  bundle: DocsKnowledgeBundle;
 }
 
 /**
- * Build the servable-tier bundle from abstraction sources.
+ * Build and write a content-hashed docs bundle.
+ * Filename: `docs-<first12(contentHash)>.json`.
  */
-export async function buildKnowledgeBundle(
-  options: BuildKnowledgeBundleOptions,
-): Promise<BuildKnowledgeBundleResult> {
-  const files = await walkAbstractionFiles(options.servableRoot);
-  if (files.length === 0) {
-    throw new Error(`No *.abstraction.json files under ${options.servableRoot}`);
-  }
+export async function writeDocsBundle(
+  options: WriteDocsBundleOptions,
+): Promise<WriteDocsBundleResult> {
+  const contentHash = computeDocsContentHash(options.chunks);
+  const totalTokenEstimate = options.pages.reduce((n, p) => n + p.tokenEstimate, 0);
 
-  const chunks: AbstractionChunk[] = [];
-  for (const filePath of files) {
-    const raw = await readFile(filePath, 'utf8');
-    const source = parseSource(raw, filePath);
-    chunks.push(toChunk(source));
-  }
-
-  const contentHash = computeContentHash(chunks);
-  const strategyIds = [...new Set(chunks.map((c) => c.strategyId))].sort();
-
-  const bundle: ServableKnowledgeBundle = {
+  const bundle: DocsKnowledgeBundle = {
     manifest: {
       schemaVersion: 1,
-      tier: 'servable',
-      builtAt: new Date().toISOString(),
+      tier: 'docs',
+      fetchedAt: options.fetchedAt ?? new Date().toISOString(),
       contentHash,
-      chunkCount: chunks.length,
-      strategyIds,
+      pages: [...options.pages],
+      totalTokenEstimate,
+      chunkCount: options.chunks.length,
     },
-    chunks,
+    chunks: [...options.chunks],
   };
 
   await mkdir(options.outputDir, { recursive: true });
+
+  if (options.pruneOld !== false) {
+    const existing = await readdir(options.outputDir);
+    for (const name of existing) {
+      if (name.startsWith(DOCS_BUNDLE_PREFIX) && name.endsWith('.json')) {
+        await unlink(path.join(options.outputDir, name));
+      }
+    }
+  }
+
   const shortHash = contentHash.slice(0, 12);
-  const baseName = `servable-${shortHash}`;
+  const baseName = `${DOCS_BUNDLE_PREFIX}${shortHash}`;
   const bundlePath = path.join(options.outputDir, `${baseName}.json`);
-  const manifestPath = path.join(options.outputDir, `${baseName}.manifest.json`);
-
   await writeFile(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`, 'utf8');
-  await writeFile(manifestPath, `${JSON.stringify(bundle.manifest, null, 2)}\n`, 'utf8');
 
-  console.info(
-    `[knowledge] servable bundle ${baseName}: ${String(chunks.length)} chunks, hash ${contentHash}`,
-  );
-
-  return { bundlePath, manifestPath, bundle };
+  return { bundlePath, bundle };
 }

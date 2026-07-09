@@ -17,17 +17,20 @@ import {
 } from '../src/shared/aiConstants';
 import { estimateKnowledgeContextTokens } from '../src/shared/knowledge/promptContext';
 import type { GeminiSendArgs, GeminiSendResult } from '../src/main/geminiService';
-import type { AbstractionChunk, KnowledgeStore } from '../src/shared/knowledgeTypes';
+import type { DocChunk, KnowledgeStore } from '../src/shared/knowledgeTypes';
 import type { ChatError, ChatState, ChatTurn, Screenshot } from '../src/shared/types';
 import type { ChatOrchestratorDeps } from '../src/main/chatOrchestrator';
 
-const SAMPLE_CHUNKS: AbstractionChunk[] = [
+const SAMPLE_CHUNKS: DocChunk[] = [
   {
-    id: 'test-contract',
-    strategyId: 'test-strategy',
-    kind: 'contract',
+    id: 'test-about',
+    pageSlug: 'market-wave-algorithm-setup-guide',
+    pageTitle: 'Market Wave Algorithm Setup Guide',
+    sourceUrl: 'https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md',
+    sectionPath: ['Market Wave Algorithm Setup Guide', 'About This Guide'],
     text: 'Behavioral summary for orchestrator tests.',
-    version: '1',
+    imageUrls: [],
+    tokenEstimate: 20,
   },
 ];
 
@@ -78,7 +81,7 @@ function fakeScreenshot(id: string): Screenshot {
 }
 
 function makeKnowledgeStore(
-  chunks: readonly AbstractionChunk[] = SAMPLE_CHUNKS,
+  chunks: readonly DocChunk[] = SAMPLE_CHUNKS,
   retrieveImpl?: KnowledgeStore['retrieve'],
 ): KnowledgeStore {
   return {
@@ -263,9 +266,10 @@ describe('chatOrchestrator', () => {
   });
 
   it('surfaces token-ceiling when the hard ceiling is exceeded', async () => {
-    const hugeChunk: AbstractionChunk = {
-      ...SAMPLE_CHUNKS[0],
+    const hugeChunk: DocChunk = {
+      ...SAMPLE_CHUNKS[0]!,
       text: 'x'.repeat(6_000_000),
+      tokenEstimate: Math.ceil(6_000_000 / 3.8),
     };
     const h = makeHarness({
       knowledgeStore: makeKnowledgeStore([hugeChunk]),

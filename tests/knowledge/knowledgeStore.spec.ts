@@ -1,27 +1,30 @@
 /**
  * @file tests/knowledge/knowledgeStore.spec.ts
- * Phase 0 task 2 — LocalKnowledgeStore bundle load + retrieval scope.
+ * LocalKnowledgeStore docs-bundle load + retrieval scope.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { buildKnowledgeBundle } from '../../src/shared/knowledge/bundleBuilder';
+import { writeDocsBundle } from '../../src/shared/knowledge/bundleBuilder';
 import {
   createLocalKnowledgeStore,
   createNodeKnowledgeFs,
-  resolveServableBundlePath,
+  resolveDocsBundlePath,
   type KnowledgeFsLike,
 } from '../../src/main/knowledgeStore';
+import type { DocChunk } from '../../src/shared/knowledgeTypes';
 
-const VALID_SOURCE = {
-  id: 'test-contract',
-  strategyId: 'test-strategy',
-  kind: 'contract',
-  version: '1',
-  text: 'Behavioral summary without code paths or proprietary defaults.',
-  review: { reviewer: 'test', reviewedAt: '2026-05-29' },
+const SAMPLE: DocChunk = {
+  id: 'mw-about',
+  pageSlug: 'market-wave-algorithm-setup-guide',
+  pageTitle: 'Market Wave Algorithm Setup Guide',
+  sourceUrl: 'https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md',
+  sectionPath: ['Market Wave Algorithm Setup Guide', 'About This Guide'],
+  text: 'Behavioral summary of Market Wave inputs without proprietary source.',
+  imageUrls: [],
+  tokenEstimate: 30,
 };
 
 function makeSilentLogger() {
@@ -35,7 +38,7 @@ function makeSilentLogger() {
   };
 }
 
-describe('resolveServableBundlePath', () => {
+describe('resolveDocsBundlePath', () => {
   let tmp: string;
 
   beforeEach(async () => {
@@ -45,10 +48,11 @@ describe('resolveServableBundlePath', () => {
     await rm(tmp, { recursive: true, force: true });
   });
 
-  it('finds servable-*.json bundle files', async () => {
-    await writeFile(path.join(tmp, 'servable-abc123.json'), '{}');
-    const resolved = await resolveServableBundlePath(tmp, createNodeKnowledgeFs());
-    expect(resolved).toMatch(/servable-abc123\.json$/);
+  it('finds docs-*.json bundle files', async () => {
+    const { writeFile } = await import('node:fs/promises');
+    await writeFile(path.join(tmp, 'docs-abc123def456.json'), '{}');
+    const resolved = await resolveDocsBundlePath(tmp, createNodeKnowledgeFs());
+    expect(resolved).toMatch(/docs-abc123def456\.json$/);
   });
 });
 
@@ -59,20 +63,25 @@ describe('LocalKnowledgeStore', () => {
   beforeEach(async () => {
     tmp = await mkdtemp(path.join(os.tmpdir(), 'knowledge-store-'));
     bundleDir = path.join(tmp, 'bundles');
-    const servable = path.join(tmp, 'servable');
-    await mkdir(path.join(servable, 'test-strategy'), { recursive: true });
-    await writeFile(
-      path.join(servable, 'test-strategy', 'contract.abstraction.json'),
-      `${JSON.stringify(VALID_SOURCE, null, 2)}\n`,
-    );
-    await buildKnowledgeBundle({ servableRoot: servable, outputDir: bundleDir });
+    await writeDocsBundle({
+      outputDir: bundleDir,
+      chunks: [SAMPLE],
+      pages: [
+        {
+          slug: SAMPLE.pageSlug,
+          sourceUrl: SAMPLE.sourceUrl,
+          contentHash: 'pagehash',
+          tokenEstimate: SAMPLE.tokenEstimate,
+        },
+      ],
+    });
   });
 
   afterEach(async () => {
     await rm(tmp, { recursive: true, force: true });
   });
 
-  it('loads the servable bundle and serves scoped retrieval', async () => {
+  it('loads the docs bundle and serves scoped retrieval', async () => {
     const store = createLocalKnowledgeStore({
       logger: makeSilentLogger(),
       bundleDir,
@@ -83,12 +92,12 @@ describe('LocalKnowledgeStore', () => {
     const version = await store.version();
     expect(version).toMatch(/^[a-f0-9]{64}$/);
 
-    const chunks = await store.retrieve({ text: 'behavioral summary', k: 2 });
+    const chunks = await store.retrieve({ text: 'Market Wave inputs', k: 2 });
     expect(chunks.length).toBeGreaterThan(0);
-    expect(chunks.every((c) => c.strategyId === 'test-strategy')).toBe(true);
+    expect(chunks.every((c) => c.pageSlug === SAMPLE.pageSlug)).toBe(true);
   });
 
-  it('logs knowledge.loaded with servable-bundle source on init', async () => {
+  it('logs knowledge.loaded with docs-bundle source on init', async () => {
     const logs: { event: string; payload: unknown }[] = [];
     const logger = {
       debug: () => {},
@@ -110,10 +119,10 @@ describe('LocalKnowledgeStore', () => {
     await store.init();
     const loaded = logs.find((l) => l.event === 'knowledge.loaded');
     expect(loaded).toBeDefined();
-    expect((loaded?.payload as { source?: string }).source).toBe('servable-bundle');
+    expect((loaded?.payload as { source?: string }).source).toBe('docs-bundle');
   });
 
-  it('never reads deep-tier paths — only bundleDir servable artifacts', async () => {
+  it('never reads deep-tier / harness paths — only bundleDir docs artifacts', async () => {
     const deepReads: string[] = [];
     const trackingFs: KnowledgeFsLike = {
       ...createNodeKnowledgeFs(),

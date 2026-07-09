@@ -1,66 +1,65 @@
 /**
  * @file src/shared/knowledgeTypes.ts
  *
- * Secure harness Phase 0 — data model for the two-tier knowledge base (PRD §7).
- * Deep-tier raw IP never appears in these types; only servable abstractions.
+ * Docs-corpus knowledge model for the internal sales/CS co-pilot (PRD D-P2/D-P11).
+ * Chunks are verbatim published documentation — not hand-curated abstractions.
  */
 
-/** Servable abstraction kinds (PRD §7). */
-export type AbstractionKind = 'contract' | 'param-role' | 'tuning' | 'risk';
+/** Algorithm ids selectable in the chat header (D-P10). `'all'` boosts nothing. */
+export type AlgorithmId = 'market-wave' | 'arbitrage' | 'intelligence' | 'apex';
+
+export type ActiveAlgorithm = AlgorithmId | 'all';
 
 /**
- * One retrieval-sized unit in the servable tier. Produced by the offline pipeline;
- * consumed later by KnowledgeStore (Phase 0 task 2).
+ * One retrieval-sized unit from the ingested docs corpus.
+ * Produced by `npm run ingest:docs`; consumed by KnowledgeStore.
  */
-export interface AbstractionChunk {
+export interface DocChunk {
   id: string;
-  strategyId: string;
-  kind: AbstractionKind;
-  /** Natural-language abstraction text. */
+  pageSlug: string;
+  pageTitle: string;
+  sourceUrl: string;
+  /** Heading path from page title through H2/H3/H4. */
+  sectionPath: string[];
+  /** Verbatim markdown body for this section (tables intact; figures processed). */
   text: string;
-  version: string;
+  /** Absolute image URLs hoisted from `<figure>` blocks. */
+  imageUrls: string[];
+  tokenEstimate: number;
 }
 
-/** Human review record attached to source abstraction files before bundling. */
-export interface AbstractionReview {
-  reviewer: string;
-  reviewedAt: string;
-}
-
-/**
- * Authoring-time abstraction document on disk under `knowledge/servable/`.
- * Serialized to `AbstractionChunk` in the bundle (review metadata stripped).
- */
-export interface ServableAbstractionSource {
-  id: string;
-  strategyId: string;
-  kind: AbstractionKind;
-  version: string;
-  text: string;
-  review: AbstractionReview;
-}
-
-/** Manifest written beside each servable bundle (PRD §5.1 — content-hashed). */
-export interface ServableBundleManifest {
-  schemaVersion: 1;
-  tier: 'servable';
-  builtAt: string;
-  /** SHA-256 hex over canonical chunk ordering (ids + text + version). */
+/** One page entry in the docs bundle manifest. */
+export interface DocsBundlePageMeta {
+  slug: string;
+  sourceUrl: string;
   contentHash: string;
+  tokenEstimate: number;
+}
+
+/** Manifest written into each docs bundle (PRD D-P3). */
+export interface DocsBundleManifest {
+  schemaVersion: 1;
+  tier: 'docs';
+  fetchedAt: string;
+  /** SHA-256 hex over canonical chunk ordering (ids + text). */
+  contentHash: string;
+  pages: DocsBundlePageMeta[];
+  totalTokenEstimate: number;
   chunkCount: number;
-  strategyIds: string[];
 }
 
-/** On-disk bundle artifact from the offline pipeline. */
-export interface ServableKnowledgeBundle {
-  manifest: ServableBundleManifest;
-  chunks: AbstractionChunk[];
+/** On-disk bundle artifact from `npm run ingest:docs`. */
+export interface DocsKnowledgeBundle {
+  manifest: DocsBundleManifest;
+  chunks: DocChunk[];
 }
 
-/** Scoped retrieval request (PRD §7). */
+/** Scoped retrieval request. */
 export interface RetrievalQuery {
   text: string;
   chartContext?: string;
+  /** When set, boosts chunks from that algorithm's guide pages (D-P4 / D-P10). */
+  activeAlgorithm?: ActiveAlgorithm;
   /** Max chunks to return. Defaults to `DEFAULT_RETRIEVAL_K`. */
   k?: number;
   /** Approximate token ceiling for returned chunk text. */
@@ -68,19 +67,19 @@ export interface RetrievalQuery {
 }
 
 /**
- * The only way runtime components read servable-tier knowledge (PRD §5.2).
+ * The only way runtime components read docs-corpus knowledge (PRD D-P11).
  * Backend selection is config-only — call sites depend on this interface.
  */
 export interface KnowledgeStore {
-  /** Load/decrypt the local index or connect to remote backend. Idempotent. */
+  /** Load the local index or connect to remote backend. Idempotent. */
   init(): Promise<void>;
-  /** Minimum relevant abstraction chunks for the query (servable tier only). */
-  retrieve(query: RetrievalQuery): Promise<AbstractionChunk[]>;
-  /** Servable-tier content hash for cache invalidation + audit. */
+  /** Minimum relevant doc chunks for the query. */
+  retrieve(query: RetrievalQuery): Promise<DocChunk[]>;
+  /** Bundle content hash for cache invalidation + audit. */
   version(): Promise<string>;
 }
 
-/** Metadata stored beside the encrypted index (not secret — hash for invalidation). */
+/** Metadata stored beside a local index (hash for invalidation). */
 export interface KnowledgeIndexMeta {
   schemaVersion: 1;
   contentHash: string;

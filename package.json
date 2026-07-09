@@ -20,6 +20,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.main.json && tsc --noEmit -p tsconfig.preload.json && tsc --noEmit -p tsconfig.renderer.json",
     "lint": "eslint \"src/**/*.{ts,tsx}\" \"scripts/**/*.mjs\"",
     "format": "prettier --write .",
+    "ingest:docs": "node scripts/ingest-docs.mjs",
     "check:screen-perm": "tsc -p tsconfig.check.json && env -u ELECTRON_RUN_AS_NODE electron dist/main/checkScreenPerm.js"
   },
   "dependencies": {

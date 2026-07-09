@@ -45,7 +45,7 @@ import {
 import { ulid } from 'ulid';
 import type { AppLogger } from './logger';
 import type {
-  AbstractionChunk,
+  DocChunk,
   KnowledgeStore,
 } from '../shared/knowledgeTypes';
 import type {
@@ -84,8 +84,8 @@ export interface GeminiSendArgs {
   history: readonly ChatTurn[];
   /** Already capped at D9 by the caller; oldest-first ordering preserved. */
   screenshots: readonly Screenshot[];
-  /** Scoped servable-tier chunks retrieved for this turn (PRD §5.2 D-8). */
-  knowledgeChunks: readonly AbstractionChunk[];
+  /** Scoped docs-corpus chunks retrieved for this turn (PRD D-P11). */
+  knowledgeChunks: readonly DocChunk[];
   /** Caller's abort signal (chat-side ESC / window close / quit). */
   signal: AbortSignal;
 }
@@ -121,7 +121,7 @@ export type GeminiSendResult = GeminiSendOk | GeminiSendError;
 
 export interface GeminiServiceDeps {
   logger: AppLogger;
-  /** Servable-tier retrieval — never the legacy harness full-bundle path. */
+  /** Docs-corpus retrieval (local bundle or future remote backend). */
   knowledgeStore: KnowledgeStore;
   /** Read the current API key. Returns `null` when unset. */
   getApiKey(): string | null;
@@ -170,7 +170,7 @@ export interface GeminiModelLike {
 }
 
 export interface GeminiService {
-  buildSystemPrompt(chunks: readonly AbstractionChunk[]): string;
+  buildSystemPrompt(chunks: readonly DocChunk[]): string;
   send(args: GeminiSendArgs): Promise<GeminiSendResult>;
   summarize(turns: readonly ChatTurn[]): Promise<string | null>;
   invalidateSystemPromptCache(): void;
@@ -203,7 +203,7 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
     return createHash('sha256').update(text).digest('hex');
   }
 
-  function buildSystemPrompt(chunks: readonly AbstractionChunk[]): string {
+  function buildSystemPrompt(chunks: readonly DocChunk[]): string {
     return composeSystemPrompt(PERSONA_PROMPT, chunks, OUTPUT_SCHEMA_INSTRUCTIONS);
   }
 

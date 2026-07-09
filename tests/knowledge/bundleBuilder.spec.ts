@@ -1,76 +1,72 @@
 /**
  * @file tests/knowledge/bundleBuilder.spec.ts
- * Phase 0 task 1 — servable bundle build + content hash stability.
+ * Docs bundle write + content hash stability.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'node:fs/promises';
+import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import {
-  buildKnowledgeBundle,
-  computeContentHash,
-} from '../../src/shared/knowledge/bundleBuilder';
-import type { AbstractionChunk } from '../../src/shared/knowledgeTypes';
+import { writeDocsBundle, computeContentHash } from '../../src/shared/knowledge/bundleBuilder';
+import type { DocChunk } from '../../src/shared/knowledgeTypes';
 
-const VALID_SOURCE = {
-  id: 'test-contract',
-  strategyId: 'test-strategy',
-  kind: 'contract',
-  version: '1',
-  text: 'Long-only behavioral summary without code or paths.',
-  review: { reviewer: 'test', reviewedAt: '2026-05-29' },
-};
+function makeChunk(id: string, text: string): DocChunk {
+  return {
+    id,
+    pageSlug: 'market-wave-algorithm-setup-guide',
+    pageTitle: 'Market Wave Algorithm Setup Guide',
+    sourceUrl: 'https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md',
+    sectionPath: ['Market Wave Algorithm Setup Guide', id],
+    text,
+    imageUrls: [],
+    tokenEstimate: Math.ceil(text.length / 3.8),
+  };
+}
 
 describe('computeContentHash', () => {
   it('is stable for the same chunk set regardless of input order', () => {
-    const a: AbstractionChunk = {
-      id: 'a',
-      strategyId: 's',
-      kind: 'contract',
-      text: 'one',
-      version: '1',
-    };
-    const b: AbstractionChunk = {
-      id: 'b',
-      strategyId: 's',
-      kind: 'risk',
-      text: 'two',
-      version: '1',
-    };
+    const a = makeChunk('a', 'one');
+    const b = makeChunk('b', 'two');
     expect(computeContentHash([a, b])).toBe(computeContentHash([b, a]));
   });
 });
 
-describe('buildKnowledgeBundle', () => {
+describe('writeDocsBundle', () => {
   let tmp: string;
 
   beforeEach(async () => {
-    tmp = await mkdtemp(path.join(os.tmpdir(), 'knowledge-build-'));
+    tmp = await mkdtemp(path.join(os.tmpdir(), 'docs-bundle-'));
   });
 
   afterEach(async () => {
     await rm(tmp, { recursive: true, force: true });
   });
 
-  it('builds a bundle from servable sources', async () => {
-    const servable = path.join(tmp, 'servable');
-    const out = path.join(tmp, 'bundles');
-    await mkdir(path.join(servable, 'test-strategy'), { recursive: true });
-    await writeFile(
-      path.join(servable, 'test-strategy', 'contract.abstraction.json'),
-      `${JSON.stringify(VALID_SOURCE)}\n`,
-    );
+  it('writes a docs-*.json bundle with manifest metadata', async () => {
+    const chunks = [makeChunk('about', 'About the guide.')];
+    const result = await writeDocsBundle({
+      outputDir: tmp,
+      chunks,
+      pages: [
+        {
+          slug: 'market-wave-algorithm-setup-guide',
+          sourceUrl: chunks[0]!.sourceUrl,
+          contentHash: 'abc',
+          tokenEstimate: chunks[0]!.tokenEstimate,
+        },
+      ],
+      fetchedAt: '2026-07-09T12:00:00.000Z',
+    });
 
-    const result = await buildKnowledgeBundle({ servableRoot: servable, outputDir: out });
-    expect(result.bundle.chunks).toHaveLength(1);
-    expect(result.bundle.manifest.tier).toBe('servable');
+    expect(result.bundle.manifest.tier).toBe('docs');
     expect(result.bundle.manifest.chunkCount).toBe(1);
+    expect(result.bundlePath).toMatch(/docs-[a-f0-9]{12}\.json$/);
 
     const onDisk = JSON.parse(await readFile(result.bundlePath, 'utf8')) as {
-      chunks: AbstractionChunk[];
+      chunks: DocChunk[];
+      manifest: { totalTokenEstimate: number };
     };
-    expect(onDisk.chunks[0].id).toBe('test-contract');
-    expect(onDisk.chunks[0]).not.toHaveProperty('review');
+    expect(onDisk.chunks[0]!.id).toBe('about');
+    expect(onDisk.manifest.totalTokenEstimate).toBe(chunks[0]!.tokenEstimate);
   });
 });

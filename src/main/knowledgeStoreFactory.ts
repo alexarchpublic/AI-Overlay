@@ -29,7 +29,7 @@ export interface CreateKnowledgeStoreOptions {
 }
 
 /**
- * Resolve the servable bundle directory for dev vs packaged builds.
+ * Resolve the docs bundle directory for dev vs packaged builds.
  * Packaged apps read from `extraResources/knowledge/bundles` (electron-builder).
  */
 export function resolveKnowledgeBundleDir(isDev: boolean, cwd = process.cwd()): string {

@@ -1,6 +1,6 @@
 /**
  * @file tests/knowledge/promptContext.spec.ts
- * Phase 0 task 3 — scoped knowledge prompt formatting.
+ * Docs-corpus prompt formatting with sectionPath labels.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -9,31 +9,37 @@ import {
   formatRetrievedKnowledge,
 } from '../../src/shared/knowledge/promptContext';
 import { KNOWLEDGE_CONTEXT_OPENER } from '../../src/shared/knowledgeConstants';
-import type { AbstractionChunk } from '../../src/shared/knowledgeTypes';
+import type { DocChunk } from '../../src/shared/knowledgeTypes';
 
-const CHUNKS: AbstractionChunk[] = [
+const CHUNKS: DocChunk[] = [
   {
-    id: 's-contract',
-    strategyId: 's',
-    kind: 'contract',
-    text: 'Long-only behavioral contract.',
-    version: '1',
+    id: 'mw-about',
+    pageSlug: 'market-wave-algorithm-setup-guide',
+    pageTitle: 'Market Wave Algorithm Setup Guide',
+    sourceUrl: 'https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md',
+    sectionPath: ['Market Wave Algorithm Setup Guide', 'About This Guide'],
+    text: 'This guide explains the Market Wave algorithm inputs.',
+    imageUrls: [],
+    tokenEstimate: 20,
   },
   {
-    id: 's-param-vol',
-    strategyId: 's',
-    kind: 'param-role',
-    text: 'Volatility filter role text.',
-    version: '1',
+    id: 'mw-trade-size',
+    pageSlug: 'market-wave-algorithm-setup-guide',
+    pageTitle: 'Market Wave Algorithm Setup Guide',
+    sourceUrl: 'https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md',
+    sectionPath: ['Market Wave Algorithm Setup Guide', 'Trade Size'],
+    text: 'All trades have a $5 minimum.',
+    imageUrls: [],
+    tokenEstimate: 10,
   },
 ];
 
 describe('formatRetrievedKnowledge', () => {
-  it('wraps chunks under the strategy knowledge opener', () => {
+  it('wraps chunks under the product documentation opener with sectionPath', () => {
     const formatted = formatRetrievedKnowledge(CHUNKS);
     expect(formatted.startsWith(KNOWLEDGE_CONTEXT_OPENER)).toBe(true);
-    expect(formatted).toContain('#### s-contract (contract)');
-    expect(formatted).toContain('Volatility filter role text.');
+    expect(formatted).toContain('#### Market Wave Algorithm Setup Guide → About This Guide');
+    expect(formatted).toContain('All trades have a $5 minimum.');
   });
 
   it('returns empty string for no chunks', () => {

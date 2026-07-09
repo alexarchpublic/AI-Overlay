@@ -1,0 +1,6 @@
+# Arch Public
+
+## Docs
+
+- [Guide With Figures](https://docs.archpublic.com/crypto/guide-with-figures.md)
+- [Small Page](https://docs.archpublic.com/crypto/small-page.md)

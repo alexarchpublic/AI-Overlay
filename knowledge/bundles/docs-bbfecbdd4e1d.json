@@ -1,0 +1,1516 @@
+{
+  "manifest": {
+    "schemaVersion": 1,
+    "tier": "docs",
+    "fetchedAt": "2026-07-09T19:02:52.688Z",
+    "contentHash": "bbfecbdd4e1d1373450ac44f039289d708e09e32548ac773979196cf5529b91b",
+    "pages": [
+      {
+        "slug": "arch-public-algorithm-setup-guide-start-here",
+        "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+        "contentHash": "a983034e20b593418f3ec070a70751f4ecb44dd9bb0a0a64c4fd1ff62114aab2",
+        "tokenEstimate": 2870
+      },
+      {
+        "slug": "market-wave-algorithm-setup-guide",
+        "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+        "contentHash": "b8ddb57604cafa9616ce414b2b1625553e65a319758e60010fca7a5a38d3210a",
+        "tokenEstimate": 11299
+      },
+      {
+        "slug": "arbitrage-algorithm-setup-guide",
+        "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+        "contentHash": "63c3cc0633cdd34295ed0f6d0b80a8bbf995585c59d0bf7da1f1a3a3c4cb2c39",
+        "tokenEstimate": 2664
+      },
+      {
+        "slug": "intelligence-algorithm-setup-guide",
+        "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+        "contentHash": "21da76ea92ee96a85f4baf81644d2c69d52a45e8ac677293bc5c920587707823",
+        "tokenEstimate": 2327
+      },
+      {
+        "slug": "arbitrage-algorithm-recipes",
+        "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md",
+        "contentHash": "1675aeea87436671cb57c4592b94d835999a19dc37cfba1da91dfd459f7e406c",
+        "tokenEstimate": 4571
+      },
+      {
+        "slug": "intelligence-algorithm-recipes",
+        "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-recipes.md",
+        "contentHash": "7e62695e4652fabf0bac83836490ba6de930de8baeb577e5ae087345a3806cd2",
+        "tokenEstimate": 569
+      },
+      {
+        "slug": "apex-algorithm-recipes",
+        "sourceUrl": "https://docs.archpublic.com/crypto/apex-algorithm-recipes.md",
+        "contentHash": "797bcfa71a62bfaaea650b06f04c454a83a9b35ce265ee073e2ae67b8f733769",
+        "tokenEstimate": 152
+      },
+      {
+        "slug": "recipe-stacks",
+        "sourceUrl": "https://docs.archpublic.com/crypto/recipe-stacks.md",
+        "contentHash": "10f395c20e58143722590e828f2a0a4f28e9c9834f18bc831227d525d31c8712",
+        "tokenEstimate": 102
+      },
+      {
+        "slug": "case-studies",
+        "sourceUrl": "https://docs.archpublic.com/crypto/case-studies.md",
+        "contentHash": "38517f25c440124f51d7ee1222dbd6a2e2a4febe02524cbbb81f1a2bdea7a8fc",
+        "tokenEstimate": 2507
+      },
+      {
+        "slug": "crypto-faq",
+        "sourceUrl": "https://docs.archpublic.com/crypto/crypto-faq.md",
+        "contentHash": "057dc689c65d031c44f60909e2ca708ce0112d9db6cf33d60ff58c523dfb1c47",
+        "tokenEstimate": 629
+      },
+      {
+        "slug": "canada-europe-united-kingdom-restrictions",
+        "sourceUrl": "https://docs.archpublic.com/crypto/canada-europe-united-kingdom-restrictions.md",
+        "contentHash": "7c7dbcabea881f195c5f42978020a121c555cec6e42a912b86da03a032a64222",
+        "tokenEstimate": 523
+      },
+      {
+        "slug": "audited-trade-history",
+        "sourceUrl": "https://docs.archpublic.com/futures/audited-trade-history.md",
+        "contentHash": "d7550502a6774ae6f32ec97a013e0f8c69a9e840c4c3c524aeaeb33f97b7aae5",
+        "tokenEstimate": 218
+      },
+      {
+        "slug": "cancel-subscription",
+        "sourceUrl": "https://docs.archpublic.com/contact/cancel-subscription.md",
+        "contentHash": "2a8128e1d2f1d78e468ea6b0e3730797e0fe3520b3701152e00f521f14d89146",
+        "tokenEstimate": 272
+      }
+    ],
+    "totalTokenEstimate": 28703,
+    "chunkCount": 89
+  },
+  "chunks": [
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md).",
+      "imageUrls": [],
+      "tokenEstimate": 80
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--set-up-a-supported-exchange-account",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Set up a Supported Exchange Account"
+      ],
+      "text": "Arch Public Algorithms require an exchange account to function. We currently support Gemini, Kraken, Coinbase, and Robinhood (beta).\n\nOnce established, you will need to fund your account",
+      "imageUrls": [],
+      "tokenEstimate": 49
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--set-up-a-tradingview-account",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Set up a TradingView Account"
+      ],
+      "text": "1. Set up a [TradingView account](https://www.tradingview.com/). <mark style=\"background-color:orange;\">**You will need an Essential Plan at minimum.**</mark>",
+      "imageUrls": [],
+      "tokenEstimate": 42
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--set-up-tradingview-2-factor-authentication-x20",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Set up TradingView 2 Factor Authentication&#x20;"
+      ],
+      "text": "Once you have created your account, click the account icon and find Profile Settings\n\nClick \"Set 2-factor authentication\". If you have not already subscribed to a paid plan, TradingView will prompt you to do so.\n\nSelect your preferred 2 Factor Authentication option using an authentication app or your phone number. In this example, we are using an authentication app.\n\n2 Factor Authentication setup is complete when you see a \"Disable\" button next to your chosen 2FA method. If you do not see a \"Disable\" button, click \"Enable\" again to complete the process.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/4SsvZ4zX9A2WB7rm8vUq",
+        "https://docs.archpublic.com/files/aU9UKl9ljNTDnDm8SWr7",
+        "https://docs.archpublic.com/files/rykgD6zQwdwXI6dDt8zB",
+        "https://docs.archpublic.com/files/wSpt7GC9M2Jvo57ubdZd",
+        "https://docs.archpublic.com/files/4nl4pVgU38GQO05peCp8",
+        "https://docs.archpublic.com/files/OtjvGXPsPc9qsozevNoU",
+        "https://docs.archpublic.com/files/Orp9yldXzsO7gZLQqFqg"
+      ],
+      "tokenEstimate": 148
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--access-arch-public-algorithms-in-tradingview",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Access Arch Public Algorithms in TradingView"
+      ],
+      "text": "Log in to your [Arch Public account and go to Client Portal](https://archpublic.com/my-account/)\n\nOn the left-hand side, click Webhooks\n\n1. The Webhooks section is where you will find all critical inputs and outputs required to automate The Bitcoin Algorithm\n2. In the User Information section you will need to input your TradingView Username and Opt into automated trades. (Make sure you click “Update” and “Save”).\n\n<mark style=\"background-color:orange;\">**Your TradingView Username IS NOT your email address. Entering your email address will not work.**</mark>",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/7rXOceWBcZ3kSfTQrFPs",
+        "https://docs.archpublic.com/files/Q3Xnq1g9tKhH9kku6j4U",
+        "https://docs.archpublic.com/files/YCQ3D7Nyh5Bjpy2NL4ut"
+      ],
+      "tokenEstimate": 149
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--connecting-to-your-exchange-account",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Connecting To Your Exchange Account"
+      ],
+      "text": "1. In order to connect your Crypto Exchange Account to Arch Public's suite of algorithms, you will need to create an API key in your exchange account and copy/paste the information into the Webhooks section in your Arch Public Client Portal.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/WtkVGyExu44wUUitLFk8",
+        "https://docs.archpublic.com/files/jP3noW7ogT0vLxni72uc",
+        "https://docs.archpublic.com/files/PNjeTDLE7yIiuVdiytUr",
+        "https://docs.archpublic.com/files/M8zBmCGUWbFQ097j0Plx",
+        "https://docs.archpublic.com/files/xZaJFvhOvXt26XKgYPdm",
+        "https://docs.archpublic.com/files/jmV0rkulrUAOGRMZ3u7V",
+        "https://docs.archpublic.com/files/G3hsW5XTHjX7Okuoqdx0",
+        "https://docs.archpublic.com/files/K2xHclxiJGfuPNbXJDMc",
+        "https://docs.archpublic.com/files/9yBLWJ7Q3fculIm3tWvD",
+        "https://docs.archpublic.com/files/qk4qKOSccZ9wBXq6Gnll",
+        "https://docs.archpublic.com/files/PjHcqrPaG81TostHQGUx",
+        "https://docs.archpublic.com/files/Xj7sWJAi1D3FaZb9x4m9",
+        "https://docs.archpublic.com/files/GeIY8wY0ZE8BSGTJJOid",
+        "https://docs.archpublic.com/files/dtB3ofKheK0DUcYQYYbp",
+        "https://docs.archpublic.com/files/9uh1NrXITkCbGgqPhTi4",
+        "https://docs.archpublic.com/files/Qj1KSXqsfSIIdAkrmavz",
+        "https://docs.archpublic.com/files/gVAGAj4P5TEq0dUMm3BL",
+        "https://docs.archpublic.com/files/IfFTKVlk8C0ew2VFv9F1",
+        "https://docs.archpublic.com/files/Zv3R6QCo72szKb93AXys",
+        "https://docs.archpublic.com/files/dp0xxljzxFIJLNs790BF",
+        "https://docs.archpublic.com/files/iL8QilNENKWoG5LYY0lc",
+        "https://docs.archpublic.com/files/JP56ieelgRh35XOUnrer",
+        "https://docs.archpublic.com/files/5F40DrYBSEvo5CdTvRgx",
+        "https://docs.archpublic.com/files/6wijbpLRg8b2d25XWz3d",
+        "https://docs.archpublic.com/files/F6GUtKXoEsHlr5NWPvVW",
+        "https://docs.archpublic.com/files/YWMLVHF03pneCCLDt5rJ",
+        "https://docs.archpublic.com/files/GT14yKGwS3sIjsOyd8TY",
+        "https://docs.archpublic.com/files/YgtVG5mnQlFHSx21l3eO",
+        "https://docs.archpublic.com/files/QFju89TZEOJofTl4Ki6B",
+        "https://docs.archpublic.com/files/sTVt6Op1rBFllOgQxNAk"
+      ],
+      "tokenEstimate": 64
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--connecting-to-your-exchange-account--connect-to-kraken",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Connecting To Your Exchange Account",
+        "Connect To Kraken"
+      ],
+      "text": "{% hint style=\"warning\" %}\nIMPORTANT\\\n\\\nKraken Staking Requirements:\n\nKraken Auto Earn may remain enabled. However, assets that are manually Flex Staked or Bonded Staked cannot be traded by Arch Public algorithms.\n\nIf a cryptocurrency is manually staked (Flex or Bonded), it must be unstaked before the algorithm can execute trades. Failing to do so may result in missed trades. You can stake a portion of a particular cryptocurrency and still trade with the unstaked portion.\n{% endhint %}\n\nLog in to your Kraken Account. In the top right-hand corner, click the Account icon and click Settings\n\nClick \"Connections & API\", then \"Create API Key\"\n\nGive your new API key a name. Make the selections as pictured in the screenshot. Then click \"Generate Key\"\n\nYou will now see your API Key and API Secret Key. Make sure you copy these somewhere safe. If you lose your API Secret Key, you will simply have to create a new API key to regain functionality. Keep this window open so you can easily copy and paste these keys into your Arch Public Client Portal.\n\nOnce you have copied your keys to a safe location, check the acknowledgement box above and Close. You will now find the API key you just created in your Kraken account.\n\nGo back to your Arch Public Client Portal’s Webhook section. Copy and paste your API Key Name (also known as Account Alias), API Key, and Secret Key. Click “Add Account”.\n\nOnce completed, you will see your Kraken API key appear in “Your Brokerage Accounts” section. You have now successfully connected Kraken to Arch Public's Crypto Algorithms.\n\nYou are now ready to [add your Arch Public Algorithms to TradingView](#adding-arch-public-algorithms-to-tradingview).\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 445
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--connecting-to-your-exchange-account--connect-to-coinbase",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Connecting To Your Exchange Account",
+        "Connect To Coinbase"
+      ],
+      "text": "Log in to your Coinbase Account. In the top right-hand corner, click the Account icon and click Settings\n\nOn the left-hand side, click \"API\" settings.\n\nClick \"Create API Key\"\n\nGive your API key a nickname and enabling trading by selecting \"Trade\". Click \"Create & download\" when finished.\n\nYou may have to complete 2-factor authentication to view your API key.\n\nCopy & Paste the ENTIRE API key and private key somewhere safe.&#x20;\n\nGo  to your Arch Public Client Portal’s Webhook section. Copy and paste your API Key Name (also known as Account Alias), API Key, and Secret Key. Click “Add Account”.\\\n\\\nOnce added, you will see your coinbase key added. Click the \"Test Connection\" button to ensure your API key has been properly added.\n\nYou are now ready to [add your Arch Public Algorithms to TradingView](#adding-arch-public-algorithms-to-tradingview).\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 227
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--connecting-to-your-exchange-account--connect-to-gemini",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Connecting To Your Exchange Account",
+        "Connect To Gemini"
+      ],
+      "text": "1. Log in to your Gemini Account. In the top right-hand corner, click the Account icon and click Settings\n\nOn the right-hand side, click API\n\nClick “Create API Key”\n\nSelect Primary Scope. Click Next.\n\nGive the API key a name (it can be anything). Select “Trading”. Select \"Unrestricted\". Click “Create API Key”.\n\nYou will now see your API Key and API Secret Key. Make sure you copy these somewhere safe. If you lose your API Secret Key, you will simply have to create a new API key to regain functionality. Keep this window open so you can easily copy and paste these keys into your Arch Public Client Portal.\n\nOnce you have copied your keys to a safe location, check the acknowledgement box above and Close. You will now find the API key you just created in your Gemini account.\n\nGo back to your Arch Public Client Portal’s Webhook section. Copy and paste your API Key Name (also known as Account Alias), API Key, and Secret Key. Click “Add Account”.\n\nOnce completed, you will see your Gemini API key appear in “Your Brokerage Accounts” section. You have now successfully connected Gemini to Arch Public's Crypto Algorithms.\n\nYou are now ready to [add your Arch Public Algorithms to TradingView](#adding-arch-public-algorithms-to-tradingview).\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 329
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--connecting-to-your-exchange-account--connect-to-robinhood",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Connecting To Your Exchange Account",
+        "Connect To Robinhood"
+      ],
+      "text": "{% hint style=\"info\" %}\nNOTE: To access available assets through Robinhood on TradingView, you must select BITSTAMP as the exchange. Robinhood recently acquired Bitstamp.\n{% endhint %}\n\nTo connect to Robinhood, you will need to first generate a private/public key. Go to your Arch Public Client Portal > Webhooks. \\\n\\\nIn the Add Account section, select Robinhood from the *Broker* dropdown. Enter a Brokerage Alias of your choice, choose between API v1 and API v2, and then click “Generate Private/Public Keys.”\n\nv1 and v2 use different order routing and fee structures.\\\nFor details on the differences between API v1 and v2, please refer to Robinhood’s documentation here: <https://robinhood.com/us/en/support/articles/crypto-api/>\\ <br>\n\nYou will see both the Private Key and Public Key appear. Click the “Copy” button to copy the Public Key to your clipboard.\n\nIn a separate tab or window, log in to your Robinhood Account. In the top right-hand corner, click \"Account\" > \"Crypto\".\n\nUnder API Trading, Select \"Add Key\".\n\nGive the key the same name as the “Brokerage Alias” you created in your Arch Public Client Portal.\n\nYou must select all five of the lower “Read” permissions (Read crypto accounts, Read crypto holdings, Read crypto orders, Read crypto products, and Read crypto quotes), plus at least one of the top “Place crypto orders” options.\n\nYou must select at least one of the following order actions (matching your Arch setup):\n\n* Place crypto orders with fee tiers = v2\n* Place crypto orders without fee tiers = v1\n\nThe option you select should match the API version chosen in your Arch Public Client Portal. You may select both if desired, but trades will be submitted according to the version established in Arch.\n\nCopy/Paste the \"Public Key\" you generated in the Arch Public Client Portal to the \"Public Key\" Field in the Add Key form, the Click Save. You may be asked to confirm the activity with your phone.\n\nWhen successful, you will see your API key appear under the \"API Trading\" Section.\n\nClick the Robinhood API key that was just generated.\n\nClick \"Copy Key\".\n\nNavigate back to your Arch Public Client Portal > \"Webhooks\" in the separate tab or window.  Paste the Robinhood API key into the \"API Key\" Field. Click \"Add Account\".\n\nOnce added, click the \"Test Connection\" button under \"Your Brokerage Accounts\" section in the Arch Public Client portal to verify.\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 629
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--adding-arch-public-algorithms-to-tradingview",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Adding Arch Public Algorithms To TradingView"
+      ],
+      "text": "On the TradingView homepage, click the upper left-hand menu and select Supercharts\n\nSelect the correct trading pair in the chart by clicking the symbol selector. For a current list of trading pairs, please reference the [Crypto FAQ](/crypto/crypto-faq.md#what-crypto-pairs-can-i-trade) . The exchange **must** be the same as your exchange (Kraken or Gemini) otherwise the algorithms will not display.\n\n<mark style=\"background-color:orange;\">IMPORTANT NOTE - If your exchange account is funded with a currency other than USD (For example, GBP, USDT, etc.), your chart MUST be set to the correct pair (e.g. BTCGBP, BTCUSDT).</mark>\n\n1. Select Indicators > Invite Only.\n2. This is where you will add the main Bitcoin Algorithms to your chart. Click the algorithm(s) you would like to add to your chart. You will see them appear on your chart.\n\n<mark style=\"background-color:orange;\">Please allow for up to 24 hours after adding your TradingView username to the Arch Public Client Portal. You will need to refresh TradingView in your browser to see recently added algorithms in the “Invite-only” section.</mark>\n\nYou will see the algorithms you’ve selected appear on the chart.\n\nDisplay only one algorithm at a time when performing analysis and setting changes. To do so, click the eyeball icon next to the algorithm’s name on the chart. Notice that the visible algorithm has a clear eyeball while the invisible algorithm has a cross through the eyeball.\n\nThe main functions you will use are the algorithm settings menu (gear icon), Strategy Tester, and timeframes.\n\nTimeframes change the period on which the algorithms function, therefore significantly effecting the performance of any given set of algorithm parameters. When setting up an instance, ensure that you are on the timeframe you desire for that instance.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/HViZuDelaIaND7COISAu",
+        "https://docs.archpublic.com/files/hylVMHS7kjc6hLHPQGsS",
+        "https://docs.archpublic.com/files/okMjjrIB9Z6BJib88xYU",
+        "https://docs.archpublic.com/files/ooDkWJQZow71cbpxzkJU",
+        "https://docs.archpublic.com/files/lt5I6ZIV6Xcyn0xdjvRR",
+        "https://docs.archpublic.com/files/5xQoVRbcLMkZxj6IjQEj",
+        "https://docs.archpublic.com/files/beTmCoBy0KWdkfQl9l9m",
+        "https://docs.archpublic.com/files/3oD3fzGzSkH852YfKbaf",
+        "https://docs.archpublic.com/files/mwNUjChnNTcV7U0qCZqH",
+        "https://docs.archpublic.com/files/uPL1CVolx6ELLLarWluY"
+      ],
+      "tokenEstimate": 478
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--setup-complete-what-next",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Setup Complete! What Next?"
+      ],
+      "text": "Start with an instance of the Arbitrage Algorithm or Intelligence Algorithm.\\\n\\\nThe Arbitrage Algorithm is deigned to take advantage of the volatility of cryptocurrency. It can be tuned to generate a cash yield, accumulate cryptocurrency, sell off an existing position, or a blend of all three.&#x20;\n\n[Setup an instance of the Arbitrage Algorithm.](/crypto/arbitrage-algorithm-setup-guide.md)\\\n\\\nThe Intelligence Algorithm is designed to accumulate cryptocurrency at the most opportune prices and excels at building a strong foundation in any cryptocurrency.\n\n[Setup an instance of the Intelligence Algorithm.](/crypto/intelligence-algorithm-setup-guide.md)",
+      "imageUrls": [],
+      "tokenEstimate": 174
+    },
+    {
+      "id": "arch-public-algorithm-setup-guide-start-here--arch-public-algorithm-setup-guide-start-here--navigating-tradingview",
+      "pageSlug": "arch-public-algorithm-setup-guide-start-here",
+      "pageTitle": "Arch Public Algorithm Setup Guide (Start Here)",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arch-public-algorithm-setup-guide-start-here.md",
+      "sectionPath": [
+        "Arch Public Algorithm Setup Guide (Start Here)",
+        "Navigating TradingView"
+      ],
+      "text": "TradingView is a comprehensive trading platform and we understand it can be daunting at first glance. For questions related to using TradingView, it's best to ask their support AI as you get up and running.\n\n---",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/WefllDYpZRh0N2btoewr"
+      ],
+      "tokenEstimate": 56
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md).",
+      "imageUrls": [],
+      "tokenEstimate": 77
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--about-this-guide",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "About This Guide"
+      ],
+      "text": "This guide explains the Market Wave algorithm inputs/settings with illustrative examples. It is descriptive and does not recommend specific configurations, timeframes, assets, or trade sizes.",
+      "imageUrls": [],
+      "tokenEstimate": 51
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--inputs-tab-vs-properties-tab",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Inputs Tab vs. Properties Tab"
+      ],
+      "text": "Initial capital is entered as \"Starting Cash\" on the Inputs tab, not in the \"Initial capital\" field on the Properties tab. The \"Initial capital\" field on the Properties tab is not needed for live trading — that's handled entirely on the Inputs tab.\n\nThe Properties tab can still be used to adjust other settings such as commission, but starting cash does not need to be entered there. The one exception is backtesting: TradingView's Strategy Report pulls from the \"Initial capital\" field on the Properties tab, so if you plan to use it, that field needs to match the \"Starting Cash\" figure on the Inputs tab. This has no impact on live trading.\n\nThe Inputs tab is where every setting lives. Sections appear top-to-bottom: User Initial Capital, Order Entry & Exit Rules, Trade Size, Market Wave, Static Market Price Filter, Trend Filter, Start/End dates, and Backtesting.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/sV13nCDwpZ5gL7fB5Ub9"
+      ],
+      "tokenEstimate": 229
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--user-initial-capital",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "User Initial Capital"
+      ],
+      "text": "### Starting Cash ($)\n\nThe cash balance the strategy starts with.\n\n### Starting Crypto Quantity\n\nThe number of crypto units the strategy starts holding. Enter the unit count only. If non-zero, the strategy opens that position via a single seed trade three calendar days before the strategy start date — whether that's the backtest start date or today's date for a live strategy. The seed trade does not fire a webhook alert and will not result in an actual buy; it's simply TradingView's way of accounting for the starting crypto position that you allocate to this particular strategy.",
+      "imageUrls": [],
+      "tokenEstimate": 154
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--order-entry-exit-rules",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Order Entry & Exit Rules"
+      ],
+      "text": "### Long Threshold (%)\n\nThe minimum red candle size required to trigger a buy.\n\n### Exit Threshold (%)\n\nThe minimum green candle size required to trigger a sell.\n\nLarge candles are not always tops or bottoms — sometimes they are the initial move of a longer leg. Smaller candles later in a move can also represent valid triggers.",
+      "imageUrls": [],
+      "tokenEstimate": 87
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size"
+      ],
+      "text": "All trades have a $5 minimum, applied in both Fixed and Percentage modes. Fixed Trade Size is checked by default.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/GzFNqJhdC8n6c9RSuHBf",
+        "https://docs.archpublic.com/files/QIfVtJ0LK2lYfjPhNmOF",
+        "https://docs.archpublic.com/files/PzzRCq0pvs51OWDkBWEg"
+      ],
+      "tokenEstimate": 30
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size--fixed-trade-size",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size",
+        "Fixed Trade Size"
+      ],
+      "text": "When only Fixed Trade Size is checked, the algo uses the dollar amounts in Entry Trade Size ($) and Exit Trade Size ($) for every trade. The percentage values are ignored.",
+      "imageUrls": [],
+      "tokenEstimate": 45
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size--percentage-trade-size",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size",
+        "Percentage Trade Size"
+      ],
+      "text": "When only Percentage Trade Size is checked, entries are sized as a percentage of available cash and exits as a percentage of available crypto — not as a percentage of your buy size, and not as a percentage of your overall portfolio value. Buys are only impacted by your available cash, sells are only impacted by your available crypto, and both are dynamic and fluctuate bar-to-bar depending on the algorithm's calculated holdings. The dollar values are ignored.\n\nNote that \"available cash\" and \"available crypto\" here refer to what the algorithm itself is tracking based on the starting inputs and the trades it has executed on the chart — not your actual holdings on the exchange. TradingView cannot see funds added to or removed from your exchange account, so all percentage calculations are contained inside the algorithm.\n\nBecause buys are sized off available cash and sells are sized off available crypto, the same percentage settings can produce very different trade sizes depending on how the portfolio is balanced. Here are three examples of starting balances on a $100,000 portfolio with 2% buy/sell sizing (for the sake of simplicity, the values below do not account for fluctuations in asset price):\n\n#### All crypto ($0 cash, $100K crypto)\n\nWith 100% allocated to crypto, the same 2% setting produces much larger sells from the start and no buys at all. A sell would fire for $2,000 (2% of $100K crypto), while buys can't fire at all since 2% of $0 cash is $0. After that first sell, the portfolio would be $2K cash / $98K crypto, so a buy could now fire for $40 (2% of $2K) and a sell for $1,960 (2% of $98K). As more sells fire, cash grows and buy sizes grow with it, while sells shrink. Depending on how often buy and sell signals fire (along with other variables), the portfolio may move away from this 100% crypto allocation toward more balance, or with enough sell signals it could swing the other way and end up mostly cash. The disparity between buy and sell sizes closes as the account approaches a more balanced state.\n\n#### All cash ($100K cash, $0 crypto)\n\nWith 100% allocated to cash, the same 2% setting produces much larger buys from the start and no sells at all. A buy would fire for $2,000 (2% of $100K cash), while sells can't fire at all since 2% of $0 crypto is $0. After that first buy, the portfolio would be $98K cash / $2K crypto, so a buy could now fire for $1,960 and a sell for $40 (2% of $2K). As more buys fire, crypto grows and sell sizes grow with it, while buys shrink. Depending on how often buy and sell signals fire, the portfolio may move away from this 100% cash allocation toward more balance, or with enough buy signals it could swing the other way and end up mostly crypto. The disparity between buy and sell sizes closes as the account approaches a more balanced state.\n\n#### Balanced ($50K cash, $50K crypto)\n\nWith cash and crypto starting at parity, the 2% setting produces equal buy and sell sizes from the start. A buy would fire for $1,000 (2% of $50K cash) and a sell would fire for $1,000 (2% of $50K crypto). From there, depending on how often each signal fires, the portfolio can drift in either direction. Say buys outpace sells and the portfolio shifts to $30K cash / $70K crypto — buys would shrink to $600 and sells would grow to $1,400. The further the portfolio drifts from balanced, the wider the disparity between buy and sell sizes; if signals on the dominant side eventually slow, that disparity itself naturally pulls the account back toward balance.",
+      "imageUrls": [],
+      "tokenEstimate": 928
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size--percentage-and-fixed-trade-size-both-checked",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size",
+        "Percentage and Fixed Trade Size both checked"
+      ],
+      "text": "When both are checked, the percentage calculation runs first as the default, with the fixed dollar amount acting as a floor (not a cap) — if the percentage calculation comes out smaller than the fixed amount, the fixed amount is used instead.\n\nThis setup can be used in multiple ways. You can use all four inputs together with meaningful values for each, or you can configure it as a hybrid where some sides effectively run on fixed sizing and others on percentage sizing.\n\nUsing both is useful because it lets you size trades dynamically as a percentage of your holdings while preventing a slew of tiny trades when your available cash or crypto runs low relative to your overall portfolio size.\n\nA few illustrative examples:\n\n#### Percentage with a fixed floor\n\nImagine a $100,000 account split 50/50 — $50K cash and $50K crypto — with trades set to 2%. Your first buy or sell would be $1,000. Fast forward and say you've deployed all but $5K of cash; now 2% only equates to $100 buys. If you kept deploying without any sells (for the sake of this example), you'd find yourself making much smaller buys than your initial $1K. If you don't want that, you can set a fixed buy as a floor — say $500 — and every buy fires at $500 minimum until the remaining cash is itself $500 or less, at which point the trade adjusts down to clear it out.\n\n#### Static buys, percentage sells\n\nUsing the same $100,000 50/50 account, if you set a fixed buy size of $1,000, a fixed sell size of $5 (min), a percentage buy size of 0%, and a percentage sell size of 20%, you'd get static $1,000 buys every time (since 0% always falls below the $1,000 floor) and percentage-based 20% sells every time (since 20% will almost always exceed the $5 (min) floor).\n\n#### Percentage buys, static sells\n\nFlip it. On the same $100,000 50/50 account, if you set a fixed buy of $5 (min), fixed sell of $1,000, percentage buy of 20%, and percentage sell of 0%, you'd get percentage-based 20% buys and static $1,000 sells.",
+      "imageUrls": [],
+      "tokenEstimate": 523
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size--auto-sized-last-trade",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size",
+        "Auto-Sized Last Trade"
+      ],
+      "text": "In any mode (percentage, fixed, or both), if the trade size would exceed what the algorithm has calculated as available cash (for buys) or available crypto (for sells) based on the initial inputs and chart data/trading activity, the order auto-sizes down to what is available. This overrides any sizing input (% or fixed) when applicable.\n\nIt's important to note that all calculations are contained inside the algorithm itself. If you add or remove funds from your exchange, TradingView cannot see that — the algorithm only knows what it has tracked from the starting inputs and the trades it has executed on the chart.\n\nFor example, if your fixed buy size is $1,000 but the algorithm has only $500 in available cash, the trade adjusts down and fires for $500. Same logic on the sell side: if your fixed sell size is $1,000 but only $500 worth of crypto remains, the sell fires for $500.\n\n#### Visual: Trade Size Modes\n\n**Fixed Trade Size only -**\n\nOnly Fixed Trade Size is checked. Both Entry and Exit Trade Size are set to $500. In this XRP example, the first two buys at $500 purchase 362.7 and 368.6 XRP units. On the third buy, there was only enough cash remaining to purchase 268.7 XRP units, so the trade auto-sized down from $500 to whatever the remaining cash allowed. This is why keeping a small amount of extra cash as headroom matters — fees and slippage can eat into the last trade.\n\n**Percentage Trade Size only -**&#x20;\n\nOnly Percentage Trade Size is checked. Entries use 5% of available cash; exits use 50% of available crypto. Each sell shown is 50% of the XRP units held at that bar, so the sell amounts get progressively smaller as the position shrinks. Amounts fluctuate bar-to-bar depending on the algo's calculated holdings at that moment.\n\n**Both checked -**\n\nBoth Fixed ($500) and Percentage (5% / 50%) are checked. The first sell is 50% of available crypto, which calculates to more than $500, so the 50% value is used. The next sell is 50% of the remaining crypto, which calculates to less than $500 — the algo falls back to the $500 fixed floor. The last sell auto-sizes down because the remaining crypto is less than $500 worth. The fixed amount acts as a floor for the percentage calculation, not a cap.",
+      "imageUrls": [],
+      "tokenEstimate": 588
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size--account-headroom",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size",
+        "Account Headroom"
+      ],
+      "text": "Keep some headroom in both cash and crypto to account for exchange fees and slippage. There's roughly a 5% server-side buffer on limit orders, so while you don't need to maintain a full 5% cushion at all times, you should always have at least some breathing room on both sides — enough to cover fees, slippage, and the buffer without orders being rejected.",
+      "imageUrls": [],
+      "tokenEstimate": 94
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size--exchange-fees",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size",
+        "Exchange fees"
+      ],
+      "text": "Crypto exchanges (not Arch) charge trading fees, and those fees are typically variable based on your trailing 30-day volume — meaning the percentage you pay can shift up or down as your activity changes. TradingView allows you to set a commission percentage on the Properties tab, but it only accepts a fixed value, so it will never match your actual exchange fees verbatim. Treat that input as an approximation, not a precise reflection of cost.",
+      "imageUrls": [],
+      "tokenEstimate": 118
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size--slippage",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size",
+        "Slippage"
+      ],
+      "text": "Slippage is the difference between the price you expected on a trade and the price the trade actually fills at. Our system only uses limit orders set in-the-money for instant fill (not market orders), but even with fill-or-kill behavior, slippage can still occur — fast price moves can mean a buy fills slightly higher than the displayed price or a sell fills slightly lower (or vice versa) in the moment between order submission and execution. The actual slippage on any given trade is unpredictable, which is why having a small cash and crypto cushion matters.",
+      "imageUrls": [],
+      "tokenEstimate": 148
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trade-size--reconciling-with-your-exchange",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trade Size",
+        "Reconciling with your exchange"
+      ],
+      "text": "Monitor your actual exchange balances against the amounts the algorithm calculates, and adjust as needed. Since TradingView only sees what the algorithm has tracked internally (not your true exchange holdings), small drifts between the two can accumulate over time as fees and slippage chip away at each trade. Periodic reconciliation helps keep the algorithm's view aligned with reality.",
+      "imageUrls": [],
+      "tokenEstimate": 103
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave"
+      ],
+      "text": "The Market Wave is a tunable wave plotted on the chart with a top edge and a bottom edge. By default, buys are only allowed below the bottom edge; sells are only allowed above the top edge. The space between is the no-action zone.\n\n#### Scope (0.5 = micro, 10 = macro)\n\nScope controls the behavior of the wave on a single slider, in 0.5 increments from 0.5 (micro) to 10 (macro). The relationship is linear across the range.\n\nLower Scope = shorter, faster-tracking wave. The wave reacts quickly to price.\n\nHigher Scope = longer, smoother wave. The wave is slower to turn and traces the broader trend.\n\nThe names describe the size of the cycles the wave responds to, not the size of the wave itself. A small scope hugs price tightly, so the buy/sell cycles it captures are short — small bounces playing out over a few candles. A large scope smooths past those bounces and only shifts when price makes a sustained directional move, so the cycles it captures are larger — extended accumulation phases and major rallies. The actual duration of those cycles depends on the chart's timeframe; a \"macro\" cycle on a daily chart might span weeks or months, while the same scope on a 30-minute chart might span only a day or two.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/3Tk8Aib5pvUN1MtgKo5q",
+        "https://docs.archpublic.com/files/ObBiKCP8ikBUcyboCVLv",
+        "https://docs.archpublic.com/files/aO3pecArxeuzMuT05eJJ",
+        "https://docs.archpublic.com/files/wgHNjb0jvw5ydxS3c3RN",
+        "https://docs.archpublic.com/files/J9yi5e6z9OSD9OK9z9S2",
+        "https://docs.archpublic.com/files/x552FkWlXiGQFHEX8ln9",
+        "https://docs.archpublic.com/files/GiPtzIJpRWHzvVS9aBCQ",
+        "https://docs.archpublic.com/files/h4qXRSqz5y3GkE9pohff",
+        "https://docs.archpublic.com/files/Y8Ynel91zW7rat87VZFn",
+        "https://docs.archpublic.com/files/JXkgKgU9iiYLQiYilv6C",
+        "https://docs.archpublic.com/files/CNVTLcOMrPRjnlyFPbOT",
+        "https://docs.archpublic.com/files/Cr5Yu3hENEoS65tbSnN0",
+        "https://docs.archpublic.com/files/wNfpaDQugJaFLbuNnrSm",
+        "https://docs.archpublic.com/files/qHfH2LwtTb8wQbAcPjaT",
+        "https://docs.archpublic.com/files/s8jdADDaQm3aYkRfWSgR",
+        "https://docs.archpublic.com/files/eGX54aFi5lfygYp0saGe",
+        "https://docs.archpublic.com/files/jo1ER8LFDcdORWa3EQBE",
+        "https://docs.archpublic.com/files/Bui2y3unGXhmnO6Ar8l0",
+        "https://docs.archpublic.com/files/sKveudgEq8dCKFmmXER9"
+      ],
+      "tokenEstimate": 321
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--scope-and-timeframe",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Scope and timeframe"
+      ],
+      "text": "Scope and timeframe are two independent zoom levels that stack on top of each other. Timeframe controls how granular each candle is (a 4-hour chart shows six times as many candles per day as a daily chart). Scope controls how tightly the wave tracks those candles. Both matter, and they don't combine in a strictly linear way — a longer timeframe with a small scope can still track close to price, just not as closely as a shorter timeframe at the same scope; a larger scope on a shorter timeframe will track more closely than the same scope on a longer one.\n\n#### Visual: Scope on a Daily Chart\n\n**BTCUSD Daily — Scope 0.5**\n\nScope 0.5 (micro) on the daily chart. The wave tracks price closely and the two oscillate around each other, producing tightly interleaved buy/sell markers throughout most of the chart.\n\n**BTCUSD Daily — Scope 2.5**\n\nScope 2.5 on the same daily chart. The wave is longer and smoother, so price spends more continuous time on each side of it. Buys and sells start clustering into runs rather than interleaving tightly.\n\n**BTCUSD Daily — Scope 5**\n\nScope 5 on the same daily chart. Compared to lower scopes the wave is smoother and price runs above or below it for longer stretches, with buy and sell clusters extending further along the trend. The exact pattern varies by asset.\n\n**BTCUSD Daily — Scope 10**\n\nScope 10 (macro) on the same daily chart. The wave is at its longest and smoothest, behaving like a long-term trend reference. Price oscillates through the wave over weeks or months rather than hours or days, defining clear accumulation and distribution zones — buys cluster through extended downtrends and sells through major rallies.\n\n#### Visual: Scope on a 4-Hour Chart\n\n**BTCUSD 4H — Scope 0.5**\n\nScope 0.5 (micro) on a 4-hour chart. The wave tracks price tightly and reacts quickly to short-term moves, producing dense, tightly interleaved buy/sell markers as price oscillates back and forth across the wave.\n\n**BTCUSD 4H — Scope 2.5**&#x20;\n\nScope 2.5 on the same 4-hour chart. The wave is longer and smoother than at 0.5, no longer tracking every short-term swing. Buys and sells begin to cluster into runs rather than alternating tightly.\n\n**BTCUSD 4H — Scope 5**&#x20;\n\nScope 5 on the same 4-hour chart. The wave is smoother and slower to react, so price spends longer stretches on one side before crossing back through. Buy and sell clusters extend further along the trend, though the exact pattern varies by asset.\n\n**BTCUSD 4H — Scope 10**\n\nScope 10 (macro) on the same 4-hour chart. The wave is at its macro setting, behaving like a long-term trend reference even on the 4-hour timeframe. Price moves through the wave over extended periods — sometimes weeks or months, though the exact duration varies — defining clear accumulation and distribution zones with buys clustering through extended downtrends and sells through major rallies.",
+      "imageUrls": [],
+      "tokenEstimate": 760
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--only-sell-above-only-buy-below",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Only Sell Above / Only Buy Below"
+      ],
+      "text": "Both checkboxes are on by default. Together they enforce the no-action zone: sells are restricted to candles closing above the top edge of the wave, buys to candles closing below the bottom edge. Anything happening inside the wave is treated as noise and ignored.\n\nThis is the core of the strategy's accumulation philosophy — buy meaningful dips below the wave and sell meaningful rallies above it, rather than trading every small oscillation in between. The no-action zone keeps the strategy from chasing chop.\n\nTurning either off allows trades inside the wave on that side. For example, unchecking \"Only Buy Below\" lets buys fire on candles inside the wave or even slightly above the bottom edge, which can increase entry frequency but also exposes the strategy to buying at less attractive prices. Turning one off is a deliberate choice for a specific market view, not a default mode of operation.",
+      "imageUrls": [],
+      "tokenEstimate": 237
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)"
+      ],
+      "text": "Buffers let users tune the area above the top edge (where sells can fire) and the area below the bottom edge (where buys can fire). Leaving both at 0 uses the wave in its natural state, calculated directly from the chart data. Adjusting them is a way to shape trade behavior around your own outlook and conviction.\n\nPositive values push an edge OUT, away from the wave body. Negative values pull an edge IN, toward the wave body. Sell Buffer controls the top edge; Buy Buffer controls the bottom edge.\n\nBuffers tune one specific component of the strategy — the size of the area outside the wave where candles can close to qualify as trades. Bigger area = more candles can potentially qualify. Smaller area = fewer candles can potentially qualify. Whether trades actually fire still depends on candle thresholds, trade size, and how the market moves.\n\nThe wave's natural width depends on the chart's timeframe. Shorter timeframes have smaller candles and a narrower wave; longer timeframes have larger candles and a wider wave. The same buffer percentage therefore has a different absolute effect on different timeframes — narrower waves are more sensitive to buffer adjustments, so smaller values go further on lower timeframes.",
+      "imageUrls": [],
+      "tokenEstimate": 324
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer--one-edge-in",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)",
+        "One edge IN"
+      ],
+      "text": "Setting a negative buffer on one side pulls that edge inward, growing the qualifying area on that side. Sell Buffer -2 with Buy Buffer 0 pulls the top edge in, opening up more area above the wave where green candles can close as potential sell triggers. Buy Buffer -2 with Sell Buffer 0 pulls the bottom edge in, opening up more area below the wave where red candles can close as potential buy triggers.",
+      "imageUrls": [],
+      "tokenEstimate": 107
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer--one-edge-out",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)",
+        "One edge OUT"
+      ],
+      "text": "Setting a positive buffer on one side pushes that edge outward, shrinking the qualifying area on that side. Sell Buffer +2 with Buy Buffer 0 pushes the top edge out, requiring a stronger move above the wave for green candles to close as sell triggers. Buy Buffer +2 with Sell Buffer 0 pushes the bottom edge out, requiring a deeper move below the wave for red candles to close as buy triggers.",
+      "imageUrls": [],
+      "tokenEstimate": 104
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer--both-edges-out-widen",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)",
+        "Both edges OUT (widen)"
+      ],
+      "text": "Setting both buffers to positive values pushes both edges outward. The wave widens and the no-action zone grows, shrinking the qualifying area on both sides. The strategy still operates on the same mean-reversion logic, just with a higher bar — only larger deviations from the wave qualify, so smaller wave-hugging moves are filtered out.\n\nWidening is also useful as a counterweight to smaller candle thresholds. If you've set smaller buy/sell thresholds to catch smaller qualifying moves, a wider no-action zone filters out the ones closest to the wave so the strategy doesn't get overwhelmed by marginal trades.",
+      "imageUrls": [],
+      "tokenEstimate": 162
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer--wave-shift-asymmetric",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)",
+        "Wave shift (asymmetric)"
+      ],
+      "text": "Setting one buffer positive and the other negative shifts the wave in one direction. Sell Buffer positive with Buy Buffer negative pushes the top edge up and pulls the bottom edge up — shrinking the area above the wave (fewer green candles can close above it as potential sell triggers) and growing the area below (more red candles can close below it as potential buy triggers). Sell Buffer negative with Buy Buffer positive does the opposite — growing the area above (more green candles can close above it as potential sell triggers) and shrinking the area below (fewer red candles can close below it as potential buy triggers).\n\nThis combination biases one gate as easier to clear than the other, which can affect how many buys vs. sells fire. The total dollar amount of buying vs. selling is a combination of trade frequency and trade size, so the buffer alone doesn't determine the overall balance — that also depends on candle thresholds, trade size, and how the market moves.",
+      "imageUrls": [],
+      "tokenEstimate": 259
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer--both-edges-in-pinch-caution",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)",
+        "Both edges IN (pinch) — caution"
+      ],
+      "text": "Setting both buffers to negative values pulls both edges inward, growing the qualifying area on both sides and filtering less whipsaw. This may produce significantly more trades.\n\nThe wave's top and bottom edges are not a fixed distance apart — the gap between them changes with every bar. Because of this, there is no specific negative buffer percentage that is safe across all conditions. On tight scopes or shorter timeframes where the wave is already narrow, negative buffers can pull the edges past each other so the bottom edge ends up above the top edge. When this happens, buys and sells can fire inside the area that would otherwise be the no-action zone. Whether you want that is a deliberate configuration choice — this may be useful when employing the Trend Filters (discussed later).",
+      "imageUrls": [],
+      "tokenEstimate": 210
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer--visual-buffer-configurations",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)",
+        "Visual: Buffer Configurations"
+      ],
+      "text": "**Baseline — Buffers 0 / 0**\n\nScope 2, both buffers at zero. The wave sits in its natural position. This is the reference point for the comparisons below. All subsequent buffer screenshots use the same chart, scope, and thresholds — only the buffer values change.\n\n**Sell Buffer +2, Buy Buffer 0 — Top edge OUT**\n\nThe top edge of the wave is pushed out (up) by 2%. Sells now have to clear a higher bar to qualify, while buy behavior is unchanged.\n\n**Sell Buffer 0, Buy Buffer +2 — Bottom edge OUT**\n\nThe bottom edge of the wave is pushed out (down) by 2%. Buys now have to clear a lower bar to qualify, while sell behavior is unchanged.\n\n**Sell Buffer +2, Buy Buffer +2 — Both edges OUT (widen)**\n\nBoth edges are pushed out by 2%. The wave widens and the no-action zone in the middle grows, hiding more of the whipsaw near the wave body. Trades that would have fired close to the wave in the baseline chart are filtered out. This widening can also offset the added trade frequency from running smaller candle thresholds — the thresholds still catch qualifying moves while the wider no-action zone filters out the closest ones.\n\n**Sell Buffer +2, Buy Buffer -2 — Wave shifts UP**\n\nThe top edge is pushed out (up) and the bottom edge is pulled in (up). The entire wave shifts upward relative to price, exposing more area below the wave for buy-qualifying candles and reducing the area above the wave for sell-qualifying candles.\n\n**Sell Buffer -2, Buy Buffer +2 — Wave shifts DOWN**\n\nThe top edge is pulled in (down) and the bottom edge is pushed out (down). The entire wave shifts downward relative to price, exposing more area above the wave for sell-qualifying candles and reducing the area below the wave for buy-qualifying candles.\n\n**Sell Buffer -5, Buy Buffer -5 — Both edges IN (pinch) — CAUTION**\n\nBoth edges are pulled inward by 5%. On this timeframe the wave is narrow enough that the pull has flipped the bands — the bottom edge (only buy below) is now above the top edge (only sell above). Buys and sells are firing inside what would normally be the no-action zone. Narrower waves (typically on shorter timeframes) flip more easily. Unless this is intentional, the buffers are too aggressive for the current setup.",
+      "imageUrls": [],
+      "tokenEstimate": 586
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer--buffers-scope-and-timeframe",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)",
+        "Buffers, Scope, and Timeframe"
+      ],
+      "text": "The effectiveness of buffers depends on how much room the wave gives price to move outside its edges. Buffers shift those edges by a percentage, but whether that shift has a meaningful impact depends on how far price typically moves from the wave to begin with. Both Scope and timeframe contribute.\n\nShorter timeframes and tighter scopes produce waves that track price closely. The gap between the top and bottom edges stays narrow, and price spends most of its time near the wave. Large positive buffers on these configurations can extend past where price typically reaches and prevent any candles from closing outside the wave. Negative buffers can quickly pull the edges past each other, since there was little room between them to begin with.\n\nLonger timeframes and broader scopes produce wider, slower waves. The edges sit further apart, and price routinely lives above or below the wave for extended periods. Larger buffers can be applied while still leaving exposed area where trades can fire, and negative buffers have more room to work before the edges cross.\n\nThe relationship is not strictly linear — Scope and timeframe are independent settings. A longer timeframe with a small scope can still track price closely, and a larger scope on a shorter timeframe can still give the wave more room. The combination matters, not just one or the other.",
+      "imageUrls": [],
+      "tokenEstimate": 357
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--market-wave--sell-buffer-and-buy-buffer--visual-buffers-vs-scope-and-timeframe",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Market Wave",
+        "Sell Buffer (%) and Buy Buffer (%)",
+        "Visual: Buffers vs Scope and Timeframe"
+      ],
+      "text": "**4H, Scope 2, Buffers +10/+10**\n\nA 4-hour chart with a small scope and 10% buffers on both sides. The wave tracks price closely at Scope 2, and 10% buffers push both edges so far out that nearly all candles are engulfed inside the wave. Very few or no trades can fire. The combination of tight scope, shorter timeframe, and large buffers has rendered the strategy effectively inoperable.\n\n**4H, Scope 10, Buffers +10/+10**\n\nSame 4-hour chart, same 10% buffers, but Scope is now 10. The wave is broader and slower to react, but on a 4-hour timeframe it's still narrow in absolute terms. Even at Scope 10, 10% buffers on a 4-hour chart still cover most of the price action. The change in scope shifts the wave's shape compared to Scope 2, but the buffers remain heavily constraining at this timeframe.\n\n**Daily, Scope 0.5, Buffers +10/+10**\n\nA daily chart with Scope 0.5 and 10% buffers. Even on a daily timeframe, the tight scope tracks price closely enough that 10% buffers swallow most of the price movement. Scope and timeframe both contribute to how much room the wave gives price to move outside its edges — the relationship is not linear, and a longer timeframe with a small scope can still track price closely.\n\n**Daily, Scope 10, Buffers +10/+10**\n\nSame daily chart, same 10% buffers, but Scope is now 10. With a macro scope, the wave is broad and slow, and daily candles travel larger percentages bar-to-bar than 4-hour candles. Even with 10% buffers, daily candles still close outside the wave, leaving exposed area above and below where trades can fire.",
+      "imageUrls": [],
+      "tokenEstimate": 412
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--static-market-price-filter",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Static Market Price Filter"
+      ],
+      "text": "An optional additional gate, useful for setting a hard price floor or ceiling that trades must respect regardless of what the wave is doing. When enabled, trades must clear both the normal Market Wave conditions and the static price threshold; the static filter disqualifies any trade that doesn't meet its price condition.\n\n### Only Sell Above (static)\n\nWhen checked, sells only fire above the entered price. Sells below that price are disqualified even if the wave and candle threshold would otherwise allow them.\n\n### Only Buy Below (static)\n\nWhen checked, buys only fire below the entered price. Buys above that price are disqualified even if the wave and candle threshold would otherwise allow them.",
+      "imageUrls": [],
+      "tokenEstimate": 186
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trend-filter",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trend Filter"
+      ],
+      "text": "The Trend Filter gates entries and exits to candles where a trend shows signs of reversing. It is a reversal-confirmation filter that waits for confirmation of a turn before allowing trades, rather than firing on every candle that meets the basic threshold.\n\nBy default (without the Trend Filter), buys trigger on red candles and sells trigger on green candles. Enabling the Trend Filter inverts this — buys now trigger on green candles where a downtrend shows signs of reversing, and sells trigger on red candles where an uptrend shows signs of reversing.\n\nThe Trend Filter is an additional gate on top of the wave and threshold checks, not a replacement. The wave's no-action zone still applies, and the candle thresholds still apply — in fact, the candle thresholds are part of how the filter establishes the trend in the first place. Once a trend is established, the filter arms the trigger and waits for signs of reversal before allowing a trade — not necessarily the first candle in the opposite direction, but a stronger indication that the trend is turning.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/dqIf5SPOF3yWNuqOlgw3",
+        "https://docs.archpublic.com/files/Z3EKQxGskAcBFlmLadTi",
+        "https://docs.archpublic.com/files/EcdezuPNg2UheBzvdr4T"
+      ],
+      "tokenEstimate": 281
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trend-filter--buy-on-change-of-trend",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trend Filter",
+        "Buy on change of trend"
+      ],
+      "text": "When checked, buys are gated to candles where a downtrend shows signs of reversal — the filter waits for price to bottom and recover before allowing a buy. This helps reduce repeated buying into a large, extended leg down — what traders often call catching a falling knife — where each buy adds to a position that keeps moving against it. *Note: with this enabled, buys fire on green candles, not the default red.*",
+      "imageUrls": [],
+      "tokenEstimate": 109
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trend-filter--sell-on-change-of-trend",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trend Filter",
+        "Sell on change of trend"
+      ],
+      "text": "When checked, sells are gated to candles where an uptrend shows signs of reversal — the filter waits for price to top and roll over before allowing a sell. This helps reduce repeated selling into a large, extended leg up where each sell exits more of the position before the move has run its course. *Note: with this enabled, sells fire on red candles, not the default green.*",
+      "imageUrls": [],
+      "tokenEstimate": 99
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--trend-filter--interaction-with-scope-and-buffers",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Trend Filter",
+        "Interaction with Scope and Buffers"
+      ],
+      "text": "When Scope is tight, the wave hugs price closely. The Trend Filter identifies valid reversals, but those reversal candles often close inside the wave body, where the no-action zone disqualifies them. The filter finds the trade; the location check blocks it. The result can be very few trades — or none at all.\n\nThere are three ways to give reversal candles room to qualify:\n\nIncrease Scope so the wave is slower to react. Price can move further from the wave before it catches up, giving reversal candles more room to close outside the no-action zone. This option preserves both edges and both location gates — nothing about the strategy's structure changes, just where the wave sits relative to price. The trade-off is a wave that's less responsive to short-term moves.\n\nPinch the wave with negative buffers, pulling the edges inward so more of the candle's close sits outside the no-action zone. If the buffers are aggressive enough to cross the edges past each other (see the Both edges IN caution in the buffer section), the Only Buy Below edge moves above the Only Sell Above edge. Buys still only fire below the Only Buy Below edge and sells still only fire above the Only Sell Above edge — but because those edges have crossed, the two zones now overlap in the middle, creating an area where reversal candles have room to qualify on either side. This can be a softer alternative to fully disabling Only Sell Above or Only Buy Below.\n\nTurn off Only Sell Above or Only Buy Below to remove the location requirement on that side, letting the filter fire regardless of where the candle sits relative to the wave. This gives up the location gate on that side, so trades fire purely on the reversal signal and the candle threshold.\n\n#### Visual: Trend Filter\n\n**Scope 0.5, Trend Filter ON**&#x20;\n\nTrend Filter is on and Scope is at 0.5. The wave hugs price so closely that reversal candles often land inside the wave body and are blocked by the no-action zone. Very few trades fire. Tight Scope and Trend Filter on together can produce few or no trades.\n\n**Scope 5, Trend Filter ON**&#x20;\n\nScope increased to 5 with Trend Filter still on. The wave is now broad and slow enough that reversal candles have room to deviate from the wave and close outside its edges. The filter's triggers can now fire. Increasing Scope, pinching the buffers, or turning off Only Sell Above / Only Buy Below all give reversal candles room to qualify.\n\n**Scope 5, Trend Filter OFF**&#x20;\n\nSame chart, same Scope 5, but with Trend Filter turned off. Buy markers are much denser than in the previous chart, especially on the large leg down. Without the filter, every threshold-meeting candle in the buy zone fires; with it, only those showing reversal signs do — which reduces repeated buying into extended downtrends. The same effect applies to sells in extended uptrends.",
+      "imageUrls": [],
+      "tokenEstimate": 751
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--start-date-time-and-end-date",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Start Date / Time and End Date"
+      ],
+      "text": "The dates the strategy starts and stops trading.\n\nFor a backtest, these define the backtest window. For a live strategy, Start Date is when the strategy begins running, and End Date is when it stops.\n\nIf Starting Crypto Quantity is greater than 0, the seed trade fires three calendar days prior to the Start Date.",
+      "imageUrls": [],
+      "tokenEstimate": 83
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--backtesting",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Backtesting"
+      ],
+      "text": "### Exit Full Position on Last Historical Bar\n\nBacktesting only. When checked, closes any open position on the final bar of the backtest. Don't enable for live trading.\n\n### Using the Strategy Report\n\nIf you want to use TradingView's built-in Strategy Report when backtesting, the \"Initial capital\" field on the Properties tab needs to match the \"Starting Cash\" figure on the Inputs tab. The Strategy Report pulls from the Properties tab, so a mismatch will produce performance numbers that don't reflect the strategy's actual behavior. This has no impact on live trading.\n\nAlternatively, the Object Tree and Data Window provide useful performance data without having to align the two values.",
+      "imageUrls": [],
+      "tokenEstimate": 183
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--tradingview-caution-banner",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "TradingView Caution Banner"
+      ],
+      "text": "TradingView may display this caution banner when the indicator is loaded, warning about look-ahead bias. This is expected for the Market Wave strategy and is not an issue. The banner can be dismissed.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/IkjnBnkMPRS3Ski5GrDZ"
+      ],
+      "tokenEstimate": 53
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--input-reference-guide",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Input Reference Guide"
+      ],
+      "text": "| Field                                     | Description                                                                                                                                                                                                                                                                                                                                              |\n| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| Starting Cash ($)                         | The cash balance the strategy starts with. Set on the Inputs tab. Do not set initial capital on the Properties tab.                                                                                                                                                                                                                                      |\n| Starting Crypto Quantity                  | The number of crypto units the strategy starts with. Enter unit count only — no notional value, no cost basis. If non-zero, the algo seeds that position via a single trade three calendar days before the strategy start date (the backtest start date, or today's date for a live strategy). The seed trade does not fire a webhook alert.             |\n| Long Threshold (%)                        | Minimum red candle size required to trigger a buy. Negative values represent the candle size (e.g. -2 means a 2% red candle). Smaller magnitudes trigger more frequently.                                                                                                                                                                                |\n| Exit Threshold (%)                        | Minimum green candle size required to trigger a sell. Positive values represent the candle size. Smaller magnitudes trigger more frequently.                                                                                                                                                                                                             |\n| Fixed Trade Size                          | Checked by default. When only Fixed is checked, trades use the dollar amounts in Entry/Exit Trade Size ($). $5 minimum per trade.                                                                                                                                                                                                                        |\n| Entry Trade Size ($)                      | Dollar amount per buy when Fixed Trade Size is the active calculation.                                                                                                                                                                                                                                                                                   |\n| Exit Trade Size ($)                       | Dollar amount per sell when Fixed Trade Size is the active calculation.                                                                                                                                                                                                                                                                                  |\n| Percentage Trade Size                     | When only Percentage is checked, entries size as a % of available cash and exits size as a % of available crypto. When both Fixed and Percentage are checked, the percentage calculation is the default; if the percentage result comes out smaller than the fixed dollar amount, the fixed amount is used as a floor. $5 minimum applies in both modes. |\n| Entry Trade Size (%)                      | Percentage of available cash used per buy when Percentage Trade Size is the active calculation.                                                                                                                                                                                                                                                          |\n| Exit Trade Size (%)                       | Percentage of available crypto used per sell when Percentage Trade Size is the active calculation.                                                                                                                                                                                                                                                       |\n| Scope (0.5–micro, 10–macro)               | Controls the length of the Market Wave in 0.5 increments. 0.5 produces a short, fast-tracking wave (micro). 10 produces a long, slow wave (macro). Linear between the ends.                                                                                                                                                                              |\n| Only Sell Above                           | When on (default), sells are restricted to candles closing above the top edge of the wave. Disables selling inside the wave.                                                                                                                                                                                                                             |\n| Only Buy Below                            | When on (default), buys are restricted to candles closing below the bottom edge of the wave. Disables buying inside the wave.                                                                                                                                                                                                                            |\n| Sell Buffer (%)                           | Adjusts the top edge of the wave. Positive values push the top edge OUT (up, away from center), making it harder for sells to qualify. Negative values pull the top edge IN (down, toward center), making it easier for sells to qualify.                                                                                                                |\n| Buy Buffer (%)                            | Adjusts the bottom edge of the wave. Positive values push the bottom edge OUT (down, away from center), making it harder for buys to qualify. Negative values pull the bottom edge IN (up, toward center), making it easier for buys to qualify.                                                                                                         |\n| Static Filter — Only Sell Above           | Optional manual price floor. When checked, sells only fire above the entered price, regardless of the wave.                                                                                                                                                                                                                                              |\n| Static Filter — Only Buy Below            | Optional manual price ceiling. When checked, buys only fire below the entered price, regardless of the wave.                                                                                                                                                                                                                                             |\n| Trend Filter — Buy on change of trend     | When checked, buys are gated to candles where a downtrend shows signs of reversal — the filter waits for price to bottom and recover before allowing a buy.                                                                                                                                                                                              |\n| Trend Filter — Sell on change of trend    | When checked, sells are gated to candles where an uptrend shows signs of reversal — the filter waits for price to top and roll over before allowing a sell.                                                                                                                                                                                              |\n| Start Date / Time                         | The date the strategy starts trading. For a backtest, this is the backtest start. For a live strategy, this is when the strategy begins operating. The seed trade (if Starting Crypto Quantity > 0) fires three calendar days prior.                                                                                                                     |\n| End Date                                  | The date the strategy stops trading. For a backtest, this is the backtest end. For a live strategy, this can be set to when the strategy should stop operating.                                                                                                                                                                                          |\n| Exit Full Position on Last Historical Bar | Backtesting only. When checked, closes any open position on the final bar of the backtest. Has no effect on a live strategy.                                                                                                                                                                                                                             |",
+      "imageUrls": [],
+      "tokenEstimate": 2482
+    },
+    {
+      "id": "market-wave-algorithm-setup-guide--market-wave-algorithm-setup-guide--disclaimer",
+      "pageSlug": "market-wave-algorithm-setup-guide",
+      "pageTitle": "Market Wave Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/market-wave-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Market Wave Algorithm Setup Guide",
+        "Disclaimer"
+      ],
+      "text": "This document describes the behavior of the Market Wave strategy and the function of its inputs. It does not constitute financial, investment, or trading advice. No outcome is guaranteed. All trading involves risk.\n\n---",
+      "imageUrls": [],
+      "tokenEstimate": 58
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md).\n\nThe Arbitrage Algorithm is deigned to take advantage of the volatility of cryptocurrency. It can be tuned to generate a cash yield, accumulate cryptocurrency, sell off an existing position, or a blend of all three.\n\n{% embed url=\"<https://youtu.be/ExeyHpHLUgA>\" %}",
+      "imageUrls": [],
+      "tokenEstimate": 147
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--funding-options",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Funding Options"
+      ],
+      "text": "The Arbitrage Algorithm can be used whether you have funded your exchange account with cryptocurrency or cash.\n\n### Funding With Cash or Stablecoins\n\nIf you have funded your exchange account with cash or stablecoins, set your start date to point in the near future when you are setting up an instance.\n\n### Funding With Crypto\n\nIf you have funded your exchange account with Bitcoin or another cryptocurrency and do not have cash in your exchange account, set your start date to a point in the past (\\~1 year is generally sufficient). This will allow the algorithm to sell cryptocurrency that has not been acquired through the algorithm.\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 169
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--selecting-the-right-trading-pair",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Selecting the right trading pair"
+      ],
+      "text": "Arch Public Algorithms currently work across the exchanges [outlined in the setup guide](/crypto/arch-public-algorithm-setup-guide-start-here.md#connecting-to-your-exchange-account) and the trading pairs as [outlined in the FAQ section](/crypto/crypto-faq.md#what-crypto-pairs-can-i-trade).\n\nTo apply our algorithms on the right exchange and trading pair, click the current trading pair in the top left-hand corner of the chart.\n\nYou can now search for your desired trading pair. In this example we want to trade BTCUSD.\n\nNow we need to filter for the BTCUSD pair that is trading on our desired exchange. In this example, we want to trade the pair on Coinbase. Click the \"All Sources\" drop down to type in your desired exchange and select it.\n\nClick the BTCUSD pair. You will now see your algorithm applied to the pair on your chart.\n\n<br>\n\n***\n\nOnce you've completed the [Arch Public Algorithm Setup Guide](/crypto/arch-public-algorithm-setup-guide-start-here.md), you can start building an instance of the Arbitrage Algorithm by ensuring that only the Arbitrage Algorithm is visible. Click the the settings icon to begin changing parameters.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/uy0OmhdnXWWRqkZS6o0f",
+        "https://docs.archpublic.com/files/b9NHhyehThcDSgFaPpdC",
+        "https://docs.archpublic.com/files/fTTUjE2UMUxy31GCX0zh",
+        "https://docs.archpublic.com/files/jM2YoNKgs0uYAqGljeM3",
+        "https://docs.archpublic.com/files/UAT3yA6ise9eGYYpdhoV"
+      ],
+      "tokenEstimate": 301
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--quick-start-using-recipes",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Quick Start Using Recipes"
+      ],
+      "text": "Beginning with our pre-built recipes is the fast way to start trading with the Arbitrage Algorithm.\n\n{% content-ref url=\"/pages/kTQy53fWDJZhG7GG6dqK\" %}\n[Arbitrage Algorithm: Recipes](/crypto/arbitrage-algorithm-recipes.md)\n{% endcontent-ref %}\n\nOnce you have copied the recipe settings, you will need to [create an instance](#creating-an-instance) in order to trade live.",
+      "imageUrls": [],
+      "tokenEstimate": 98
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--arbitrage-algorithm-settings",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Arbitrage Algorithm Settings"
+      ],
+      "text": "Clicking the gear icon next to the Arbitrage Algorithm’s name access its settings menu. Here you can make changes to the algorithm and see in real time its effects on your performance.\n\nIn the example settings above, when Bitcoin closes down 2.5%, the algorithm will execute a buy order of $580. When Bitcoin closes up 2.1%, the algorithm will execute a sell order of $260\n\nNote: Changing the timeframe of the chart effects the algorithm’s results.\n\n**Arbitrage Algorithm Settings**\n\n**Inputs**\n\nEnable Long Threshold - Toggle the ability for the algorithm to buy cryptocurrency on/off\n\nLong Threshold (%) - The percent decrease on candle close required to trigger a buy order.\n\nEnable Exit Threshold - Toggle the ability for the algorithm to sell cryptocurrency on/off\n\nExit Threshold (%) - The percent increase on candle close required to trigger sell order.\n\nSell Above Cost Basis - Toggle the algorithm to only execute a sell order when close price is above cost basis.\n\nShow On Chart - Toggle a visual representation of cost basis over time.\n\nAverage Price Mode - Select \"Auto\" for costs basis to be generated by the algorithm. Select \"Manual\" to enter a cost basis manually (Helpful when looking to sell a pre-existing position).\n\nBase Cost (Manual) - When Average Price Mode is \"Manual\", enter your the average position cost.\n\nBase Quantity (Manual) - When Average Price Mode is \"Manual\", enter your the average position quantity.\n\nEntry Trade Size ($) - The dollar value of each buy order.\n\nExit Trade Size ($) - The dollar value of each sell order.\n\nStart Date / Time - The start date of the data backtest.\n\nEnd Date - The end date of the data backtest. A far future date is required when setting up an instance.\n\nNumber of Bars - The number of bars to load into the chart. 10,000 is recommended.\n\nExit Full Position on Last Historical Bar - If there are any open trades during the backtest, checking this box will close out those trades on the last closed bar which allows you to include open trades in performance calculations.\n\nLimit to Available Capital - For backtesting purposes, checking this box will limit the amount of available capital the algorithm can execute buy order from based on the initial capital + realized profits. This feature is useful in helping you determine how much capital you will need in your exchange account to execute your desired parameters.\n\n<mark style=\"background-color:orange;\">IMPORTANT NOTES - Arbitrage Algorithm Setup</mark>\n\n<mark style=\"background-color:orange;\">Exit Full Position on Last Historical Bar - When setting up an instance, DO NOT have this item checked.</mark>\n\n<mark style=\"background-color:orange;\">Limit to Available Capital - When setting up an instance, DO NOT have this item checked.</mark>\n\n**Properties**\n\nInitial Capital - The dollar value of your starting capital (cash position)\n\nPyramiding - Maximum number of successive like-kind entries allowed.&#x20;\n\nCommission - Fees paid for each entry and exit. Fees vary by exchange and are typically based on  tiered fee schedules that are subject to change\n\nAll other settings in the Properties are irrelevant to the Arbitrage Algorithm.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/KW2UNlyBzXsHwZQIFWCW",
+        "https://docs.archpublic.com/files/T0pPe1ckRbwX15fQTs9R"
+      ],
+      "tokenEstimate": 832
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--using-strategy-tester",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Using Strategy Tester"
+      ],
+      "text": "TradingView’s Strategy Tester is a powerful performance analysis tool that adjusts realtime to changes made to your algorithm’s settings. This allows you to intelligently hone in on your preferred settings.\n\nUpon changing settings for any algorithm, you will see the chart and Strategy Tester immediately update to reflect those changes.\n\nThe four main tabs of Strategy Tester are:\n\n* Overview\n* Performance Summary\n* List of Trades\n* Properties\n\n{% embed url=\"<https://youtu.be/7rZ2DZkelVo?feature=shared>\" %}",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/EHWkPNt6GfbKMGLG3Rmq"
+      ],
+      "tokenEstimate": 135
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--creating-an-instance",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Creating an Instance"
+      ],
+      "text": "Once you’ve honed in on settings you like, you will need to direct The Arbitrage Algorithm to execute your trades automatically. To do that, you will create an instance. Instances allow you to stack multiple versions of Arch Public algorithms on your Gemini account, creating a comprehensive, sophisticated, and personalized cryptocurrency strategy designed to meet your goals.\n\nFirst, go to the Webhooks section through your Arch Public Client Portal. You will find the TradingView Alerts section. For instances to successfully trigger orders on your exchange account, you must have already completed the steps outlined in [Connecting To Your Exchange Account](/crypto/arch-public-algorithm-setup-guide-start-here.md#connecting-to-your-exchange-account).\n\nOn the right hand side of TradingView, click Alerts (clock icon) > Create Alerts.\n\nTo create an instance, first change the Condition to the algorithm you would like to set up for this instance. At the top of the window, check to make sure the timeframe is the correct one you want. If it is not, simply change it on the chart and click on alerts again.\n\nGive the alert any name you wish.\n\n#### How to Add the Webhook Message to TradingView\n\n1. In your Arch Public Client Portal, navigate to:\\\n   Webhooks → TradingView Alerts\n2. Click the Copy button to copy the generated webhook message.\n3. In TradingView, open your alert and delete the pre-filled content in the Message section.\n4. Paste the webhook message you copied directly into the TradingView Message field.\n\nMake sure you paste it directly into TradingView (do not paste it into another document first), as this may alter the formatting and result in failed trades.\n\n<mark style=\"background-color:orange;\">IMPORTANT NOTE - Instance Expiration</mark>\n\n<mark style=\"background-color:orange;\">The TradingView Essential membership limits the maximum lifespan of an alert to 60 days. This means that your instance will expire after 60 days and you will need to restart it. Upgrading to the TradingView Premium membership enables you to have open-ended alerts which means your instance will function in perpetuity.</mark>\n\nNow click the notifications tab. You will need to check Webhook URL and copy/paste the URL found in your Arch Public Account. All other checkboxes are optional.\n\n<mark style=\"background-color:green;\">Click Create and your instance will be live.</mark>\n\nYou will see your instance appear in the Alerts section on TradingView.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/C0Qp08xbTZyk6gAvtVsH",
+        "https://docs.archpublic.com/files/fxIkC3UjNmcONKS8tqJc",
+        "https://docs.archpublic.com/files/ac0j09DdVV2RP8EJKbDa",
+        "https://docs.archpublic.com/files/P1sYfHMkpTRsfvNm1Htc",
+        "https://docs.archpublic.com/files/iI8E2CqX6Wz6XK0bufbo",
+        "https://docs.archpublic.com/files/qnozERrNVoDbDQ1v4ItM",
+        "https://docs.archpublic.com/files/QSDtX8LXsiZ0CBqwJIwF",
+        "https://docs.archpublic.com/files/gssRfpWx8BlqQs9lsAoD",
+        "https://docs.archpublic.com/files/lDj73Wpxow5K7u9dblIR"
+      ],
+      "tokenEstimate": 648
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--monitoring-your-algorithms",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Monitoring Your Algorithms"
+      ],
+      "text": "{% embed url=\"<https://youtu.be/kE8mz6RSQjY>\" %}",
+      "imageUrls": [],
+      "tokenEstimate": 13
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--verifying-successful-order-execution",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Verifying Successful Order Execution"
+      ],
+      "text": "When an instance executes an order you may receive an alert depend on the notification settings you checked during the instance setup above. To verify that your order successfully executed on your exchange account, go to Portfolio and scroll down to find Transaction history. A successfully executed order will appear in your Transaction History.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/JlluqeE5RJyriIoMhWEX",
+        "https://docs.archpublic.com/files/0br2ZLef4GeuBmJaUgh5"
+      ],
+      "tokenEstimate": 92
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--modifying-an-instance",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Modifying an Instance"
+      ],
+      "text": "If you would like to cease order execution of any instance, simply find the instance in your TradingView Alerts tab and click Pause. You are also able to delete the instance from this section.\n\nClicking the gear icon of an instance will allow you to edit the webhook and notification parameters of the instance.\n\nIf you wish to change the trading parameters of the instance, for example, you would like to increase the dollar amount traded, you will need to delete the instance instead. After deletion, make changes to the algorithm’s trading settings and create a new instance.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/ksClsSivutMfOhgKwpMV",
+        "https://docs.archpublic.com/files/7H78LfN3xXGM5HmnqwbT"
+      ],
+      "tokenEstimate": 153
+    },
+    {
+      "id": "arbitrage-algorithm-setup-guide--arbitrage-algorithm-setup-guide--keeping-your-instance-updated",
+      "pageSlug": "arbitrage-algorithm-setup-guide",
+      "pageTitle": "Arbitrage Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Arbitrage Algorithm Setup Guide",
+        "Keeping Your Instance Updated"
+      ],
+      "text": "When we release a new version of the algorithms, you will see a purple icon next to the aglorithm's name. Click the icon to update.\n\nYou will need to update any live instances by creating a new instance using the updated algorithm with the same settings from the previous instance.\n\n---",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/2zE2S75R9AkBw4B6DHj4"
+      ],
+      "tokenEstimate": 76
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md).\n\nThe Intelligence Algorithm is designed to accumulate cryptocurrency at the most opportune prices and excels at building a strong foundation in any cryptocurrency.\n\nOnce you've completed the [Bitcoin Algorithm Setup Guide](/crypto/arch-public-algorithm-setup-guide-start-here.md), you can start building an instance of the Intelligence Algorithm by ensuring that only the Intelligence Algorithm is visible. Click the the settings icon to begin changing parameters.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/7tenN31LkHKC8GOjLEf5"
+      ],
+      "tokenEstimate": 200
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--funding-options",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Funding Options"
+      ],
+      "text": "The Intelligence Algorithm requires cash or stablecoins in your Gemini account. If you need to sell off a cryptocurrency position, you can use the Arbitrage Algorithm to do so.",
+      "imageUrls": [],
+      "tokenEstimate": 47
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--quick-start-using-recipes",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Quick Start Using Recipes"
+      ],
+      "text": "Beginning with our pre-built recipes is the fast way to start trading with the Intelligence Algorithm.\n\n{% content-ref url=\"/pages/lnMVV2GRouGNWUnBAcCW\" %}\n[Intelligence Algorithm: Recipes](/crypto/intelligence-algorithm-recipes.md)\n{% endcontent-ref %}\n\nOnce you have copied the recipe settings, you will need to [create an instance](#creating-an-instance) in order to trade live.",
+      "imageUrls": [],
+      "tokenEstimate": 101
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--intelligence-algorithm-settings",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Intelligence Algorithm Settings"
+      ],
+      "text": "Clicking the gear icon next to the Intelligence Algorithm’s name access its settings menu. Here you can make changes to the algorithm and see in real time its effects on your performance.\n\nThe Intelligence Algorithm is designed to accumulate cryptocurrency at opportune times, typically when the market is forming troughs and consolidating. By tuning the Intelligence factor, you are able to tune for specific buying behavior that fits the needs of your instance.\n\n**Intelligence Algorithm Settings**\n\n**Inputs**\n\nRepeat Purchase Method - The buying window allowed for the algorithm to execute orders. Note, this is not the same as changing timeframes.\n\nEvery Bar Parameters - Only applies when Repeat Purchase Method is set to “Every Bar”. Generally used when setting timeframe to intraday periods.\n\nStart Time - The start time when the algorithm will be enabled to buy.\n\nEnd Time - The end time when the algorithm will be enabled to buy.\n\nDaily Parameters - Only applies when Repeat Purchase Method is set to “Daily”.\n\nTime of Day - The time when the algorithm will buy if conditions for order execution are met.\n\nWeekly Parameters - Only applies when Repeat Purchase Method is set to “Weekly”.\n\nTime of Day - The time when the algorithm will buy if conditions for order execution are met.\n\nDay of Week - The day when the algorithm will buy if conditions for order execution are met.\n\nMonthly Parameters - Only applies when Repeat Purchase Method is set to “Monthly”.\n\nTime of Day - The time when the algorithm will buy if conditions for order execution are met.\n\nDay of Month - The day when the algorithm will buy if conditions for order execution are met.\n\nStart Date - The start date of the algorithm’s backtest\n\nEnd Date - The end date of the algorithm’s backtest. A far future date is recommended.\n\nNumber of Bars - The number of bars to load into the chart.\n\nExit Full Position on Last Historical Bar - If there are any open trades during the backtest, checking this box will close out those trades on the last closed bar which allows you to include open trades in performance calculations.\n\nActivate Intelligence - When checked, the intelligence algorithm is active. The Intelligence factor (0 - 1+) adjusts the sensitivity of the Intelligence Algorithm. Higher numbers increases the frequency of buy orders, lower numbers decrease the frequency of buy orders.\n\nLimit to Available Capital - For backtesting purpose, checking this box will limit the amount of available capital the algorithm can execute buy order from based on the initial capital + realized profits. This feature is useful in helping you determine how much capital you will need in your Gemini account to execute your desired parameters.\n\n<mark style=\"background-color:orange;\">IMPORTANT NOTES - Intelligence Algorithm Setup</mark>\n\n<mark style=\"background-color:orange;\">Exit Full Position on Las Historical Bar - When setting up an instance, DO NOT have this item checked.</mark>\n\n**Properties**\n\nInitial Capital - The dollar value of your starting capital (cash position).\n\nOrder Size - The value of each executed buy order.\n\nPyramiding - Maximum number of successive entries allowed.\n\nCommission - Fees paid for each entry and exit. Fees vary by exchange and are typically based on     &#x20;\r\\\n&#x20;                        tiered fee schedules that are subject to change.\n\nAll other settings in the Properties are irrelevant to the Intelligence Algorithm.\n\n<mark style=\"background-color:orange;\">IMPORTANT NOTES - Intelligence Algorithm Setup</mark>\n\n<mark style=\"background-color:orange;\">Order Size - Unlike the Arbitrage Algorithm, you will need to set this parameter for the algorithm to buy the desired amount of cryptocurrency.</mark>",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/V19l1br56DJiMICbg37s",
+        "https://docs.archpublic.com/files/1rzGF5kwKmsQe0eeKwOc"
+      ],
+      "tokenEstimate": 980
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--using-strategy-tester",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Using Strategy Tester"
+      ],
+      "text": "TradingView’s Strategy Tester is a powerful performance analysis tool that adjusts realtime to changes made to your algorithm’s settings. This allows you to intelligently hone in on your preferred settings.\n\nUpon changing settings for any algorithm, you will see the chart and Strategy Tester immediately update to reflect those changes.\n\nThe four main tabs of Strategy Tester are:\n\n* Overview\n* Performance Summary\n* List of Trades\n* Properties\n\n{% embed url=\"<https://youtu.be/7rZ2DZkelVo?feature=shared>\" %}",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/EHWkPNt6GfbKMGLG3Rmq"
+      ],
+      "tokenEstimate": 135
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--creating-an-instance",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Creating an Instance"
+      ],
+      "text": "Once you’ve honed in on settings you like, you will need to direct The Bitcoin Algorithm to execute your trades automatically. To do that, you will create an instance. Instances allow you to stack multiple versions of Arch Public algorithms on your Gemini account, creating a comprehensive, sophisticated, and personalized cryptocurrency strategy designed to meet your goals.\n\nFirst, go to the Webhooks section through your Arch Public Client Portal. You will find the TradingView Alerts section. For instances to successfully trigger orders on your Gemini account, you must have already completed the steps outlined in [Connecting To Gemini](https://www.notion.so/Connecting-To-Gemini-17cd0b3ffcd1805f9962f7a0848965a7?pvs=21).\n\nOn the right hand side of TradingView, click Alerts (clock icon) > Create Alerts.\n\nTo create an instance, first change the Condition to the algorithm you would like to set up for this instance. At the top of the window, check to make sure the timeframe is the correct one you want. If it is not, simply change it on the chart and click on alerts again.\n\nGive the alert any name you wish.\n\nIn the TradingView message section, you will need to copy/paste the Webhook message generated in your Arch Public account.\n\n<mark style=\"background-color:orange;\">IMPORTANT NOTE - Instance Expiration</mark>\n\n<mark style=\"background-color:orange;\">The TradingView Essential membership limits the maximum lifespan of an alert to 60 days. This means that your instance will expire after 60 days and you will need to restart it. Upgrading to the TradingView Premium membership enables you to have open-ended alerts which means your instance will function in perpetuity.</mark>\n\nNow click the notifications tab. You will need to check Webhook URL and copy/paste the URL found in your Arch Public Account. All other checkboxes are optional.\n\n<mark style=\"background-color:green;\">Click Create and your instance will be live.</mark>\n\nYou will see your instance appear in the Alerts section on TradingView.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/C0Qp08xbTZyk6gAvtVsH",
+        "https://docs.archpublic.com/files/fxIkC3UjNmcONKS8tqJc",
+        "https://docs.archpublic.com/files/ac0j09DdVV2RP8EJKbDa",
+        "https://docs.archpublic.com/files/P1sYfHMkpTRsfvNm1Htc",
+        "https://docs.archpublic.com/files/iI8E2CqX6Wz6XK0bufbo",
+        "https://docs.archpublic.com/files/qnozERrNVoDbDQ1v4ItM",
+        "https://docs.archpublic.com/files/QSDtX8LXsiZ0CBqwJIwF",
+        "https://docs.archpublic.com/files/gssRfpWx8BlqQs9lsAoD",
+        "https://docs.archpublic.com/files/lDj73Wpxow5K7u9dblIR"
+      ],
+      "tokenEstimate": 531
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--monitoring-your-algorithms",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Monitoring Your Algorithms"
+      ],
+      "text": "{% embed url=\"<https://youtu.be/kE8mz6RSQjY>\" %}",
+      "imageUrls": [],
+      "tokenEstimate": 13
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--verifying-successful-order-execution",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Verifying Successful Order Execution"
+      ],
+      "text": "When an instance executes an order you may receive an alert depend on the notification settings you checked during the instance setup above. To verify that your order successfully executed on your Gemini account, go to Portfolio and scroll down to find Transaction history. A successfully executed order will appear in your Transaction History.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/JlluqeE5RJyriIoMhWEX",
+        "https://docs.archpublic.com/files/0br2ZLef4GeuBmJaUgh5"
+      ],
+      "tokenEstimate": 91
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--modifying-an-instance",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Modifying an Instance"
+      ],
+      "text": "If you would like to cease order execution of any instance, simply find the instance in your TradingView Alerts tab and click Pause. You are also able to delete the instance from this section.\n\nClicking the gear icon of an instance will allow you to edit the webhook and notification parameters of the instance.\n\nIf you wish to change the trading parameters of the instance, for example, you would like to increase the dollar amount traded, you will need to delete the instance instead. After deletion, make changes to the algorithm’s trading settings and create a new instance.",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/ksClsSivutMfOhgKwpMV",
+        "https://docs.archpublic.com/files/7H78LfN3xXGM5HmnqwbT"
+      ],
+      "tokenEstimate": 153
+    },
+    {
+      "id": "intelligence-algorithm-setup-guide--intelligence-algorithm-setup-guide--keeping-your-instance-updated",
+      "pageSlug": "intelligence-algorithm-setup-guide",
+      "pageTitle": "Intelligence Algorithm Setup Guide",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-setup-guide.md",
+      "sectionPath": [
+        "Intelligence Algorithm Setup Guide",
+        "Keeping Your Instance Updated"
+      ],
+      "text": "When we release a new version of the algorithms, you will see a purple icon next to the aglorithm's name. Click the icon to update.\n\nYou will need to update any live instances by creating a new instance using the updated algorithm with the same settings from the previous instance.\n\n---",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/2zE2S75R9AkBw4B6DHj4"
+      ],
+      "tokenEstimate": 76
+    },
+    {
+      "id": "arbitrage-algorithm-recipes--arbitrage-algorithm-recipes",
+      "pageSlug": "arbitrage-algorithm-recipes",
+      "pageTitle": "Arbitrage Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md",
+      "sectionPath": [
+        "Arbitrage Algorithm: Recipes"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md).\n\n{% hint style=\"warning\" %}\nTo explore all Arch Public Recipes, visit <https://recipes.archpublic.com/>.\\\n\\\nThis page will be depreciated January 1, 2026.\n\nLearn how to use Recipe Lab in under 5 minutes: <https://youtu.be/f_HjWioMlF8>\n{% endhint %}\n\nThis section provides actionable case studies with *tested parameter sets* that clients can replicate in TradingView. Each example balances cash flow generation and Crypto accumulation based on specific objectives.\n\n{% embed url=\"<https://youtu.be/ExeyHpHLUgA>\" %}\n\n***\n\n<mark style=\"background-color:orange;\">Note: When you find a recipe you want to use, but would like to change the amount of money you are buying and selling without changing it's performance, you will need to take note of the proportion between Entry Trade Size and Exit Trade Size.</mark>&#x20;\n\n<mark style=\"background-color:orange;\">Using STH Recipe No. 1 as an example, the proportion between the Exit and Entry size is 81.25%. This means the Exit Trade is 81.25% smaller than the Entry Trade. If you wanted the Entry trade to be $1,000, you can calculate the Exit: $1,000\\*0.8125 = $812.50</mark>\n\n<mark style=\"background-color:orange;\">We have included an Exit to Entry Proportion under each recipe's Parameters section to make this easy.</mark>\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 412
+    },
+    {
+      "id": "arbitrage-algorithm-recipes--arbitrage-algorithm-recipes--bitcoin-recipes--short-time-horizon-sth-recipes",
+      "pageSlug": "arbitrage-algorithm-recipes",
+      "pageTitle": "Arbitrage Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md",
+      "sectionPath": [
+        "Arbitrage Algorithm: Recipes",
+        "Bitcoin Recipes",
+        "Short Time Horizon (STH) Recipes"
+      ],
+      "text": "Short time horizon recipes are backtested over the previous 6 months, optimized for current market conditions. These recipes are tailored to deploy and trade meaningful amounts of capital across shorter time horizons.\n\n#### **\\[BTC] STH Recipe No. 1: Daily Arbitrage**\n\n**Goal**: Accumulate a Bitcoin position at a low cost basis while taking advantage of volatility to book cash profits.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $8,000 when price drops **3%**\n* **Exit Trade**: Sell $6,500 when price rises **3.5%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion: 81.25%**\n* **Time Frame**: Daily\n* **Backtesting Period**: January, 2025 - June, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$2,742**\n* Bitcoin Accumulated: $96,170 (0.92 BTC @ $104,000)\n* Net Profit: **$20,455** (87% from BTC growth, 13% cash)\n* CAGR: **45.29%**\n\n&#x20;\n\n***",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/S860T4ybJNJ0Lg6n8v3t",
+        "https://docs.archpublic.com/files/CarfOHb8Lgc59X5YLoyE",
+        "https://docs.archpublic.com/files/zHGd2QfIzUC3cNq8eHgJ",
+        "https://docs.archpublic.com/files/lB01p4A0pbjyKXzvbUiZ",
+        "https://docs.archpublic.com/files/oHrQCGeJw2SlMiNfh2dn",
+        "https://docs.archpublic.com/files/RR7B2R4xarwaXirgtfSM",
+        "https://docs.archpublic.com/files/HbFeo6C2sTQxXUab4T9v",
+        "https://docs.archpublic.com/files/UuGXgov5DXAAeIawqTED",
+        "https://docs.archpublic.com/files/WKrnK6SyWjydIG3vHBNr",
+        "https://docs.archpublic.com/files/gAGQQC89y3suLo4CPEdD",
+        "https://docs.archpublic.com/files/VLViJt0Lz2QwgUZVwKdj",
+        "https://docs.archpublic.com/files/fdvd2iBy6gxSg9scHyoE",
+        "https://docs.archpublic.com/files/5J0WsCmLFg9xc2GIAWiO",
+        "https://docs.archpublic.com/files/KjQ21TRY9o8QMEFU0gZ3",
+        "https://docs.archpublic.com/files/qw40KMizJGQYBN4wfsTF",
+        "https://docs.archpublic.com/files/lXRehC0efhNfFAaiu7hd",
+        "https://docs.archpublic.com/files/2ngGBwbSLez5F0Gj33DD",
+        "https://docs.archpublic.com/files/1reCy7DtLj7IJfOcwL4N",
+        "https://docs.archpublic.com/files/TyYIgm3ssYiumrvq0GXM",
+        "https://docs.archpublic.com/files/wqPhRbBfr2Fs6rAmJGeV"
+      ],
+      "tokenEstimate": 234
+    },
+    {
+      "id": "arbitrage-algorithm-recipes--arbitrage-algorithm-recipes--bitcoin-recipes--long-time-horizon-lth-recipes",
+      "pageSlug": "arbitrage-algorithm-recipes",
+      "pageTitle": "Arbitrage Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md",
+      "sectionPath": [
+        "Arbitrage Algorithm: Recipes",
+        "Bitcoin Recipes",
+        "Long Time Horizon (LTH) Recipes"
+      ],
+      "text": "Long Time Horizon recipes are backtested over many years, optimized to endure multiple market cycles. These recipes are tailored to deploy capital over a long time without adding additional capital. We recognize this isn't completely realistic as the majority of clients add capital throughout a multiple year time horizon. Therefore, the statistics for each recipe represent lower performance than what will realistically occur.&#x20;\n\nNever the less, the recipes below offer substantial returns. Ensure that you are sizing entry and exit trade amounts to fit your account size. \\\n\\\nFor example, if you deploy LTH Recipe No. 1 with a $100,000 account, you will want to multiple the entry and exit trade size by 2x in order to match the return results.\n\n#### **\\[BTC] LTH Recipe No. 1: 6 hour Arbitrage**\n\n**Goal**: Maximize short-term cash profits in volatile intra-day markets while building a core BTC position.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $580 when price drops **2.5%**\n* **Exit Trade**: Sell $260 when price rises **2.1%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion: 44.8%**\n* **Time Frame**: 6 Hour\n* **Backtesting Period**: January, 2019– April, 2025\n\n**Results**:\n\n* Initial Capital: $50,000\n* Cash Profit: **$98,913**\n* Bitcoin Accumulated: $520,776 (6.53 BTC @ $79,588)\n* Net Profit: **$471,568** (79% from BTC growth, 21% cash)\n* CAGR: **47.52%**\n* **Best For**: Clients comfortable with moderate activity who would like to generate a moderate cash position while growing their BTC core position.\n\n***\n\n#### &#x20;**\\[BTC] LTH Recipe No. 2: Daily Arbitrage**\n\n**Goal**: Maximize short-term cash profits in volatile markets while building a core BTC position.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $580 when price drops **2.5%**\n* **Exit Trade**: Sell $260 when price rises **2.1%**\n* **Exit to Entry Proportion: 44.8%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: January, 2019– January, 2025\n\n**Results**:\n\n* Cash Profit: **$68,440**\n* Bitcoin Accumulated: $246,189 (2.3 BTC @ $107,000)\n* Net Profit: **$314,629** (78% from BTC growth, 22% cash)\n* Annualized Return: **26.7%**\n* **Best For**: Clients comfortable with moderate activity who would like to generate a moderate cash position while growing their BTC core position.\n\n***\n\n#### &#x20;**\\[BTC] LTH Recipe No. 3: Cycle Arbitrage**\n\n**Goal**: Maximize BTC & Cash profits over entire market cycles, continuously\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $50,000 when price drops **20%**\n* **Exit Trade**: Sell $25,000 when price rises **16%**\n* **Exit to Entry Proportion:  50%**\n* **Time Frame**: 1 Week\n* **Backtesting Period**: January, 2019– January, 2025\n\n**Results**:\n\n* Cash Profit: **$191,840**\n* Bitcoin Accumulated: $991,553 (9.8 BTC @ $101,000)\n* Net Profit: **$1,183,393** (84% from BTC growth, 16% cash)\n* Annualized Return: **53%**\n* **Best For**: Clients seeking to deploy large amounts of capital at cycle bottoms and take profits during and near the end of cycle tops.\n\n***\n\n#### **\\[BTC] LTH Recipe No. 4: Bitcoin Yield**\n\n**Goal**: Maximize BTC yield while accumulating BTC\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $1,200 when price drops **2.5%**\n* **Exit Trade**: Sell $1,500 when price rises **2.1%**\n* **Exit to Entry Proportion:  125%**\n* **Time Frame**: 6 Hour\n* **Backtesting Period**: October, 2021– April, 2025\n\n**Results**:\n\n* Cash Profit: **$102,454**\n* Bitcoin Accumulated: $129,200 (1.36 BTC @ $95,000)\n* Net Profit: **$144,372** (29% from BTC growth, 71% cash)\n* Annualized Return: **25.77%**\n* Realized Cash Yield: **20.32%**\n* **Best For**: Clients seeking significant cash yield while accumulating BTC over the long term.\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 973
+    },
+    {
+      "id": "arbitrage-algorithm-recipes--arbitrage-algorithm-recipes--solana-recipes",
+      "pageSlug": "arbitrage-algorithm-recipes",
+      "pageTitle": "Arbitrage Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md",
+      "sectionPath": [
+        "Arbitrage Algorithm: Recipes",
+        "Solana Recipes"
+      ],
+      "text": "### Short Time Horizon (STH) Recipes\n\nShort time horizon recipes are backtested over the previous 6 months, optimized for current market conditions. These recipes are tailored to deploy and trade meaningful amounts of capital across shorter time horizons.\n\n#### **\\[SOL] STH Recipe No. 1: High Cash Flow**\n\n**Goal**: Maximize short-term cash profits in volatile markets while building a small SOL position.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $14,000 when price drops &#x36;**%**\n* **Exit Trade**: Sell $11,500 when price rises &#x35;**%**\n* **Exit to Entry Proportion: 82.14%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: January, 2025– June, 2025\n\n**Results**:\n\n* Cash Profit: **$19,115**\n* Solana Accumulated: $33,317 (227 SOL @ $146)\n* Net Profit: **$23,800** (20% from SOL growth, 80% cash)\n* CAGR: **53.35%**\n\n***\n\n### Long Time Horizon (LTH) Recipes\n\nLong Time Horizon recipes are backtested over many years, optimized to endure multiple market cycles. These recipes are tailored to deploy capital over a long time without adding additional capital. We recognize this isn't completely realistic as the majority of clients add capital throughout a multiple year time horizon. Therefore, the statistics for each recipe represent lower performance than what will realistically occur.&#x20;\n\nNever the less, the recipes below offer substantial returns. Ensure that you are sizing entry and exit trade amounts to fit your account size. \\\n\\\nFor example, if you deploy LTH Recipe No. 1 with a $200,000 account, you will want to multiple the entry and exit trade size by 2x in order to match the return results.\n\n#### **\\[SOL] LTH Recipe No. 1: High Cash Flow**\n\n**Goal**: Maximize short-term cash profits in volatile markets while building a small SOL position.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $2900 when price drops **5%**\n* **Exit Trade**: Sell $1300 when price rises **4.2%**\n* **Exit to Entry Proportion: 44.8%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: January, 2023– March, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$81,366**\n* Solana Accumulated: $3,975 (34 SOL @ $117)\n* Net Profit: **$85,341** (5% from SOL growth, 95% cash)\n* Annualized Return: **31.8%**\n* **Best For**: Clients comfortable with moderate activity who would like to generate a large cash position while growing their SOL position incrementally.\n\n***",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/tAIeYEf1I2tXTGRo8t0Z",
+        "https://docs.archpublic.com/files/HJRIJe8HMLCUbRFaJGex",
+        "https://docs.archpublic.com/files/ydz6qvpsEmof2Xk4fGDK",
+        "https://docs.archpublic.com/files/vVaCXDisqezlSoPDgHhX",
+        "https://docs.archpublic.com/files/Sg18AjONy0O38nz6O0yr",
+        "https://docs.archpublic.com/files/FtUv15O3ajoqn8gkKdkI",
+        "https://docs.archpublic.com/files/oqoWq6uB3yj34NmOgnPQ",
+        "https://docs.archpublic.com/files/kWnNYtCs3RduiW2Gp6ho"
+      ],
+      "tokenEstimate": 629
+    },
+    {
+      "id": "arbitrage-algorithm-recipes--arbitrage-algorithm-recipes--xrp-recipes",
+      "pageSlug": "arbitrage-algorithm-recipes",
+      "pageTitle": "Arbitrage Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md",
+      "sectionPath": [
+        "Arbitrage Algorithm: Recipes",
+        "XRP Recipes"
+      ],
+      "text": "### Short Time Horizon (STH) Recipes\n\nShort time horizon recipes are backtested over the previous 6 months, optimized for current market conditions. These recipes are tailored to deploy and trade meaningful amounts of capital across shorter time horizons.\n\n#### **\\[ XRP] STH Recipe No. 1: Daily Cash Arbitrage**\n\n**Goal**: Maximize short-term cash profits using XRP volatility.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $15,000 when price drops **3.7%**\n* **Exit Trade**: Sell $16,000 when price rises **1.6%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  106.6%**\n* **Time Frame**: Daily\n* **Backtesting Period**: January, 2025– June, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$26,593**\n* XRP Accumulated: $0\n* Net Profit: **$26,593** (100% cash)\n* CAGR: **60.26%**\n\n#### **\\[ XRP] STH Recipe No. 2: 6 Hour Cash Arbitrage**\n\n**Goal**: Maximize short-term cash profits using XRP volatility.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $5,000 when price drops **2.5%**\n* **Exit Trade**: Sell $10,000 when price rises **2.2%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  200%**\n* **Time Frame**: 6 Hour\n* **Backtesting Period**: January, 2025– July, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$17,785**\n* XRP Accumulated: $34,474 (14,490 XRP @ $2.37/XRP)\n* Net Profit: **$21,378** (83% cash)\n* CAGR: **47.34%**\n\n***\n\n### Long Time Horizon (LTH) Recipes\n\nLong Time Horizon recipes are backtested over many years, optimized to endure multiple market cycles. These recipes are tailored to deploy capital over a long time without adding additional capital. We recognize this isn't completely realistic as the majority of clients add capital throughout a multiple year time horizon. Therefore, the statistics for each recipe represent lower performance than what will realistically occur.&#x20;\n\nNever the less, the recipes below offer substantial returns. Ensure that you are sizing entry and exit trade amounts to fit your account size. \\\n\\\nFor example, if you deploy LTH Recipe No. 1 with a $200,000 account, you will want to multiple the entry and exit trade size by 2x in order to match the return results.\n\n#### **\\[ XRP] LTH Recipe No. 1: 6 hour Arbitrage**\n\n**Goal**: Maximize short-term cash profits in volatile intra-day markets while building a core XRP position.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $18,000 when price drops **3.1%**\n* **Exit Trade**: Sell $16,000 when price rises **1.6%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  88.8%**\n* **Time Frame**: 6 Hour\n* **Backtesting Period**: December, 2024– April, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$40,369**\n* XRP Accumulated: $76,752 (36,196 XRP @ $2.12)\n* Net Profit: **$49,027** (18% from XRP growth, 82% cash)\n* CAGR: **122%**\n* **Best For**: Clients comfortable with moderate activity who would like to generate a substantial cash position while growing their XRP core position.\n\n***\n\n#### **\\[XRP] LTH Recipe No. 2: 1 hour Cash Yield**\n\n**Goal**: Maximize cash profits while maintaining little to no XRP long term.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $7,000 when price drops **2.5%**\n* **Exit Trade**: Sell $14,583 when price rises 2.&#x31;**%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  208%**\n* **Time Frame**: 1 Hour\n* **Backtesting Period**: December, 2024– April, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$32,272**\n* XRP Accumulated: $0\n* Net Profit: **$32,272** (100% cash)\n* CAGR: **88%**\n* **Best For**: Clients that want to take advantage of XRP volatility to generate a cash yield while mitigating long term XRP allocation risk.\n\n***",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/IkOcEyyauuCEBW0WQyVK",
+        "https://docs.archpublic.com/files/fGYWWK7ZoQafSaxKQfU3",
+        "https://docs.archpublic.com/files/18D5djAYpZP9SrgfcBF7",
+        "https://docs.archpublic.com/files/EsrpeBUpvvJLhfMqij9O",
+        "https://docs.archpublic.com/files/xdDcVAs4Bq17aNvvnp25",
+        "https://docs.archpublic.com/files/EFcujotHLn81ZgkRpxl0",
+        "https://docs.archpublic.com/files/zVigwFCmMjHbYo5s42t4",
+        "https://docs.archpublic.com/files/ZDKSNUzZLKbv50Pvep1k",
+        "https://docs.archpublic.com/files/mQTMDjyNhnLkLizqcWxv",
+        "https://docs.archpublic.com/files/MTQLKHcAaCVA8tzdn8eo",
+        "https://docs.archpublic.com/files/Z72XN9c6cF5yIq6mMxHG",
+        "https://docs.archpublic.com/files/TPNK56rMridVBykCWFMF",
+        "https://docs.archpublic.com/files/d2wxOKUbd2nvbaOhrfx5",
+        "https://docs.archpublic.com/files/yzcxr9hyH0MIPLjHkJxR",
+        "https://docs.archpublic.com/files/lGwrMwLIj9SRGmzHnCJC",
+        "https://docs.archpublic.com/files/rYbhIOpWvn3lC4dAgtVQ"
+      ],
+      "tokenEstimate": 982
+    },
+    {
+      "id": "arbitrage-algorithm-recipes--arbitrage-algorithm-recipes--ethereum-recipes",
+      "pageSlug": "arbitrage-algorithm-recipes",
+      "pageTitle": "Arbitrage Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md",
+      "sectionPath": [
+        "Arbitrage Algorithm: Recipes",
+        "Ethereum Recipes"
+      ],
+      "text": "### Short Time Horizon (STH) Recipes\n\nShort time horizon recipes are backtested over the previous 6 months, optimized for current market conditions. These recipes are tailored to deploy and trade meaningful amounts of capital across shorter time horizons.\n\n#### **\\[ETH] STH Recipe No. 1: Daily Cash Arbitrage**\n\n**Goal**: Generate strong cash returns leveraging Ethereum volatility.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $12,000 when price drops &#x37;**%**\n* **Exit Trade**: Sell $24,000 when price rises &#x36;**%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  200%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: January, 2025– June, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$21,789**\n* ETH Accumulated: 0 ETH&#x20;\n* Net Profit: **$21,789** (100% Cash Yield)\n* CAGR: 48.3&#x33;**%**\n\n#### **\\[ETH] STH Recipe No. 2: Daily Accumulation Arbitrage**\n\n**Goal**: Establish a sizable Ethereum position while minimizing drawdown.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $12,000 when price drops &#x37;**%**\n* **Exit Trade**: Sell $8,000 when price rises &#x36;**%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  66.6%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: January, 2025– June, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: -**$656**\n* ETH Accumulated: $82,147ETH (32.5 ETH @ $2,500)\n* Net Profit: **$22,203** (100% from ETH growth)\n* CAGR: 49.&#x32;**%**\n\n***\n\n### Long Time Horizon (LTH) Recipes\n\nLong Time Horizon recipes are backtested over many years, optimized to endure multiple market cycles. These recipes are tailored to deploy capital over a long time without adding additional capital. We recognize this isn't completely realistic as the majority of clients add capital throughout a multiple year time horizon. Therefore, the statistics for each recipe represent lower performance than what will realistically occur.&#x20;\n\nNever the less, the recipes below offer substantial returns. Ensure that you are sizing entry and exit trade amounts to fit your account size. \\\n\\\nFor example, if you deploy LTH Recipe No. 1 with a $200,000 account, you will want to multiple the entry and exit trade size by 2x in order to match the return results.\n\n#### **\\[ETH] LTH Recipe No. 1: Daily Arbitrage**\n\n**Goal**: A balanced strategy for cash yield and Ethereum accumulation.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $8,000 when price drops **4%**\n* **Exit Trade**: Sell $12,000 when price rises **3.8%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  150%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: October, 2023– April, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$29,414**\n* ETH Accumulated: 39.9 ETH ($101,230 @ $2,529/ETH)\n* Net Profit: **$56,718** (52% Cash Yield, 48% Accumulation)\n* CAGR: 29.7&#x38;**%**\n* **Best For**: Clients that want generate yield while accumulating Ethereum.\n\n***",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/rgVP3PGd9Lh3YGnNqj1A",
+        "https://docs.archpublic.com/files/uX2STRmrbmuX9NfhFGKI",
+        "https://docs.archpublic.com/files/JcbGpOJbucvhlNrWmxRy",
+        "https://docs.archpublic.com/files/TBKrnhh2M0XBV5cC6hXa",
+        "https://docs.archpublic.com/files/2ALjPfNsiONDYEr1OaNP",
+        "https://docs.archpublic.com/files/LfwBLt5WLAGaq9R5WKqA",
+        "https://docs.archpublic.com/files/hWhUFr2dUxWgW2SltmJV",
+        "https://docs.archpublic.com/files/lhQ4IgddbpZdFqJQ98h2",
+        "https://docs.archpublic.com/files/xkwfwg0Ypq6a8f6MvZ4n",
+        "https://docs.archpublic.com/files/TiD9aspCQj5KlC32Ieuj",
+        "https://docs.archpublic.com/files/sPuIc32fjaBv3AlufBWr",
+        "https://docs.archpublic.com/files/C4BsiSMWPwvtxSxRPk0y"
+      ],
+      "tokenEstimate": 781
+    },
+    {
+      "id": "arbitrage-algorithm-recipes--arbitrage-algorithm-recipes--sui-recipes",
+      "pageSlug": "arbitrage-algorithm-recipes",
+      "pageTitle": "Arbitrage Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/arbitrage-algorithm-recipes.md",
+      "sectionPath": [
+        "Arbitrage Algorithm: Recipes",
+        "SUI Recipes"
+      ],
+      "text": "### Short Time Horizon (STH) Recipes\n\nShort time horizon recipes are backtested over the previous 6 months, optimized for current market conditions. These recipes are tailored to deploy and trade meaningful amounts of capital across shorter time horizons.\n\n#### **\\[SUI] STH Recipe No. 1: Cash Yield**\n\n**Goal**: Generate strong cash returns leveraging SUI volatility.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $2,900 when price drops 3.&#x38;**%**\n* **Exit Trade**: Sell $28,000 when price rises &#x36;**%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  965%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: January, 2025– July, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$18,683**\n* SUI Accumulated: 2,158 SUI ($6,305 @ $2.92/SUI)\n* Net Profit: **$19,188** (97% Cash Yield)\n* CAGR: 42.0&#x36;**%**\n\n#### **\\[SUI] STH Recipe No. 2: Balanced Accumulation**\n\n**Goal**: Generate a significant SUI position while profiting off of volatility spikes.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $2,900 when price drops 3.&#x38;**%**\n* **Exit Trade**: Sell $3,100 when price rises &#x34;**%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  106.9%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: January, 2025– July, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$7,568**\n* SUI Accumulated: 26,769 SUI ($78,258 @ $2.92/SUI)\n* Net Profit: **$18,833** (40% Cash Yield)\n* CAGR: 41.1&#x39;**%**\n\n#### **\\[SUI] STH Recipe No. 3: Max Accumulation**\n\n**Goal**: Generate a maximal SUI position at a low cost basis positioned for large, positive price movement.\n\n**Parameters**:\n\n* **Entry Trade**: Purchase $2,900 when price drops 3.&#x38;**%**\n* **Exit Trade**: Sell $2,350 when price rises &#x34;**%**\n* **Sell Above Cost Basis:** Checked\n* **Exit to Entry Proportion:  81%**\n* **Time Frame**: 1 Day\n* **Backtesting Period**: January, 2025– July, 2025\n\n**Results**:\n\n* Initial Capital: $100,000\n* Cash Profit: **$554**\n* SUI Accumulated: 33,302 SUI ($97,491 @ $2.92/SUI)\n* Net Profit: **$16,328** (3.3% Cash Yield)\n* CAGR: 35.3&#x32;**%**\n\n---",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/N8N5DVCDwyJUKIbnyI6S",
+        "https://docs.archpublic.com/files/CUhWEwjEJO1Q4rqvwcS1",
+        "https://docs.archpublic.com/files/pkxkYrlOxOxrJF3OfE0L",
+        "https://docs.archpublic.com/files/oAcJSx6S8c3noHwJNtB8",
+        "https://docs.archpublic.com/files/CgLDjqecmQ93LyM13iND",
+        "https://docs.archpublic.com/files/ldCNjhAvNya5o1xtJURI",
+        "https://docs.archpublic.com/files/0CbzdcZw6NA1wDLIJIki",
+        "https://docs.archpublic.com/files/YFOBKZFK0oNvNE4W4sZa",
+        "https://docs.archpublic.com/files/szGfdIsu3hbtYBO1ueoE",
+        "https://docs.archpublic.com/files/dxpnZSjfF6n6nQPNMraB",
+        "https://docs.archpublic.com/files/cbbDPT8gkpZ7A5Y34Axg",
+        "https://docs.archpublic.com/files/cMjjHibUXzbiM8fy0Wow"
+      ],
+      "tokenEstimate": 560
+    },
+    {
+      "id": "intelligence-algorithm-recipes--intelligence-algorithm-recipes",
+      "pageSlug": "intelligence-algorithm-recipes",
+      "pageTitle": "Intelligence Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-recipes.md",
+      "sectionPath": [
+        "Intelligence Algorithm: Recipes"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/intelligence-algorithm-recipes.md).\n\n{% hint style=\"warning\" %}\nTo explore all Arch Public Recipes, visit <https://recipes.archpublic.com/>.\\\n\\\nThis page will be depreciated January 1, 2026.\n\nLearn how to use Recipe Lab in under 5 minutes: <https://youtu.be/f_HjWioMlF8>\n{% endhint %}\n\nThis section provides actionable case studies with *tested parameter sets* that clients can replicate in TradingView. Each example balances cash flow generation and Crypto accumulation based on specific objectives.\n\n{% embed url=\"<https://youtu.be/N6HGOusiRg0>\" %}\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 213
+    },
+    {
+      "id": "intelligence-algorithm-recipes--intelligence-algorithm-recipes--recipe-no-1-aggressive-accumulation",
+      "pageSlug": "intelligence-algorithm-recipes",
+      "pageTitle": "Intelligence Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-recipes.md",
+      "sectionPath": [
+        "Intelligence Algorithm: Recipes",
+        "**Recipe No. 1: Aggressive Accumulation**"
+      ],
+      "text": "**Goal**: Build a Bitcoin position with urgency.\n\n**Parameters**:\n\n* **Time Frame**: 1D\n* **Backtesting Period**: January, 2019– January, 2025\n* **Low Buys: 1.1**\n\n**Results**:\n\n* Bitcoin Accumulated: $621,051 (5.97 BTC @ $104,000)\n* Annualized Return: 35.5%\n* **Best For**: Clients who want to build a substantial Bitcoin position and are generally price agnostic.\n* **Buy Trigger**: Purchase $500 when intelligence triggers\n\n  \n\n  \n\n***",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/adzxEcN3YZaHDNlE5K9H",
+        "https://docs.archpublic.com/files/kkDDSFyYFN3M4aGC3GQz",
+        "https://docs.archpublic.com/files/lQppqAYIXsa9kRAszVEu",
+        "https://docs.archpublic.com/files/OUg3e9J489zGEHiL1APi"
+      ],
+      "tokenEstimate": 116
+    },
+    {
+      "id": "intelligence-algorithm-recipes--intelligence-algorithm-recipes--recipe-no-2-moderate-accumulation",
+      "pageSlug": "intelligence-algorithm-recipes",
+      "pageTitle": "Intelligence Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-recipes.md",
+      "sectionPath": [
+        "Intelligence Algorithm: Recipes",
+        "**Recipe No. 2:  Moderate Accumulation**"
+      ],
+      "text": "**Goal**: Build a Bitcoin position with urgency, but would like to primarily target lower prices.\n\n**Parameters**:\n\n* **Time Frame**: 1D\n* **Backtesting Period**: January, 2019– January, 2025\n* **Low Buys: 0.7**\n\n**Results**:\n\n* Bitcoin Accumulated: $690,971 (6.64 BTC @ $104,000)\n* Annualized Return: 40.7%\n* **Best For**: Clients who want to build a substantial Bitcoin position and are generally price agnostic.\n* **Buy Trigger**: Purchase $1,000 when intelligence triggers\n\n***",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/t4Ap3dWkskClVVnuKDmi",
+        "https://docs.archpublic.com/files/hJjCZvoerMecXkLgsPcf",
+        "https://docs.archpublic.com/files/qCYRxU5Wvx1uepNf8ypN",
+        "https://docs.archpublic.com/files/G7RzCiSFQ4juW8rnA6ee"
+      ],
+      "tokenEstimate": 127
+    },
+    {
+      "id": "intelligence-algorithm-recipes--intelligence-algorithm-recipes--recipe-no-3-precise-accumulation",
+      "pageSlug": "intelligence-algorithm-recipes",
+      "pageTitle": "Intelligence Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/intelligence-algorithm-recipes.md",
+      "sectionPath": [
+        "Intelligence Algorithm: Recipes",
+        "**Recipe No. 3:  Precise Accumulation**"
+      ],
+      "text": "**Goal**: Build a Bitcoin position at ultimate cycle lows.\n\n**Parameters**:\n\n* **Time Frame**: 1D\n* **Backtesting Period**: January, 2019– January, 2025\n* **Low Buys: 0.5**\n\n**Results**:\n\n* Bitcoin Accumulated: $1,008,047 (9.69 BTC @ $104,000)\n* Annualized Return: 48%\n* **Best For**: Clients who want to build a substantial Bitcoin position at the best prices.\n* **Buy Trigger**: Purchase $4,000 when intelligence triggers\n\n---",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/kKGb2gQAeYj6SxO9aoJL",
+        "https://docs.archpublic.com/files/PFFdU1Y1AqOECB66rlSb",
+        "https://docs.archpublic.com/files/2w2Jh3T2u1BS7Q5fsbmt",
+        "https://docs.archpublic.com/files/0xzEhHQUVqIS7WCMm8Pm"
+      ],
+      "tokenEstimate": 113
+    },
+    {
+      "id": "apex-algorithm-recipes--apex-algorithm-recipes",
+      "pageSlug": "apex-algorithm-recipes",
+      "pageTitle": "Apex Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/apex-algorithm-recipes.md",
+      "sectionPath": [
+        "Apex Algorithm: Recipes"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/apex-algorithm-recipes.md).\n\nThis section provides actionable case studies  that clients can replicate in TradingView.&#x20;\n\n{% embed url=\"<https://youtu.be/ZkDsdQmDNQ0>\" %}\n\n***",
+      "imageUrls": [],
+      "tokenEstimate": 114
+    },
+    {
+      "id": "apex-algorithm-recipes--apex-algorithm-recipes--recipe-no-1-monthly-trimming",
+      "pageSlug": "apex-algorithm-recipes",
+      "pageTitle": "Apex Algorithm: Recipes",
+      "sourceUrl": "https://docs.archpublic.com/crypto/apex-algorithm-recipes.md",
+      "sectionPath": [
+        "Apex Algorithm: Recipes",
+        "**Recipe No. 1: Monthly Trimming**"
+      ],
+      "text": "**Goal**: Sell off a Bitcoin position on a monthly basis.\n\n**Parameters**:\n\n* **Time Frame**: 1D\n* **Order Size**: $10,000\n\n**Results**:\n\n---",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/rgDbrXmGv2HqY8Clm1mD",
+        "https://docs.archpublic.com/files/yRIZB5EUhOn83NnSFO6c",
+        "https://docs.archpublic.com/files/eLsk16PnfaF6bPMLokGH"
+      ],
+      "tokenEstimate": 38
+    },
+    {
+      "id": "recipe-stacks--recipe-stacks",
+      "pageSlug": "recipe-stacks",
+      "pageTitle": "Recipe Stacks",
+      "sourceUrl": "https://docs.archpublic.com/crypto/recipe-stacks.md",
+      "sectionPath": [
+        "Recipe Stacks"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/recipe-stacks.md).\n\n{% embed url=\"<https://drive.google.com/file/d/1AeCBqEW11u9oTTQoCJj2-8vE_9to_w76/view?usp=drive_link>\" %}\n\n---",
+      "imageUrls": [],
+      "tokenEstimate": 102
+    },
+    {
+      "id": "case-studies--case-studies",
+      "pageSlug": "case-studies",
+      "pageTitle": "Case Studies",
+      "sourceUrl": "https://docs.archpublic.com/crypto/case-studies.md",
+      "sectionPath": [
+        "Case Studies"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/case-studies.md).\n\n***\n\n<table data-view=\"cards\"><thead><tr><th></th><th></th><th data-hidden data-card-cover data-type=\"image\">Cover image</th><th data-hidden data-card-target data-type=\"content-ref\"></th></tr></thead><tbody><tr><td>QQQ Market Wave</td><td>June 2026</td><td><a href=\"/files/5vhwYFOJpavQ6k4CQ7gc\">/files/5vhwYFOJpavQ6k4CQ7gc</a></td><td><a href=\"https://drive.google.com/file/d/1S0aiiTp-wBaujLEe_T5moVNGjLSIfZAV/view?usp=drive_link\">https://drive.google.com/file/d/1S0aiiTp-wBaujLEe_T5moVNGjLSIfZAV/view?usp=drive_link</a></td></tr><tr><td>NVDA Market Wave</td><td>June 2026</td><td><a href=\"/files/qPiEeNgVtaxsVaWbVQW5\">/files/qPiEeNgVtaxsVaWbVQW5</a></td><td><a href=\"https://drive.google.com/file/d/1Evs_0OPCNnipJDignPypVjSnVRFxQ2PE/view?usp=drive_link\">https://drive.google.com/file/d/1Evs_0OPCNnipJDignPypVjSnVRFxQ2PE/view?usp=drive_link</a></td></tr><tr><td>MSTR Market Wave</td><td>June 2026</td><td><a href=\"/files/TYD4cwzU5reIjOLUwQ2v\">/files/TYD4cwzU5reIjOLUwQ2v</a></td><td><a href=\"https://drive.google.com/file/d/1Y01bBEixwYAaG5RpDHA-Dnk3wtM63pp8/view?usp=drive_link\">https://drive.google.com/file/d/1Y01bBEixwYAaG5RpDHA-Dnk3wtM63pp8/view?usp=drive_link</a></td></tr><tr><td>TSLA Market Wave</td><td>June 2026</td><td><a href=\"/files/OP29OCKIkSN3rgf8yC38\">/files/OP29OCKIkSN3rgf8yC38</a></td><td><a href=\"https://drive.google.com/file/d/1EwnCpplmGYo4Ljqvc9dkgespo3Awd8qa/view?usp=drive_link\">https://drive.google.com/file/d/1EwnCpplmGYo4Ljqvc9dkgespo3Awd8qa/view?usp=drive_link</a></td></tr><tr><td>The Pioneer, Revisited</td><td>June 2026</td><td><a href=\"/files/PTKvnSmasFmxKu9d6sqa\">/files/PTKvnSmasFmxKu9d6sqa</a></td><td><a href=\"https://drive.google.com/file/d/1qeF6t7P5yBNCE-YnmXsUN08U-WQ9rZRn/view?usp=sharing\">https://drive.google.com/file/d/1qeF6t7P5yBNCE-YnmXsUN08U-WQ9rZRn/view?usp=sharing</a></td></tr><tr><td>Ride The Market Wave</td><td>April 2026</td><td><a href=\"/files/gkV53CjgVrHAvsEgUvPu\">/files/gkV53CjgVrHAvsEgUvPu</a></td><td><a href=\"https://drive.google.com/file/d/1flqIHunb24xLIBw_O3dAJImIbDVJmeSk/view?usp=drive_link\">https://drive.google.com/file/d/1flqIHunb24xLIBw_O3dAJImIbDVJmeSk/view?usp=drive_link</a></td></tr><tr><td>Mastering XRP Volatility</td><td>March 2026</td><td><a href=\"/files/nDTjnmpXIYVviIbvw1Ls\">/files/nDTjnmpXIYVviIbvw1Ls</a></td><td><a href=\"https://drive.google.com/file/d/1w9hfOfw0VM0vsCgqYrJW5oi9AorseXcI/view?usp=drive_link\">https://drive.google.com/file/d/1w9hfOfw0VM0vsCgqYrJW5oi9AorseXcI/view?usp=drive_link</a></td></tr><tr><td>Winning The Bear Market</td><td>February 2026</td><td><a href=\"/files/HNcsXz8OO7MNOsQFU3cp\">/files/HNcsXz8OO7MNOsQFU3cp</a></td><td><a href=\"https://drive.google.com/file/d/1XNq1lzUF2kmVar7oO6MhOl1tBk2hIt-4/view?usp=drive_link\">https://drive.google.com/file/d/1XNq1lzUF2kmVar7oO6MhOl1tBk2hIt-4/view?usp=drive_link</a></td></tr><tr><td>Institutional Series: Follow The Money</td><td>January 2026</td><td><a href=\"/files/Tv4K7NJYRa6QPwZqheOk\">/files/Tv4K7NJYRa6QPwZqheOk</a></td><td><a href=\"https://drive.google.com/file/d/143NXQCrcX5gbQMRA7k4dp0NsJf5K2s9t/view?usp=drive_link\">https://drive.google.com/file/d/143NXQCrcX5gbQMRA7k4dp0NsJf5K2s9t/view?usp=drive_link</a></td></tr><tr><td>Institutional Series: The Pioneer</td><td>January 2026</td><td><a href=\"/files/CgKi9H7CYalLvNyca964\">/files/CgKi9H7CYalLvNyca964</a></td><td><a href=\"https://drive.google.com/file/d/1-7v1v9r6OJ1kOu66CrIspjEC0gWT7Cdx/view?usp=drive_link\">https://drive.google.com/file/d/1-7v1v9r6OJ1kOu66CrIspjEC0gWT7Cdx/view?usp=drive_link</a></td></tr><tr><td>Futures Algorithm Portfolio Review 2025</td><td>December 2025</td><td><a href=\"/files/NIsV1txGO9urt5hDuxda\">/files/NIsV1txGO9urt5hDuxda</a></td><td><a href=\"https://drive.google.com/file/d/1ExJu-NT56_az8_nkmX5z9fcxcvAhN28-/view?usp=drive_link\">https://drive.google.com/file/d/1ExJu-NT56_az8_nkmX5z9fcxcvAhN28-/view?usp=drive_link</a></td></tr><tr><td>Enduring The Drop</td><td>November 2025</td><td><a href=\"/files/jkmuVQjfl1KDVsPeTMii\">/files/jkmuVQjfl1KDVsPeTMii</a></td><td><a href=\"https://drive.google.com/file/d/1cOwHouvRTPEa9IL70rnjet3dZIkxhRMB/view?usp=drive_link\">https://drive.google.com/file/d/1cOwHouvRTPEa9IL70rnjet3dZIkxhRMB/view?usp=drive_link</a></td></tr><tr><td>Dynamics of The Oracle Protocol</td><td>October 2025</td><td><a href=\"/files/8wVmBKhU8qjVFIzu40Ww\">/files/8wVmBKhU8qjVFIzu40Ww</a></td><td><a href=\"https://drive.google.com/file/d/1pswVLwmVQPBDGxAIpfPP7wRsNsZCvXMn/view?usp=sharing\">https://drive.google.com/file/d/1pswVLwmVQPBDGxAIpfPP7wRsNsZCvXMn/view?usp=sharing</a></td></tr><tr><td>Introduction: The Oracle Protocol</td><td>October 2025</td><td><a href=\"/files/Sy2uxOn321OmtdS3y3xM\">/files/Sy2uxOn321OmtdS3y3xM</a></td><td><a href=\"https://drive.google.com/file/d/1-seD79wH8kaACjpQGqMQCKS2lygI1o6I/view?usp=drive_link\">https://drive.google.com/file/d/1-seD79wH8kaACjpQGqMQCKS2lygI1o6I/view?usp=drive_link</a></td></tr><tr><td>Futures Algorithms Overview</td><td>September 2025</td><td><a href=\"/files/ZwcdlI13bSl7MFWds5bO\">/files/ZwcdlI13bSl7MFWds5bO</a></td><td><a href=\"https://drive.google.com/file/d/1_GI5BBwW1WxBmlx6nTMMclW3_iprhm6e/view?usp=sharing\">https://drive.google.com/file/d/1_GI5BBwW1WxBmlx6nTMMclW3_iprhm6e/view?usp=sharing</a></td></tr><tr><td>Buy The Bottom Effortlessly</td><td>September 2025</td><td><a href=\"/files/QoWJrVkdslzQrqn7IBrx\">/files/QoWJrVkdslzQrqn7IBrx</a></td><td><a href=\"https://drive.google.com/file/d/1Qn2bgV9C7IfI_YFtSQfsN2iZjbsgwCWG/view?usp=sharing\">https://drive.google.com/file/d/1Qn2bgV9C7IfI_YFtSQfsN2iZjbsgwCWG/view?usp=sharing</a></td></tr><tr><td>Thriving In Turmoil</td><td>August 2025</td><td><a href=\"/files/L9l4cFVTmMKVLFFeeE2b\">/files/L9l4cFVTmMKVLFFeeE2b</a></td><td><a href=\"https://drive.google.com/file/d/1a8IsR5NJJcV1XSYhzKPK7VEtN10wDrbr/view?usp=drive_link\">https://drive.google.com/file/d/1a8IsR5NJJcV1XSYhzKPK7VEtN10wDrbr/view?usp=drive_link</a></td></tr><tr><td>Trading All Time Highs Three Ways</td><td>August 2025</td><td><a href=\"/files/HlZMaTdFQVhUHK18xS1w\">/files/HlZMaTdFQVhUHK18xS1w</a></td><td><a href=\"https://drive.google.com/file/d/10Ph_oZLlcsDxzqTdMSviOLMgmMHgv3iB/view?usp=drive_link\">https://drive.google.com/file/d/10Ph_oZLlcsDxzqTdMSviOLMgmMHgv3iB/view?usp=drive_link</a></td></tr><tr><td>The SUI > BTC Flywheel</td><td>July 2025</td><td><a href=\"/files/WrgyHZ508TL5Q1pUu3e3\">/files/WrgyHZ508TL5Q1pUu3e3</a></td><td><a href=\"https://drive.google.com/file/d/1mIor8xFKMdZLQ7ClHWL0Z54662jBZ1OH/view?usp=sharing\">https://drive.google.com/file/d/1mIor8xFKMdZLQ7ClHWL0Z54662jBZ1OH/view?usp=sharing</a></td></tr><tr><td>Superior Bitcoin Yield &#x26; Total Return</td><td>May 2025</td><td><a href=\"/files/14Vbl8pnzZgoFhxbAmc1\">/files/14Vbl8pnzZgoFhxbAmc1</a></td><td><a href=\"https://drive.google.com/file/d/1poICgWAJnyOVZm5G554GXmW_ENOVoD2T/view?usp=drive_link\">https://drive.google.com/file/d/1poICgWAJnyOVZm5G554GXmW_ENOVoD2T/view?usp=drive_link</a></td></tr><tr><td>Recipe Stack: SOL + BTC</td><td>April 2025</td><td><a href=\"/files/T3Jw0yDmzpLO7aNvhGMk\">/files/T3Jw0yDmzpLO7aNvhGMk</a></td><td><a href=\"https://drive.google.com/file/d/1AeCBqEW11u9oTTQoCJj2-8vE_9to_w76/view?usp=drive_link\">https://drive.google.com/file/d/1AeCBqEW11u9oTTQoCJj2-8vE_9to_w76/view?usp=drive_link</a></td></tr><tr><td>Arbitrage XRP</td><td>April 2025</td><td><a href=\"/files/ZChFPh1LasHCCAnmebbi\">/files/ZChFPh1LasHCCAnmebbi</a></td><td><a href=\"https://drive.google.com/file/d/1DPiQiLvmotjfiZnQsSC8-yrgkNVHwTOW/view?usp=drive_link\">https://drive.google.com/file/d/1DPiQiLvmotjfiZnQsSC8-yrgkNVHwTOW/view?usp=drive_link</a></td></tr><tr><td>Beating Buy &#x26; Hold</td><td>February 2025</td><td><a href=\"/files/y6fGZeY4IBNjHsiyak2U\">/files/y6fGZeY4IBNjHsiyak2U</a></td><td><a href=\"https://drive.google.com/file/d/1akfFf2ZQdBSRcXksWFu-03iYetchm9XT/view?usp=drive_link\">https://drive.google.com/file/d/1akfFf2ZQdBSRcXksWFu-03iYetchm9XT/view?usp=drive_link</a></td></tr><tr><td>Profiting From Volatility</td><td>February 2025</td><td><a href=\"/files/2zDmGc5v6efdpuUM1OwT\">/files/2zDmGc5v6efdpuUM1OwT</a></td><td><a href=\"https://drive.google.com/file/d/1g6hqOhR1aUGf4D0DEx-OCySAJx0egp7f/view?usp=drive_link\">https://drive.google.com/file/d/1g6hqOhR1aUGf4D0DEx-OCySAJx0egp7f/view?usp=drive_link</a></td></tr><tr><td>Arbitrage Algorithm for BTC</td><td>January 2025</td><td><a href=\"/files/VMa1UU3LijlhhUmsSfjF\">/files/VMa1UU3LijlhhUmsSfjF</a></td><td><a href=\"https://drive.google.com/file/d/1EtlhIkhn3svbmZxe1QtlkhCnKdGy5ywP/view?usp=drive_link\">https://drive.google.com/file/d/1EtlhIkhn3svbmZxe1QtlkhCnKdGy5ywP/view?usp=drive_link</a></td></tr><tr><td>Arbitrage Algorithm for ETH</td><td>January 2025</td><td><a href=\"/files/5Lm3zUB6aESEJBLmvU15\">/files/5Lm3zUB6aESEJBLmvU15</a></td><td><a href=\"https://drive.google.com/file/d/1uIohZAjffMSfMuzMDgfd3pOgWcz22NnF/view?usp=drive_link\">https://drive.google.com/file/d/1uIohZAjffMSfMuzMDgfd3pOgWcz22NnF/view?usp=drive_link</a></td></tr><tr><td>Arbitrage Algorithm for SOL</td><td>January 2025</td><td><a href=\"/files/k9FgUdvthfc9LiXvW0eq\">/files/k9FgUdvthfc9LiXvW0eq</a></td><td><a href=\"https://drive.google.com/file/d/1P5iOVATC3_udKqiNKfw8h1aXykCZKDpG/view?usp=drive_link\">https://drive.google.com/file/d/1P5iOVATC3_udKqiNKfw8h1aXykCZKDpG/view?usp=drive_link</a></td></tr></tbody></table>\n\n---",
+      "imageUrls": [],
+      "tokenEstimate": 2507
+    },
+    {
+      "id": "crypto-faq--crypto-faq",
+      "pageSlug": "crypto-faq",
+      "pageTitle": "Crypto FAQ",
+      "sourceUrl": "https://docs.archpublic.com/crypto/crypto-faq.md",
+      "sectionPath": [
+        "Crypto FAQ"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/crypto-faq.md).\n\n### What crypto pairs can I trade?\n\n#### Available on Gemini\n\nBTC Pairs: USD, USDT, GUSD, EUR, GBP, SGD\n\nETH Pairs: USD, USDT, GUSD, EUR, GBP, SGD\n\nSOL Pairs: USD\n\nXRP Pairs: USD, GUSD\n\n#### Available on Kraken\n\nBTC Pairs: USD, USDC, USDT, EUR, GBP\n\nETH Pairs: USD, USDC, USDT, EUR\n\nSOL Pairs: USD, USDC, USDT, EUR\n\nXRP Pairs: USD, USDC, USDT, EUR\n\nSUI Pairs: USD\n\nDOGE Pairs: USD\n\nChainlink Pairs: USD\n\n#### Available on Coinbase\n\nBTC Pairs: USD, USDT, EUR, GBP\n\nETH Pairs: USD, USDT, EUR\n\nSOL Pairs: USD, USDT, EUR\n\nXRP Pairs: USD, USDT, EUR\n\nSUI Pairs: USD\n\nDOGE Pairs: USD\n\nChainlink Pairs: USD\n\n### Can I start trading with purely Crypto in my Gemini account?\n\nYes, you are able to use the Arbitrage Algorithm with only crypto in your Gemini account. When setting up an instance, make sure to back-date the start date to atleast 1 year in the past. Keep in mind that only sell orders will execute until you have accrued enough cash to fill a buy order.\n\n### I set up an instance but have yet to see a trade go through.\n\nIf you are using one of the listed recipes, you most likely have the correct setup but need to give them a few days to make the first trade. \\\n\\\nLearn how to monitor your algorithms:<br>\n\n{% embed url=\"<https://youtu.be/kE8mz6RSQjY>\" %}\n\n### TradingView said an instance executed, but I am not seeing a trade in my Gemini transaction history.\n\n* Ensure that your Gemini account is funded with the same currency your chart is set to (USD, USD, GUSD)\n* Ensure that your chart is set to the correct currency pair before creating your instance. For example, if your chart is set to BTC/USDT, you will need to have USDT in your Gemini account. Likewise, if you are setting up an instance on a BTC/USD chart but only have USDT, the instance will not execute.\n\n* Gemini's minimum order size is $10 USD\n\n### Can I connect multiple Gemini accounts to The Bitcoin Algorithm(s)?\n\nYes, you are able to create an API key for each Gemini account and connect it to Arch Public allowing you to set up instances across personal and tax savings accounts.(for example, self directed IRA retirement accounts).\n\n---",
+      "imageUrls": [
+        "https://docs.archpublic.com/files/VXmanh2M7BSr03iMtAiq"
+      ],
+      "tokenEstimate": 629
+    },
+    {
+      "id": "canada-europe-united-kingdom-restrictions--canada-europe-united-kingdom-restrictions",
+      "pageSlug": "canada-europe-united-kingdom-restrictions",
+      "pageTitle": "Canada, Europe, United Kingdom Restrictions",
+      "sourceUrl": "https://docs.archpublic.com/crypto/canada-europe-united-kingdom-restrictions.md",
+      "sectionPath": [
+        "Canada, Europe, United Kingdom Restrictions"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/crypto/canada-europe-united-kingdom-restrictions.md).\n\nThe restrictive regulatory environment in Canada, Europe, and the United Kingdom make it difficult for Arch Public clients to use our algorithms through Gemini.\n\nSee [Gemini's support page](https://support.gemini.com/hc/en-us/articles/33437494572443-Non-MiCA-Compliant-Stablecoins) for further details.\\\n\\\nClients in these locations may use the built-in webhook functionality on exchanges like Binance in place of Gemini to trade cryptocurrency pairs denominated in USD, GUSD, and USDT.\n\n<mark style=\"background-color:orange;\">Note: we cannot provide support for clients using exchanges other than Gemini as we have no visibility into instance execution.</mark> <br>\n\nIn order to use Binance in place of Gemini, you **will not** add your Binance API key in the Arch Public client portal. \\\n\\\nInstead, follow the steps below when setting up an instance as outlined in [Arch Public Algorithm Setup Guide (Start Here)](/crypto/arch-public-algorithm-setup-guide-start-here.md).\\ <br>\n\nUnder the **\\[Settings]** tab, name your alert and enter the message from your Binance webhook setup.\n\nPlease make sure the message matches the one in the Binance webhook.\n\nExample Message Format: {\"symbol\":\"{{ticker}}\",\"side\":\"buy\",\"qty\":\"1\",\"price\":\"{{close}}\",\"trigger\\_time\":\"{{timenow}}\",\"signal\\_id\":\"175cbc02-79eb-44ef-ac67-d0d818c6f928\",\"UID\":\"xxxxx\"}\n\nUnder the **\\[Notifications]** tab, paste the Alert webhook URL you got from Binance. Click **\\[Save]**.\n\nClick **\\[Run Webhook]** to confirm.\n\nYou’ll see all alerts under the **\\[Alerts]** panel on the right of the TradingView interface. You can hover over an alert to view its details.\n\nYou may stop, edit, or remove alerts as needed.\n\n---",
+      "imageUrls": [
+        "https://public.bnbstatic.com/image/cms/article/body/202409/e9f5bdd7141cdc5ca3af716dbac11231.png",
+        "https://public.bnbstatic.com/image/cms/article/body/202409/fdf32dec4a85d57489d4417fec55acbf.png",
+        "https://public.bnbstatic.com/image/cms/article/body/202409/d34088619589edfaa437ed7ced80fc5d.png",
+        "https://public.bnbstatic.com/image/cms/article/body/202309/11083a9bc98d0f5fea82d6225d17bc4c.png",
+        "https://public.bnbstatic.com/image/cms/article/body/202409/fdf32dec4a85d57489d4417fec55acbf.png",
+        "https://public.bnbstatic.com/image/cms/article/body/202309/5b1d78a8f9b897804484585ed9a123cb.png",
+        "https://public.bnbstatic.com/image/cms/article/body/202309/04bf6ea78dbe5ccd48db938e6e87d2e5.png"
+      ],
+      "tokenEstimate": 523
+    },
+    {
+      "id": "audited-trade-history--audited-trade-history",
+      "pageSlug": "audited-trade-history",
+      "pageTitle": "Audited Trade History",
+      "sourceUrl": "https://docs.archpublic.com/futures/audited-trade-history.md",
+      "sectionPath": [
+        "Audited Trade History"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/futures/audited-trade-history.md).\n\nDive into the latest performance analysis for all Arch Public futures algorithms. This data showcases the actual trading results experienced by our clients, sourced directly from our execution broker. Please note: Past performance is not a guarantee of future results.\n\n[Open in Google Sheets](https://docs.google.com/spreadsheets/d/1GiFwLlCh7NGZX1h3DyGepX1fNsd63KesiCF-O6f_N0E/edit?usp=sharing) or view below.\n\n***\n\n{% embed url=\"<https://docs.google.com/spreadsheets/d/1GiFwLlCh7NGZX1h3DyGepX1fNsd63KesiCF-O6f_N0E/edit?usp=sharing>\" %}\n\n---",
+      "imageUrls": [],
+      "tokenEstimate": 218
+    },
+    {
+      "id": "cancel-subscription--cancel-subscription",
+      "pageSlug": "cancel-subscription",
+      "pageTitle": "Cancel Subscription",
+      "sourceUrl": "https://docs.archpublic.com/contact/cancel-subscription.md",
+      "sectionPath": [
+        "Cancel Subscription"
+      ],
+      "text": "> For the complete documentation index, see [llms.txt](https://docs.archpublic.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to page URLs; this page is available as [Markdown](https://docs.archpublic.com/contact/cancel-subscription.md).\n\nIf you would like to cancel your Gateway subscription please follow the steps below\n\n### Method 1: Through Your Client Portal (Recommended)\n\n1. Log in to your account at archpublic.com\n2. Go to \"MY SUBSCRIPTION\" in the left menu\n3. Look for the subscription details\n4. Click the \"Cancel\" button in the Actions section\n5. Follow the prompts to confirm cancellation\n\n### Method 2: Through PayPal (Alternative)&#x20;\n\nIf you can't access the portal or prefer to cancel through PayPal:\n\n1. Log in to your PayPal account at paypal.com\n2. Click the gear icon (Settings) in the top-right corner\n3. Select \"Payments\" from the menu\n4. Click \"Manage automatic payments\"\n5. Find and select your Gateway subscription\n6. Click \"Cancel\" and confirm your choice\n\n---",
+      "imageUrls": [],
+      "tokenEstimate": 272
+    }
+  ]
+}
