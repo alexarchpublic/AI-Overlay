@@ -656,3 +656,84 @@ meaningful work. Entries are chronological, newest at the bottom.
 - Model output schema is v3; v2 JSON is rejected as invalid-json.
 - Prompt path injects full docs corpus today; retrieval remainder is a no-op until corpus exceeds 50k tokens.
 - Latency posture: Flash-lite default + 40k soft ceiling.
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-09-ARCH-PIVOT-P4
+**Timestamp:** 2026-07-09T14:21:00-05:00 (CDT)
+**Model:** Composer
+**Focus Area:** Internal co-pilot pivot — Phase 4 renderer (D-P7, D-P9, D-P10, PRD §3.4–3.7)
+
+### Decisions Made
+- Added `knowledge.*` IPC namespace (`getActiveAlgorithm`, `setActiveAlgorithm`, `getBundleInfo`) plus `chat.copyTalkTrack` — successor to removed harness IPC.
+- Persisted algorithm picker in `electron-store` key `knowledge.activeAlgorithm` (default `market-wave`); orchestrator reads via injected `getActiveAlgorithm()` on each send.
+- Extracted `TalkTrack.tsx` with copy button; suggestions table now shows `rationale` column; risk callout always renders when structured output exists (placeholder when empty).
+- Settings: new `KnowledgeSettings` panel (bundle hash, ingest date, page count, token total, `npm run ingest:docs` instructions); backend toggle remains code-only (not in UI per PRD §3.7).
+- Reframed capture copy for client screen-share in meeting window (Settings + region picker + chat empty state).
+
+### Files Modified / Created
+- New: `src/renderer/chat/TalkTrack.tsx`, `src/renderer/settings/KnowledgeSettings.tsx`
+- Renderer: `AssistantMessage.tsx`, `QuickPrompts.tsx`, `ChatHeader.tsx`, `ChatPanel.tsx`, `ChatError.tsx`, `chatStore.ts`, `CaptureSettings.tsx`, `RegionPicker.tsx`, `regionPicker.module.css`, `SettingsShell.tsx`, `env.d.ts`
+- Main/IPC: `knowledgeStoreState.ts`, `knowledgeStore.ts`, `knowledgeTypes.ts`, `knowledgeConstants.ts`, `chatOrchestrator.ts`, `bootstrap.ts`, `appContext.ts`, `ipcChannels.ts`, `registerChatAiIpc.ts`, `preload/index.ts`
+- Tests: `chatPanel.smoke.spec.tsx`, `chatStore.spec.ts`, `chatOrchestrator.spec.ts`, `knowledgeStoreState.spec.ts`, `knowledgeStoreFactory.spec.ts`, `geminiService.spec.ts`
+
+### Open Questions / Risks
+- Algorithm picker max-width may truncate on very narrow chat windows — acceptable for MVP.
+- `KnowledgeSettings` polls bundle info once on mount; no live refresh after ingest without restart (by design).
+- Manual `npm run dev` acceptance (picker persistence across relaunch, quick prompts, talk-track copy) not run in this session.
+
+### Verification Results
+- `npm run typecheck && npm run lint && npm test` — **256 tests pass** (+6 vs Phase 3).
+
+### Recommended Next Steps for Next Claude Instance
+1. **Phase 5** — Context v0.3.0, superseded banner on security PRD, README/MAC_ACCEPTANCE/project-state updates.
+2. **Phase 6** — eval bank (20 scenarios), latency p50/p95 sweep, grep contracts, coverage gate.
+3. Manual dev smoke: algorithm picker persists across relaunch; six quick prompts prefill; talk-track Copy writes clipboard.
+
+### Key Context Delta
+- Phase 4 complete: renderer surfaces internal-call UX (talk track, call-scenario prompts, algorithm picker, Knowledge settings).
+- Orchestrator no longer hard-codes `market-wave`; reads persisted picker value.
+- Error copy updated from harness → knowledge bundle terminology.
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-09-ARCH-PIVOT-P5
+**Timestamp:** 2026-07-09T14:33:00-05:00 (CDT)
+**Model:** Composer
+**Focus Area:** Internal co-pilot pivot — Phase 5 project docs reset (D-P12)
+
+### Decisions Made
+- Rewrote `Context.md` to v0.3.0: internal sales/CS mission, full-fidelity docs corpus, persona v3 summary, schema v3/talk track, algorithm picker, latency targets; removed security-harness language (keychain hygiene retained).
+- Prepended superseded banner to `security-harness-PRD.md` pointing to pivot PRD + Context v0.3.0; file kept for history.
+- Rebuilt `project-state.md` with pivot phase tracker (Phases 0–5 ✅, Phase 6 pending), superseded-items section, updated test count and quick-verify commands.
+- Updated `README.md`: ingest workflow, removed red-team/build:knowledge references, new sources of truth, eval-bank/call-simulation acceptance pointers.
+- Rewrote `MAC_ACCEPTANCE.md`: replaced harness fixture + red-team phases with Knowledge bundle (Phase E), docs ingest verification (Phase G), call-simulation acceptance (Phase H), eval-bank gate; updated capture target copy for client screen-share.
+
+### Files Modified / Created
+- `../Context.md` (v0.3.0 rewrite)
+- `security-harness-PRD.md` (superseded banner)
+- `project-state.md` (pivot phases + superseded section)
+- `README.md` (internal co-pilot framing)
+- `MAC_ACCEPTANCE.md` (ingest + eval-bank + call-simulation flow)
+- `CLAUDE_HANDOFF.md` (this entry)
+
+### Open Questions / Risks
+- Phase 6 eval bank and latency sweep not yet run — acceptance criteria in PRD §6.3–6.4 remain open.
+- `MAC_ACCEPTANCE.md` Phase H assumes Zoom/Meet screen-share; solo test with shared TradingView tab is acceptable substitute.
+- Role.md still references `ArchPublic_AI_Overlay_Context.md` filename — actual file is `Context.md` (cosmetic; no change made).
+
+### Verification Results
+- `npm run typecheck && npm run lint && npm test` — **256 tests pass** (docs-only phase; no code changes).
+
+### Recommended Next Steps for Next Claude Instance
+1. **Phase 6** — grep contracts, `npm run test:coverage`, fresh `npm run ingest:docs`, eval bank (20 scenarios), latency p50/p95 sweep; tick Phase 6 boxes in `project-state.md`.
+2. Manual call-simulation: `MAC_ACCEPTANCE.md` Phase H on operator hardware.
+3. Commit Phase 5 as single commit on `pivot/internal-copilot` if operator wants one-commit-per-phase convention.
+
+### Key Context Delta
+- All project docs now describe the internal co-pilot product; security-harness PRD is archived with banner.
+- Glossary: Harness = ingested docs bundle (`docs-*.json`).
+- Acceptance path: eval bank + call-simulation replaces red-team checklist.
+

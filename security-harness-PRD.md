@@ -1,8 +1,19 @@
+> **⚠️ SUPERSEDED (2026-07-09).** This PRD is archived for history only. The
+> product pivoted to an **internal sales/CS co-pilot** for trusted employees on
+> live client calls. The zero-leakage invariant, abstraction-only knowledge,
+> deterministic firewall, enumeration monitor, D-3 validation, and red-team gates
+> described here were **fully removed** — not flagged off. See
+> `../PRD_Internal_Copilot_Pivot.md` and `../Context.md` (v0.3.0) for the
+> current product direction. OS-keychain API-key encryption (`secretsStore.ts`,
+> `knowledgeCrypto.ts`) was retained as operational hygiene.
+
+---
+
 # PRD — Secure Chat Harness for the Arch Public AI Overlay
 
 **Author:** Dr. Marcus Hale (secure-AI-agent architecture)
 **Date:** May 29, 2026
-**Status:** Approved to build (Phase 0 — internal MVP).
+**Status:** ~~Approved to build (Phase 0 — internal MVP).~~ **Superseded 2026-07-09** — see banner above.
 **Inputs:** `role.md`, `context.md` (secure target + Gap Register G1–G6), `phase-1-findings.md` (codebase security review + research synthesis + findings A1–A3).
 **Source project under refactor:** `~/Documents/Claude/Projects/AP Agent Overlay/arch-public-ai-overlay`.
 
