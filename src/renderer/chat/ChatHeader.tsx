@@ -1,12 +1,22 @@
 /**
  * @file src/renderer/chat/ChatHeader.tsx
  *
- * Draggable chat header with capture-status indicator, app menu, and close.
- * Replaces the overlay pill's status ring + right-click context menu.
+ * Draggable chat header with capture-status indicator, algorithm picker (D-P10),
+ * app menu, and close.
  */
 
-import { useCallback, useEffect, useState, type MouseEvent, type ReactElement } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type MouseEvent,
+  type ReactElement,
+} from 'react';
+import { ACTIVE_ALGORITHM_OPTIONS } from '../../shared/knowledgeConstants';
+import type { ActiveAlgorithm } from '../../shared/knowledgeTypes';
 import type { WidgetStatus } from '../../shared/types';
+import { useChatStore } from './chatStore';
 
 const STATUS_LABEL: Record<WidgetStatus, string> = {
   ready: 'Ready',
@@ -35,6 +45,8 @@ export interface ChatHeaderProps {
 
 export default function ChatHeader(props: ChatHeaderProps): ReactElement {
   const [status, setStatus] = useState<WidgetStatus>('ready');
+  const activeAlgorithm = useChatStore((s) => s.activeAlgorithm);
+  const setActiveAlgorithm = useChatStore((s) => s.setActiveAlgorithm);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +81,15 @@ export default function ChatHeader(props: ChatHeaderProps): ReactElement {
     [openMenuAt],
   );
 
+  const handleAlgorithmChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>): void => {
+      const next = e.target.value as ActiveAlgorithm;
+      setActiveAlgorithm(next);
+      void window.api.knowledge.setActiveAlgorithm(next);
+    },
+    [setActiveAlgorithm],
+  );
+
   const noDrag = { WebkitAppRegion: 'no-drag' } as React.CSSProperties;
   const drag = { WebkitAppRegion: 'drag' } as React.CSSProperties;
 
@@ -84,6 +105,21 @@ export default function ChatHeader(props: ChatHeaderProps): ReactElement {
         aria-label={STATUS_LABEL[status]}
       />
       <span className="min-w-0 flex-1 truncate text-white/80">Arch Public AI</span>
+      <label className="flex items-center gap-1 text-white/50" style={noDrag}>
+        <span className="sr-only">Active algorithm</span>
+        <select
+          aria-label="Active algorithm"
+          value={activeAlgorithm}
+          onChange={handleAlgorithmChange}
+          className="max-w-[7.5rem] truncate rounded border border-white/15 bg-ap-muted px-1.5 py-0.5 font-mono text-[10px] text-ap-fg hover:border-ap-gold/40"
+        >
+          {ACTIVE_ALGORITHM_OPTIONS.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </label>
       <span className="hidden font-mono text-white/50 sm:inline">{props.model || '—'}</span>
       <button
         type="button"

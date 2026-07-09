@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { wrapKnowledgeStore } from '../../src/main/knowledgeStoreState';
+import { wrapKnowledgeStore, parseActiveAlgorithm } from '../../src/main/knowledgeStoreState';
 import type { StoreLike } from '../../src/main/widgetState';
 
 function makeFakeStore(initial: Record<string, unknown> = {}): StoreLike {
@@ -37,5 +37,17 @@ describe('wrapKnowledgeStore', () => {
     const w = wrapKnowledgeStore(makeFakeStore());
     w.setBackend('remote');
     expect(w.getBackend()).toBe('remote');
+  });
+
+  it('defaults activeAlgorithm to market-wave', () => {
+    const w = wrapKnowledgeStore(makeFakeStore());
+    expect(w.getActiveAlgorithm()).toBe('market-wave');
+  });
+
+  it('round-trips activeAlgorithm and rejects invalid values', () => {
+    const w = wrapKnowledgeStore(makeFakeStore());
+    expect(w.setActiveAlgorithm('arbitrage')).toBe('arbitrage');
+    expect(w.getActiveAlgorithm()).toBe('arbitrage');
+    expect(parseActiveAlgorithm('not-valid')).toBe('market-wave');
   });
 });

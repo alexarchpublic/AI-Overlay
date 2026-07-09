@@ -43,17 +43,18 @@ export default function ChatErrorView(props: ChatErrorProps): ReactElement {
     case 'no-harness':
       return (
         <div role="alert" className={baseClass}>
-          <div className="font-semibold">No harness loaded.</div>
+          <div className="font-semibold">No knowledge bundle loaded.</div>
           <div className="mt-1 text-amber-50/80">
-            Choose a harness folder so the AI has source code to ground its
-            answers in.
+            Run <code className="font-mono">npm run ingest:docs</code> from the
+            project repo, then restart the app so the AI can ground answers in
+            the published documentation.
           </div>
           <button
             type="button"
             onClick={props.onOpenSettings}
             className="mt-2 rounded bg-ap-muted px-2 py-1 text-[11px] text-ap-fg hover:bg-ap-elevated"
           >
-            Open Harness Settings
+            Open Knowledge Settings
           </button>
         </div>
       );
@@ -64,7 +65,7 @@ export default function ChatErrorView(props: ChatErrorProps): ReactElement {
           <div className="mt-1 text-amber-50/80">
             Approx tokens: {error.approxTokens.toLocaleString()} · Ceiling:{' '}
             {error.ceiling.toLocaleString()}. Close + reopen the chat to clear
-            history, or shrink the harness.
+            history, or send a shorter message.
           </div>
         </div>
       );

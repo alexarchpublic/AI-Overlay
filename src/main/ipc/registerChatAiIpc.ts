@@ -12,6 +12,7 @@ import { maskApiKey } from '../aiStore';
 import { SecretEncryptionUnavailableError } from '../secretsStore';
 import { openSettingsWindow } from '../settingsWindow';
 import { DEFAULT_RETRIEVAL_TOKEN_BUDGET } from '../../shared/knowledgeConstants';
+import { parseActiveAlgorithm } from '../knowledgeStoreState';
 import {
   IPC_AI_CLEAR_API_KEY,
   IPC_AI_GET_API_KEY,
@@ -23,12 +24,16 @@ import {
   IPC_CHAT_CANCEL,
   IPC_CHAT_CLOSE,
   IPC_CHAT_COPY_SUGGESTION,
+  IPC_CHAT_COPY_TALK_TRACK,
   IPC_CHAT_GET_HISTORY,
   IPC_CHAT_GET_KNOWLEDGE_READY,
   IPC_CHAT_IS_OPEN,
   IPC_CHAT_OPEN,
   IPC_CHAT_OPEN_SETTINGS,
   IPC_CHAT_SEND,
+  IPC_KNOWLEDGE_GET_ACTIVE_ALGORITHM,
+  IPC_KNOWLEDGE_GET_BUNDLE_INFO,
+  IPC_KNOWLEDGE_SET_ACTIVE_ALGORITHM,
 } from '../../shared/ipcChannels';
 import type {
   ApiKeyPresence,
@@ -36,6 +41,7 @@ import type {
   GeminiCallStats,
   SuggestedParameterChange,
 } from '../../shared/types';
+import type { ActiveAlgorithm, KnowledgeBundleInfo } from '../../shared/knowledgeTypes';
 import { isSuggestedChange } from './typeGuards';
 
 function formatSuggestionForClipboard(s: SuggestedParameterChange): string {
@@ -130,6 +136,45 @@ export function registerChatAiIpc(ctx: AppContext, chat: ChatLifecycle): void {
       log.warn('chat.suggestionCopyFailed', {
         message: err instanceof Error ? err.message : String(err),
       });
+    }
+  });
+
+  ipcMain.handle(IPC_CHAT_COPY_TALK_TRACK, (_e: IpcMainInvokeEvent, payload: unknown): void => {
+    if (typeof payload !== 'string' || payload.trim().length === 0) return;
+    try {
+      clipboard.writeText(payload);
+      log.info('chat.talkTrackCopied', { length: payload.length });
+    } catch (err) {
+      log.warn('chat.talkTrackCopyFailed', {
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  });
+
+  ipcMain.handle(IPC_KNOWLEDGE_GET_ACTIVE_ALGORITHM, (): ActiveAlgorithm => {
+    return ctx.knowledgeStoreState.getActiveAlgorithm();
+  });
+
+  ipcMain.handle(
+    IPC_KNOWLEDGE_SET_ACTIVE_ALGORITHM,
+    (_e: IpcMainInvokeEvent, raw: unknown): ActiveAlgorithm => {
+      const next = ctx.knowledgeStoreState.setActiveAlgorithm(parseActiveAlgorithm(raw));
+      log.info('knowledge.activeAlgorithmChanged', { activeAlgorithm: next });
+      gemini?.invalidateSystemPromptCache();
+      return next;
+    },
+  );
+
+  ipcMain.handle(IPC_KNOWLEDGE_GET_BUNDLE_INFO, async (): Promise<KnowledgeBundleInfo | null> => {
+    const store = ctx.knowledgeStore;
+    if (!store) return null;
+    try {
+      return await store.getBundleInfo();
+    } catch (err) {
+      log.warn('knowledge.bundleInfoFailed', {
+        message: err instanceof Error ? err.message : String(err),
+      });
+      return null;
     }
   });
 

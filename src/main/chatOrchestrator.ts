@@ -27,10 +27,8 @@ import {
   selectPromptKnowledge,
 } from '../shared/knowledge/promptContext';
 import { SCREENSHOTS_PER_TURN } from '../shared/aiConstants';
+import type { ActiveAlgorithm } from '../shared/knowledgeTypes';
 import type { ChatError, ChatState, ChatTurn, Screenshot } from '../shared/types';
-
-/** Default until Phase 4 algorithm picker lands (D-P10). */
-const DEFAULT_ACTIVE_ALGORITHM = 'market-wave' as const;
 
 export interface ChatOrchestratorEmit {
   turnAppended(turn: ChatTurn): void;
@@ -49,6 +47,8 @@ export interface ChatOrchestratorDeps {
   emit: ChatOrchestratorEmit;
   /** Mutable ref shared with the IPC cancel handler. */
   chatInflight: { current: AbortController | null };
+  /** Persisted algorithm picker value (D-P10). */
+  getActiveAlgorithm: () => ActiveAlgorithm;
 }
 
 export interface ChatOrchestrator {
@@ -69,6 +69,7 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
     screenshotService: captureService,
     emit,
     chatInflight,
+    getActiveAlgorithm,
   } = deps;
 
   async function runChatSend(
@@ -112,7 +113,7 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
 
     const preTruncateHistory = conv.getHistory();
     const chartContext = extractChartContextForRetrieval(preTruncateHistory, text);
-    const activeAlgorithm = DEFAULT_ACTIVE_ALGORITHM;
+    const activeAlgorithm = getActiveAlgorithm();
 
     let knowledgeBlocks;
     try {

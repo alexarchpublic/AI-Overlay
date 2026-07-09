@@ -19,6 +19,8 @@ import type {
   GeminiCallStats,
   Screenshot,
 } from '../../shared/types';
+import type { ActiveAlgorithm } from '../../shared/knowledgeTypes';
+import { DEFAULT_ACTIVE_ALGORITHM } from '../../shared/knowledgeConstants';
 
 export interface ChatUiState {
   /** Newest-at-end. Mirrors `conversationStore.getHistory()`. */
@@ -31,6 +33,8 @@ export interface ChatUiState {
   stats: GeminiCallStats | null;
   /** Active model name — pulled at boot so the header renders without a flash. */
   model: string;
+  /** Persisted algorithm picker — drives doc injection + retrieval boost (D-P10). */
+  activeAlgorithm: ActiveAlgorithm;
   /** Current input draft. Lives in the store so quick-prompts can prefill it. */
   draft: string;
   /** Screenshots queued for the next outgoing message (oldest-first). */
@@ -45,6 +49,7 @@ export interface ChatUiState {
   setIsOpen: (open: boolean) => void;
   setStats: (s: GeminiCallStats | null) => void;
   setModel: (model: string) => void;
+  setActiveAlgorithm: (algorithm: ActiveAlgorithm) => void;
   setDraft: (draft: string) => void;
   addPendingScreenshot: (screenshot: Screenshot) => void;
   removePendingScreenshot: (id: string) => void;
@@ -58,6 +63,7 @@ export const useChatStore = create<ChatUiState>((set) => ({
   isOpen: false,
   stats: null,
   model: '',
+  activeAlgorithm: DEFAULT_ACTIVE_ALGORITHM,
   draft: '',
   pendingScreenshots: [],
 
@@ -88,6 +94,9 @@ export const useChatStore = create<ChatUiState>((set) => ({
   },
   setModel: (model) => {
     set({ model });
+  },
+  setActiveAlgorithm: (activeAlgorithm) => {
+    set({ activeAlgorithm });
   },
   setDraft: (draft) => {
     set({ draft });

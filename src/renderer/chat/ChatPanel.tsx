@@ -29,6 +29,7 @@ export default function ChatPanel(): ReactElement {
   const setState = useChatStore((s) => s.setState);
   const setError = useChatStore((s) => s.setError);
   const setModel = useChatStore((s) => s.setModel);
+  const setActiveAlgorithm = useChatStore((s) => s.setActiveAlgorithm);
   const clear = useChatStore((s) => s.clear);
 
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
@@ -41,15 +42,17 @@ export default function ChatPanel(): ReactElement {
     let cancelled = false;
     async function boot(): Promise<void> {
       try {
-        const [history, modelName, apiKey, knowledgeReady] = await Promise.all([
+        const [history, modelName, apiKey, knowledgeReady, activeAlgorithm] = await Promise.all([
           window.api.chat.getHistory(),
           window.api.ai.getModel(),
           window.api.ai.getApiKey(),
           window.api.chat.getKnowledgeReady().catch(() => false),
+          window.api.knowledge.getActiveAlgorithm(),
         ]);
         if (cancelled) return;
         setTurns([...history]);
         setModel(modelName);
+        setActiveAlgorithm(activeAlgorithm);
         setHasApiKey(apiKey.present);
         setHasKnowledge(knowledgeReady);
         // Surface implicit error states even before the user types.
@@ -72,7 +75,7 @@ export default function ChatPanel(): ReactElement {
     return () => {
       cancelled = true;
     };
-  }, [setTurns, setModel, setError]);
+  }, [setTurns, setModel, setActiveAlgorithm, setError]);
 
   useEffect(() => {
     const offTurn = window.api.chat.onTurnAppended((t: ChatTurn) => {
@@ -162,9 +165,9 @@ export default function ChatPanel(): ReactElement {
 
       {turns.length === 0 && error === null && (
         <div className="px-4 py-3 text-xs text-white/70">
-          Ask about the current signal, risk, or settings. Use the camera button
-          to attach a chart screenshot — after trying a suggestion, capture again
-          to iterate the tuning loop.
+          Help the client on a live call — ask which inputs to change, why, and
+          what to say. Point the capture region at the client&apos;s shared screen
+          in Zoom or Meet so answers reflect their chart and settings.
         </div>
       )}
 

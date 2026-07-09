@@ -5,14 +5,19 @@
  * for the internal sales/CS co-pilot (PRD D-P3 / D-P4 / D-P10 / D-P11).
  */
 
-import type { AlgorithmId } from './knowledgeTypes';
+import type { ActiveAlgorithm, AlgorithmId } from './knowledgeTypes';
 
 /** Runtime knowledge backend selection (factory seam retained). */
 export type KnowledgeBackend = 'local' | 'remote';
 
 export const KNOWLEDGE_STORE_KEY_BACKEND = 'knowledge.backend';
 
+/** Persisted chat-header algorithm picker (D-P10). */
+export const KNOWLEDGE_STORE_KEY_ACTIVE_ALGORITHM = 'knowledge.activeAlgorithm';
+
 export const DEFAULT_KNOWLEDGE_BACKEND: KnowledgeBackend = 'local';
+
+export const DEFAULT_ACTIVE_ALGORITHM: ActiveAlgorithm = 'market-wave';
 
 /** Repo-relative bundle directory produced by `npm run ingest:docs`. */
 export const KNOWLEDGE_BUNDLES_DIR = 'knowledge/bundles';
@@ -73,6 +78,15 @@ export const ALGORITHMS: readonly AlgorithmId[] = [
  * Page slugs (filename without `.md`) owned by each algorithm.
  * Used for full-guide injection (D-P4) and retrieval boosting (D-P10).
  */
+/** Chat-header picker options (D-P10). */
+export const ACTIVE_ALGORITHM_OPTIONS: readonly { id: ActiveAlgorithm; label: string }[] = [
+  { id: 'market-wave', label: 'Market Wave' },
+  { id: 'arbitrage', label: 'Arbitrage' },
+  { id: 'intelligence', label: 'Intelligence' },
+  { id: 'apex', label: 'Apex' },
+  { id: 'all', label: 'All' },
+] as const;
+
 export const ALGORITHM_PAGE_SLUGS: Readonly<Record<AlgorithmId, readonly string[]>> = {
   'market-wave': ['market-wave-algorithm-setup-guide'],
   arbitrage: ['arbitrage-algorithm-setup-guide', 'arbitrage-algorithm-recipes'],

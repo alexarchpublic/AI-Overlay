@@ -77,4 +77,10 @@ describe('chatStore', () => {
     useChatStore.getState().setState('error');
     expect(useChatStore.getState().error).toEqual({ variant: 'no-api-key' });
   });
+
+  it('defaults and updates activeAlgorithm', () => {
+    expect(useChatStore.getState().activeAlgorithm).toBe('market-wave');
+    useChatStore.getState().setActiveAlgorithm('intelligence');
+    expect(useChatStore.getState().activeAlgorithm).toBe('intelligence');
+  });
 });

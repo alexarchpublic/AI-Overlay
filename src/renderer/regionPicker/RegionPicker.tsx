@@ -162,6 +162,9 @@ export default function RegionPicker(): ReactElement {
         </>
       )}
       <div className={styles.hintBar}>
+        <span className={styles.hintLead}>
+          Drag over the client&apos;s shared screen in your meeting window
+        </span>
         <span>
           <span className={styles.kbd}>Drag</span>to set capture region
         </span>

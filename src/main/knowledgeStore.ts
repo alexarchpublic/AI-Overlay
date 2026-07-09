@@ -199,6 +199,24 @@ export function createLocalKnowledgeStore(deps: LocalKnowledgeStoreDeps): Knowle
       }
       return state.contentHash;
     },
+
+    async getBundleInfo(): Promise<{
+      contentHash: string;
+      fetchedAt: string;
+      pageCount: number;
+      totalTokenEstimate: number;
+    }> {
+      await this.init();
+      if (!state) {
+        throw new KnowledgeStoreError('NOT_INITIALIZED', 'Knowledge store failed to initialize');
+      }
+      return {
+        contentHash: state.contentHash,
+        fetchedAt: state.fetchedAt,
+        pageCount: state.pageCount,
+        totalTokenEstimate: state.totalTokenEstimate,
+      };
+    },
   };
 }
 
@@ -230,6 +248,9 @@ export function createRemoteKnowledgeStoreStub(): KnowledgeStore {
       return Promise.reject(new RemoteKnowledgeStoreNotImplementedError());
     },
     version(): Promise<never> {
+      return Promise.reject(new RemoteKnowledgeStoreNotImplementedError());
+    },
+    getBundleInfo(): Promise<never> {
       return Promise.reject(new RemoteKnowledgeStoreNotImplementedError());
     },
   };

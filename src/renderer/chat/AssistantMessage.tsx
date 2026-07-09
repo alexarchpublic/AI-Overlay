@@ -1,18 +1,8 @@
 /**
  * @file src/renderer/chat/AssistantMessage.tsx
  *
- * Why it exists: PRD §3.5 — renders an assistant turn. Markdown via
- * `react-markdown` + `remark-gfm` (D23). The structured suggestions table
- * is rendered separately (not as part of the markdown body) so the
- * per-row "Copy" button can be a real React component instead of a
- * post-render DOM hack.
- *
- * `confidence_score` renders as a small badge with three buckets
- * (low/med/high). `risk_notes` lives in an amber callout under the table.
- *
- * XSS smoke: `react-markdown` is configured with no HTML allowed (its
- * default `skipHtml` is `false` but we don't pass a `rehype-raw` plugin,
- * so raw HTML in the markdown source is dropped).
+ * PRD §3.4–3.5 — assistant turn with talk track, suggestions table, and
+ * always-visible risk notes for internal CS compliance.
  */
 
 import { type ReactElement } from 'react';
@@ -21,6 +11,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import type { ChatTurn } from '../../shared/types';
 import ApplySuggestion from './ApplySuggestion';
+import TalkTrack from './TalkTrack';
 
 export interface AssistantMessageProps {
   turn: ChatTurn;
@@ -30,6 +21,11 @@ function confidenceBucket(score: number): { label: string; klass: string } {
   if (score >= 0.75) return { label: 'High', klass: 'bg-emerald-500/20 text-emerald-200' };
   if (score >= 0.4) return { label: 'Medium', klass: 'bg-ap-gold/20 text-ap-gold' };
   return { label: 'Low', klass: 'bg-amber-500/20 text-amber-200' };
+}
+
+function formatCurrentValue(current: string | null): string {
+  if (current === null || current.trim().length === 0) return '—';
+  return current;
 }
 
 export default function AssistantMessage(props: AssistantMessageProps): ReactElement {
@@ -60,12 +56,7 @@ export default function AssistantMessage(props: AssistantMessageProps): ReactEle
         </div>
 
         {structured && structured.talk_track.trim().length > 0 && (
-          <div className="mt-3 rounded-md border border-sky-400/35 bg-sky-950/40 px-3 py-2 text-[12px] text-sky-50">
-            <div className="mb-1 text-[10px] uppercase tracking-wide text-sky-200/80">
-              Say it to the client
-            </div>
-            {structured.talk_track}
-          </div>
+          <TalkTrack text={structured.talk_track} />
         )}
 
         {structured && structured.suggested_parameter_changes.length > 0 && (
@@ -75,6 +66,7 @@ export default function AssistantMessage(props: AssistantMessageProps): ReactEle
                 <tr>
                   <th className="px-2 py-1.5">Parameter</th>
                   <th className="px-2 py-1.5">Change</th>
+                  <th className="px-2 py-1.5">Rationale</th>
                   <th className="px-2 py-1.5">Doc</th>
                   <th className="px-2 py-1.5">&nbsp;</th>
                 </tr>
@@ -89,14 +81,10 @@ export default function AssistantMessage(props: AssistantMessageProps): ReactEle
                       {row.parameter}
                     </td>
                     <td className="px-2 py-1.5 font-mono text-ap-green">
-                      {row.current_value === null || row.current_value.trim().length === 0
-                        ? '—'
-                        : row.current_value}{' '}
-                      → {row.suggested_value}
+                      {formatCurrentValue(row.current_value)} → {row.suggested_value}
                     </td>
-                    <td className="px-2 py-1.5 text-white/85">
-                      {row.doc_ref}
-                    </td>
+                    <td className="px-2 py-1.5 text-white/85">{row.rationale}</td>
+                    <td className="px-2 py-1.5 text-white/85">{row.doc_ref}</td>
                     <td className="px-2 py-1.5 text-right">
                       <ApplySuggestion suggestion={row} />
                     </td>
@@ -111,12 +99,14 @@ export default function AssistantMessage(props: AssistantMessageProps): ReactEle
           </div>
         )}
 
-        {structured && structured.risk_notes.trim().length > 0 && (
+        {structured && (
           <div className="mt-3 rounded-md border border-amber-400/40 bg-ap-warning px-3 py-2 text-[12px] text-amber-100">
             <div className="mb-1 text-[10px] uppercase tracking-wide text-amber-200/80">
               Risk
             </div>
-            {structured.risk_notes}
+            {structured.risk_notes.trim().length > 0
+              ? structured.risk_notes
+              : 'None noted for this change.'}
           </div>
         )}
 

@@ -82,6 +82,16 @@ export interface KnowledgeStore {
   getAllChunks(): Promise<readonly DocChunk[]>;
   /** Bundle content hash for cache invalidation + audit. */
   version(): Promise<string>;
+  /** Manifest summary for the Settings Knowledge panel. */
+  getBundleInfo(): Promise<KnowledgeBundleInfo>;
+}
+
+/** Bundle metadata surfaced in Settings → Knowledge (PRD §3.7). */
+export interface KnowledgeBundleInfo {
+  contentHash: string;
+  fetchedAt: string;
+  pageCount: number;
+  totalTokenEstimate: number;
 }
 
 /** Metadata stored beside a local index (hash for invalidation). */

@@ -22,6 +22,7 @@ import type {
   WidgetPosition,
   WidgetStatus,
 } from '../shared/types';
+import type { ActiveAlgorithm, KnowledgeBundleInfo } from '../shared/knowledgeTypes';
 
 declare global {
   interface Window {
@@ -73,6 +74,7 @@ declare global {
         cancelInFlight: () => Promise<void>;
         getHistory: () => Promise<readonly ChatTurn[]>;
         copySuggestion: (payload: SuggestedParameterChange) => Promise<void>;
+        copyTalkTrack: (text: string) => Promise<void>;
         openSettings: () => Promise<void>;
         getKnowledgeReady: () => Promise<boolean>;
         onTurnAppended: (cb: (turn: ChatTurn) => void) => () => void;
@@ -80,6 +82,11 @@ declare global {
         onStateChanged: (cb: (s: ChatState) => void) => () => void;
         onError: (cb: (e: ChatError) => void) => () => void;
         onHistoryCleared: (cb: () => void) => () => void;
+      };
+      knowledge: {
+        getActiveAlgorithm: () => Promise<ActiveAlgorithm>;
+        setActiveAlgorithm: (algorithm: ActiveAlgorithm) => Promise<ActiveAlgorithm>;
+        getBundleInfo: () => Promise<KnowledgeBundleInfo | null>;
       };
       ai: {
         getApiKey: () => Promise<ApiKeyPresence>;

@@ -42,6 +42,7 @@ function assertKnowledgeStoreInterface(store: KnowledgeStore): void {
   expect(typeof store.retrieve).toBe('function');
   expect(typeof store.getAllChunks).toBe('function');
   expect(typeof store.version).toBe('function');
+  expect(typeof store.getBundleInfo).toBe('function');
 }
 
 describe('resolveKnowledgeBundleDir', () => {

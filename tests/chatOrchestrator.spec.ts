@@ -93,6 +93,12 @@ function makeKnowledgeStore(
       (async () => [...chunks]),
     getAllChunks: async () => [...chunks],
     version: async () => 'test-content-hash',
+    getBundleInfo: async () => ({
+      contentHash: 'test-content-hash',
+      fetchedAt: '2026-07-09T00:00:00.000Z',
+      pageCount: 1,
+      totalTokenEstimate: 100,
+    }),
   };
 }
 
@@ -127,6 +133,7 @@ interface Harness {
 
 function makeHarness(overrides: {
   getApiKey?: () => string | null;
+  getActiveAlgorithm?: () => import('../src/shared/knowledgeTypes').ActiveAlgorithm;
   knowledgeStore?: KnowledgeStore;
   sendResult?: GeminiSendResult | ((args: GeminiSendArgs) => Promise<GeminiSendResult>);
   summarize?: (turns: readonly ChatTurn[]) => Promise<string | null>;
@@ -167,6 +174,7 @@ function makeHarness(overrides: {
       getById: (id) => overrides.screenshots?.find((s) => s.id === id) ?? null,
     } as ChatOrchestratorDeps['screenshotService'],
     chatInflight: { current: null },
+    getActiveAlgorithm: overrides.getActiveAlgorithm ?? (() => 'market-wave'),
     emit: {
       turnAppended: (t) => {
         turns.push(t);
@@ -234,6 +242,12 @@ describe('chatOrchestrator', () => {
     expect(getAllSpy).toHaveBeenCalled();
     expect(h.sendCalls[0]?.knowledgeBlocks).toBeDefined();
     expect(h.sendCalls[0]?.activeAlgorithm).toBe('market-wave');
+  });
+
+  it('passes persisted activeAlgorithm from getActiveAlgorithm()', async () => {
+    const h = makeHarness({ getActiveAlgorithm: () => 'arbitrage' });
+    await h.run('hello');
+    expect(h.sendCalls[0]?.activeAlgorithm).toBe('arbitrage');
   });
 
   it('completes when structured output is absent', async () => {

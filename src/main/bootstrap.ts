@@ -150,6 +150,8 @@ export async function bootstrapApp(
     newId: () => ulid(),
   });
 
+  const { wrapper: knowledgeStoreWrapper } = await createKnowledgeStoreState();
+
   const ctx: AppContext = {
     logger,
     widgetState,
@@ -157,6 +159,7 @@ export async function bootstrapApp(
     screenshotService,
     permissions,
     knowledgeStore: null,
+    knowledgeStoreState: knowledgeStoreWrapper,
     conversationStore,
     geminiService: null,
     aiStore,
@@ -195,7 +198,6 @@ export async function bootstrapApp(
 
   registerCoreIpc(ctx, permissionSync);
 
-  const { wrapper: knowledgeStoreWrapper } = await createKnowledgeStoreState();
   try {
     ctx.knowledgeStore = await createKnowledgeStore({
       backend: knowledgeStoreWrapper.getBackend(),
@@ -236,6 +238,7 @@ export async function bootstrapApp(
       knowledgeStore: ctx.knowledgeStore,
       screenshotService,
       chatInflight,
+      getActiveAlgorithm: () => knowledgeStoreWrapper.getActiveAlgorithm(),
       emit: {
         turnAppended: (turn) => {
           chatLifecycle.emitTurnAppended(turn);

@@ -55,6 +55,12 @@ function makeKnowledgeStore(chunks: readonly DocChunk[] = SAMPLE_CHUNKS): Knowle
     retrieve: async () => [...chunks],
     getAllChunks: async () => [...chunks],
     version: async () => 'test-content-hash',
+    getBundleInfo: async () => ({
+      contentHash: 'test-content-hash',
+      fetchedAt: '2026-07-09T00:00:00.000Z',
+      pageCount: 1,
+      totalTokenEstimate: 100,
+    }),
   };
 }
 

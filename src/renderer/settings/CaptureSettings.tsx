@@ -160,6 +160,12 @@ export default function CaptureSettings(): ReactElement {
         </span>
       </header>
 
+      <p className="mb-4 text-xs text-white/60">
+        On client calls, draw the capture region over the client&apos;s shared
+        TradingView screen in your Zoom or Meet window — not your local chart.
+        Auto-capture keeps the model grounded in the client&apos;s live inputs.
+      </p>
+
       <div className="mb-5">
         <label
           htmlFor="capture-interval"

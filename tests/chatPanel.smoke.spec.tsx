@@ -10,8 +10,8 @@
  */
 
 import React from 'react';
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import ChatErrorView from '../src/renderer/chat/ChatError';
 import AssistantMessage from '../src/renderer/chat/AssistantMessage';
 import type { ChatTurn } from '../src/shared/types';
@@ -23,6 +23,7 @@ import type { ChatTurn } from '../src/shared/types';
     api: {
       chat: {
         copySuggestion: async (): Promise<void> => Promise.resolve(),
+        copyTalkTrack: async (): Promise<void> => Promise.resolve(),
       },
       log: {
         debug: () => undefined,
@@ -34,6 +35,10 @@ import type { ChatTurn } from '../src/shared/types';
   });
 
 describe('<ChatError /> variants render', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('renders no-api-key with a CTA', () => {
     render(<ChatErrorView error={{ variant: 'no-api-key' }} />);
     expect(screen.getByText(/No Gemini API key set/)).toBeTruthy();
@@ -42,8 +47,8 @@ describe('<ChatError /> variants render', () => {
 
   it('renders no-harness with a CTA', () => {
     render(<ChatErrorView error={{ variant: 'no-harness' }} />);
-    expect(screen.getByText(/No harness loaded/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Open Harness Settings/ })).toBeTruthy();
+    expect(screen.getByText(/No knowledge bundle loaded/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Open Knowledge Settings/ })).toBeTruthy();
   });
 
   it('renders token-ceiling with the offending count', () => {
@@ -79,6 +84,10 @@ describe('<ChatError /> variants render', () => {
 });
 
 describe('<AssistantMessage /> happy path', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('renders analysis + suggestion table + risk callout', () => {
     const turn: ChatTurn = {
       id: 'a1',
@@ -109,12 +118,70 @@ describe('<AssistantMessage /> happy path', () => {
     expect(screen.getByText(/looks bullish/)).toBeTruthy();
     expect(screen.getByText('Sell Buffer (%)')).toBeTruthy();
     expect(screen.getByText(/0\s*→\s*2/)).toBeTruthy();
+    expect(screen.getByText(/widen no-action zone/)).toBeTruthy();
     expect(screen.getByText(/Buffers, Scope/)).toBeTruthy();
     expect(screen.getByText(/Say it to the client/)).toBeTruthy();
     expect(screen.getByText(/widen the sell buffer/)).toBeTruthy();
     expect(screen.getByText('regime might shift')).toBeTruthy();
     expect(screen.getByText(/High confidence/)).toBeTruthy();
     expect(screen.getByText(/gemini-3.1-flash-lite-preview/)).toBeTruthy();
+  });
+
+  it('copies talk track via IPC', async () => {
+    const copyTalkTrack = vi.fn(async (): Promise<void> => Promise.resolve());
+    (globalThis.window as Window & { api: { chat: { copyTalkTrack: typeof copyTalkTrack } } }).api
+      .chat.copyTalkTrack = copyTalkTrack;
+
+    const turn: ChatTurn = {
+      id: 'a-talk',
+      role: 'assistant',
+      text: 'Analysis',
+      attachedScreenshotIds: [],
+      structured: {
+        schema_version: '3',
+        analysis: 'Analysis',
+        suggested_parameter_changes: [],
+        talk_track: 'We can widen the sell buffer so it waits through chop.',
+        confidence_score: 0.8,
+        risk_notes: '',
+      },
+      createdAt: 0,
+    };
+    render(<AssistantMessage turn={turn} />);
+    fireEvent.click(screen.getByRole('button', { name: /Copy talk track/i }));
+    expect(copyTalkTrack).toHaveBeenCalledWith(
+      'We can widen the sell buffer so it waits through chop.',
+    );
+  });
+
+  it('escapes raw HTML in talk_track and doc_ref (XSS smoke)', () => {
+    const turn: ChatTurn = {
+      id: 'a3',
+      role: 'assistant',
+      text: 'ok',
+      attachedScreenshotIds: [],
+      structured: {
+        schema_version: '3',
+        analysis: 'ok',
+        suggested_parameter_changes: [
+          {
+            parameter: 'Scope',
+            current_value: null,
+            suggested_value: '1.0',
+            rationale: 'plain rationale',
+            doc_ref: '<img src=x onerror=alert(1)>',
+          },
+        ],
+        talk_track: 'safe <script>alert(1)</script> talk track',
+        confidence_score: 0.5,
+        risk_notes: '<script>alert(2)</script> risk',
+      },
+      createdAt: 0,
+    };
+    const { container } = render(<AssistantMessage turn={turn} />);
+    expect(container.querySelector('script')).toBeNull();
+    expect(screen.getByText(/safe .* talk track/)).toBeTruthy();
+    expect(screen.getByText(/<img src=x onerror=alert\(1\)>/)).toBeTruthy();
   });
 
   it('escapes raw HTML in the markdown body (XSS smoke)', () => {

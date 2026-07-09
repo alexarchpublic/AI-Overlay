@@ -22,6 +22,7 @@ import type {
   WidgetPosition,
   WidgetStatus,
 } from '../shared/types';
+import type { ActiveAlgorithm, KnowledgeBundleInfo } from '../shared/knowledgeTypes';
 import {
   IPC_AI_CLEAR_API_KEY,
   IPC_AI_GET_API_KEY,
@@ -42,6 +43,7 @@ import {
   IPC_CHAT_CANCEL,
   IPC_CHAT_CLOSE,
   IPC_CHAT_COPY_SUGGESTION,
+  IPC_CHAT_COPY_TALK_TRACK,
   IPC_CHAT_ERROR,
   IPC_CHAT_GET_HISTORY,
   IPC_CHAT_GET_KNOWLEDGE_READY,
@@ -67,6 +69,9 @@ import {
   IPC_WIDGET_REPORT_POSITION,
   IPC_WIDGET_SET_STATUS,
   IPC_WIDGET_STATUS_CHANGED,
+  IPC_KNOWLEDGE_GET_ACTIVE_ALGORITHM,
+  IPC_KNOWLEDGE_GET_BUNDLE_INFO,
+  IPC_KNOWLEDGE_SET_ACTIVE_ALGORITHM,
 } from '../shared/ipcChannels';
 
 type LogFn = (event: string, context?: LogContext) => void;
@@ -206,6 +211,7 @@ interface ChatApi {
   cancelInFlight(): Promise<void>;
   getHistory(): Promise<readonly ChatTurn[]>;
   copySuggestion(payload: SuggestedParameterChange): Promise<void>;
+  copyTalkTrack(text: string): Promise<void>;
   openSettings(): Promise<void>;
   getKnowledgeReady(): Promise<boolean>;
   onTurnAppended(cb: (turn: ChatTurn) => void): () => void;
@@ -226,6 +232,8 @@ const chat: ChatApi = {
     ipcRenderer.invoke(IPC_CHAT_GET_HISTORY) as Promise<readonly ChatTurn[]>,
   copySuggestion: (payload) =>
     ipcRenderer.invoke(IPC_CHAT_COPY_SUGGESTION, payload) as Promise<void>,
+  copyTalkTrack: (text) =>
+    ipcRenderer.invoke(IPC_CHAT_COPY_TALK_TRACK, text) as Promise<void>,
   openSettings: () => ipcRenderer.invoke(IPC_CHAT_OPEN_SETTINGS) as Promise<void>,
   getKnowledgeReady: () =>
     ipcRenderer.invoke(IPC_CHAT_GET_KNOWLEDGE_READY) as Promise<boolean>,
@@ -276,6 +284,21 @@ const chat: ChatApi = {
   },
 };
 
+interface KnowledgeApi {
+  getActiveAlgorithm(): Promise<ActiveAlgorithm>;
+  setActiveAlgorithm(algorithm: ActiveAlgorithm): Promise<ActiveAlgorithm>;
+  getBundleInfo(): Promise<KnowledgeBundleInfo | null>;
+}
+
+const knowledge: KnowledgeApi = {
+  getActiveAlgorithm: () =>
+    ipcRenderer.invoke(IPC_KNOWLEDGE_GET_ACTIVE_ALGORITHM) as Promise<ActiveAlgorithm>,
+  setActiveAlgorithm: (algorithm) =>
+    ipcRenderer.invoke(IPC_KNOWLEDGE_SET_ACTIVE_ALGORITHM, algorithm) as Promise<ActiveAlgorithm>,
+  getBundleInfo: () =>
+    ipcRenderer.invoke(IPC_KNOWLEDGE_GET_BUNDLE_INFO) as Promise<KnowledgeBundleInfo | null>,
+};
+
 interface AiApi {
   getApiKey(): Promise<ApiKeyPresence>;
   setApiKey(raw: string): Promise<void>;
@@ -312,6 +335,7 @@ const api = {
   capture,
   region,
   chat,
+  knowledge,
   ai,
 } as const;
 

@@ -86,8 +86,10 @@ export const IPC_CHAT_GET_HISTORY = 'chat:getHistory';
 export const IPC_CHAT_COPY_SUGGESTION = 'chat:copySuggestion';
 /** Open the settings window from chat error CTAs or in-app shortcuts. */
 export const IPC_CHAT_OPEN_SETTINGS = 'chat:openSettings';
-/** Whether the servable-tier knowledge store initialized with at least one chunk. */
+/** Whether the docs bundle initialized with at least one chunk. */
 export const IPC_CHAT_GET_KNOWLEDGE_READY = 'chat:getKnowledgeReady';
+/** Copy a talk-track string to the clipboard. */
+export const IPC_CHAT_COPY_TALK_TRACK = 'chat:copyTalkTrack';
 
 /** main → renderer push: a new turn (user or assistant) was appended. */
 export const IPC_CHAT_TURN_APPENDED = 'chat:turnAppended';
@@ -111,6 +113,14 @@ export const IPC_AI_GET_MODEL = 'ai:getModel';
 export const IPC_AI_SET_MODEL = 'ai:setModel';
 export const IPC_AI_LIST_MODELS = 'ai:listModels';
 export const IPC_AI_GET_STATS = 'ai:getStats';
+
+// ---------------------------------------------------------------------------
+// Knowledge channels (internal co-pilot pivot — D-P10 / §3.7)
+// ---------------------------------------------------------------------------
+
+export const IPC_KNOWLEDGE_GET_ACTIVE_ALGORITHM = 'knowledge:getActiveAlgorithm';
+export const IPC_KNOWLEDGE_SET_ACTIVE_ALGORITHM = 'knowledge:setActiveAlgorithm';
+export const IPC_KNOWLEDGE_GET_BUNDLE_INFO = 'knowledge:getBundleInfo';
 
 // ---------------------------------------------------------------------------
 // Menu action identifiers (strings sent over IPC_WIDGET_MENU_ACTION)

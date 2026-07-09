@@ -15,6 +15,7 @@ import type { PermissionsHelper } from './permissions';
 import type { ScreenshotService } from './screenshotService';
 import type { WidgetStateStore } from './widgetState';
 import type { KnowledgeStore } from '../shared/knowledgeTypes';
+import type { KnowledgeStateStore } from './knowledgeStoreState';
 import type { ChatState } from '../shared/types';
 
 export interface AppContext {
@@ -24,6 +25,7 @@ export interface AppContext {
   screenshotService: ScreenshotService;
   permissions: PermissionsHelper;
   knowledgeStore: KnowledgeStore | null;
+  knowledgeStoreState: KnowledgeStateStore;
   conversationStore: ConversationStore;
   geminiService: GeminiService | null;
   aiStore: AiStateStore;

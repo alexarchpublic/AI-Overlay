@@ -10,6 +10,7 @@ import { useEffect, useState, type ReactElement } from 'react';
 import CaptureSettings from './CaptureSettings';
 import RecentCapturesPanel from './RecentCapturesPanel';
 import AISettings from './AISettings';
+import KnowledgeSettings from './KnowledgeSettings';
 
 function useDevPanelEnabled(): boolean {
   const [enabled] = useState<boolean>(() => import.meta.env.DEV);
@@ -33,6 +34,7 @@ export default function SettingsShell(): ReactElement {
       </header>
       <div className="flex flex-col gap-5">
         <CaptureSettings />
+        <KnowledgeSettings />
         <AISettings />
         {showDevPanel && <RecentCapturesPanel />}
       </div>

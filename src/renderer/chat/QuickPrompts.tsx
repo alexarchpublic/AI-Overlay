@@ -1,18 +1,20 @@
 /**
  * @file src/renderer/chat/QuickPrompts.tsx
  *
- * Why it exists: PRD D16 — three preset chips above the input bar that
- * prefill the textarea. Verbatim text from `MVP_Chunking_Plan.md §2 — Chunk 5`.
- * Clicking a chip prefills, never auto-sends.
+ * PRD §3.6 — six call-scenario quick prompts for internal sales/CS.
+ * Clicking a chip prefills the draft; it never auto-sends.
  */
 
 import { type ReactElement } from 'react';
 import { useChatStore } from './chatStore';
 
 const QUICK_PROMPTS: readonly string[] = [
-  'Current signal?',
-  'Risk right now?',
-  'More conservative settings?',
+  'Client wants fewer trades during chop',
+  'Client wants to deploy cash faster',
+  "Why isn't the client's algo trading?",
+  'Explain Scope in client-friendly terms',
+  'Client is worried about buying into a falling market',
+  "Read the client's current settings off the latest screenshot",
 ];
 
 export interface QuickPromptsProps {
