@@ -75,6 +75,11 @@ export interface KnowledgeStore {
   init(): Promise<void>;
   /** Minimum relevant doc chunks for the query. */
   retrieve(query: RetrievalQuery): Promise<DocChunk[]>;
+  /**
+   * Full in-memory corpus for prompt composition (active-doc / full-corpus
+   * injection). Callers must not mutate the returned array.
+   */
+  getAllChunks(): Promise<readonly DocChunk[]>;
   /** Bundle content hash for cache invalidation + audit. */
   version(): Promise<string>;
 }

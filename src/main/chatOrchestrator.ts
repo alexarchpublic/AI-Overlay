@@ -21,9 +21,16 @@ import {
   DEFAULT_RETRIEVAL_K,
   DEFAULT_RETRIEVAL_TOKEN_BUDGET,
 } from '../shared/knowledgeConstants';
-import { estimateKnowledgeContextTokens } from '../shared/knowledge/promptContext';
+import {
+  estimatePromptKnowledgeTokens,
+  flattenPromptKnowledge,
+  selectPromptKnowledge,
+} from '../shared/knowledge/promptContext';
 import { SCREENSHOTS_PER_TURN } from '../shared/aiConstants';
 import type { ChatError, ChatState, ChatTurn, Screenshot } from '../shared/types';
+
+/** Default until Phase 4 algorithm picker lands (D-P10). */
+const DEFAULT_ACTIVE_ALGORITHM = 'market-wave' as const;
 
 export interface ChatOrchestratorEmit {
   turnAppended(turn: ChatTurn): void;
@@ -105,15 +112,22 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
 
     const preTruncateHistory = conv.getHistory();
     const chartContext = extractChartContextForRetrieval(preTruncateHistory, text);
+    const activeAlgorithm = DEFAULT_ACTIVE_ALGORITHM;
 
-    let knowledgeChunks;
+    let knowledgeBlocks;
     try {
-      knowledgeChunks = await store.retrieve({
-        text,
-        ...(chartContext !== undefined ? { chartContext } : {}),
-        k: DEFAULT_RETRIEVAL_K,
-        tokenBudget: DEFAULT_RETRIEVAL_TOKEN_BUDGET,
-      });
+      const allChunks = await store.getAllChunks();
+      knowledgeBlocks = selectPromptKnowledge(
+        allChunks,
+        {
+          text,
+          ...(chartContext !== undefined ? { chartContext } : {}),
+          activeAlgorithm,
+          k: DEFAULT_RETRIEVAL_K,
+          tokenBudget: DEFAULT_RETRIEVAL_TOKEN_BUDGET,
+        },
+        activeAlgorithm,
+      );
     } catch (err) {
       log.warn('chat.knowledgeRetrieveFailed', {
         message: err instanceof Error ? err.message : String(err),
@@ -121,12 +135,13 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
       emit.error({ variant: 'no-harness' });
       return;
     }
+    const knowledgeChunks = flattenPromptKnowledge(knowledgeBlocks);
     if (knowledgeChunks.length === 0) {
       emit.error({ variant: 'no-harness' });
       return;
     }
 
-    const knowledgeApproxTokens = estimateKnowledgeContextTokens(knowledgeChunks);
+    const knowledgeApproxTokens = estimatePromptKnowledgeTokens(knowledgeBlocks);
 
     await conv.maybeTruncate((older) => gemini.summarize(older));
 
@@ -195,7 +210,8 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
         userText: modelUserText,
         history: fitResult.history,
         screenshots: fitResult.screenshots,
-        knowledgeChunks,
+        knowledgeBlocks,
+        activeAlgorithm,
         signal: ctrl.signal,
       });
     } finally {

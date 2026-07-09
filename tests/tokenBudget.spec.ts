@@ -97,15 +97,15 @@ describe('tokenBudget.fit', () => {
 
   it('trims oldest history pairs first when over the soft ceiling', () => {
     // Build history that contributes a meaningful number of tokens.
-    const longText = 'x'.repeat(40_000); // ~10.5k tokens
+    const longText = 'x'.repeat(4_000); // ~1k tokens per turn
     const history: ChatTurn[] = [];
     for (let i = 0; i < 20; i++) {
       history.push(userTurn(`u${String(i)}`, longText));
       history.push(assistantTurn(`a${String(i)}`, longText));
     }
-    // Set harness so the FLOOR fits but adding history pushes us over.
+    // Floor fits under soft ceiling; history pushes us over.
     const result = fit({
-      knowledgeApproxTokens: SOFT_CEILING_TOKENS - 100_000,
+      knowledgeApproxTokens: 1_000,
       history,
       screenshots: [],
       userText: 'go',
@@ -115,8 +115,6 @@ describe('tokenBudget.fit', () => {
     if (result.ok) {
       expect(result.trims.length).toBeGreaterThan(0);
       expect(result.history.length).toBeLessThan(history.length);
-      // Earliest-first drops: the first remaining turn should have a
-      // higher index than the first dropped turn.
       const firstTrim = result.trims[0];
       expect(firstTrim?.what).toBe('historyPair');
     } else {
@@ -146,5 +144,9 @@ describe('tokenBudget.fit', () => {
     expect(result.screenshots.length).toBeLessThan(screenshots.length);
     const firstScreenshotTrim = result.trims.find((t) => t.what === 'screenshot');
     expect(firstScreenshotTrim?.id).toBe('old');
+  });
+
+  it('uses the Phase 3 ~40k soft ceiling', () => {
+    expect(SOFT_CEILING_TOKENS).toBe(40_000);
   });
 });

@@ -39,7 +39,11 @@ import type {
 import { isSuggestedChange } from './typeGuards';
 
 function formatSuggestionForClipboard(s: SuggestedParameterChange): string {
-  return `${s.parameter}: ${s.direction} to ${s.suggested_value} # ${s.chart_context} — ${s.rationale}`;
+  const current =
+    s.current_value === null || s.current_value.trim().length === 0
+      ? '—'
+      : s.current_value;
+  return `${s.parameter}: ${current} → ${s.suggested_value} (${s.doc_ref}) — ${s.rationale}`;
 }
 
 export function registerChatAiIpc(ctx: AppContext, chat: ChatLifecycle): void {

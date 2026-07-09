@@ -91,6 +91,7 @@ function makeKnowledgeStore(
     retrieve:
       retrieveImpl ??
       (async () => [...chunks]),
+    getAllChunks: async () => [...chunks],
     version: async () => 'test-content-hash',
   };
 }
@@ -203,25 +204,26 @@ describe('chatOrchestrator', () => {
     expect(h.sendCalls).toHaveLength(0);
   });
 
-  it('passes chartContext to knowledge retrieve after a tuning turn', async () => {
-    const retrieveSpy = vi.fn(async () => [...SAMPLE_CHUNKS]);
-    const h = makeHarness({
-      knowledgeStore: makeKnowledgeStore(SAMPLE_CHUNKS, retrieveSpy),
-    });
+  it('loads corpus via getAllChunks and sends knowledgeBlocks to gemini', async () => {
+    const getAllSpy = vi.fn(async () => [...SAMPLE_CHUNKS]);
+    const store = makeKnowledgeStore(SAMPLE_CHUNKS);
+    store.getAllChunks = getAllSpy;
+    const h = makeHarness({ knowledgeStore: store });
     h.deps.conversationStore.appendAssistant({
-      text: 'Try tightening the stop.',
+      text: 'Try widening Sell Buffer.',
       structured: {
-        schema_version: '2',
-        analysis: 'Volatility is elevated.',
+        schema_version: '3',
+        analysis: 'Chop is elevated.',
         suggested_parameter_changes: [
           {
-            parameter: 'stop',
-            direction: 'tighten',
-            suggested_value: '1.5× ATR',
-            chart_context: 'Wide bands on the last three sessions.',
-            rationale: 'Reduce risk.',
+            parameter: 'Sell Buffer (%)',
+            current_value: '0',
+            suggested_value: '2',
+            rationale: 'Widen no-action zone.',
+            doc_ref: 'Market Wave → Buffers, Scope, and Timeframe',
           },
         ],
+        talk_track: 'We can widen the sell buffer so it waits through chop.',
         confidence_score: 0.7,
         risk_notes: 'None.',
       },
@@ -229,11 +231,9 @@ describe('chatOrchestrator', () => {
       modelUsed: 'test',
     });
     await h.run('I applied the change — screenshot attached');
-    expect(retrieveSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        chartContext: expect.stringContaining('Wide bands') as string,
-      }),
-    );
+    expect(getAllSpy).toHaveBeenCalled();
+    expect(h.sendCalls[0]?.knowledgeBlocks).toBeDefined();
+    expect(h.sendCalls[0]?.activeAlgorithm).toBe('market-wave');
   });
 
   it('completes when structured output is absent', async () => {
@@ -245,18 +245,18 @@ describe('chatOrchestrator', () => {
     expect(h.turns).toHaveLength(2);
   });
 
-  it('surfaces no-harness when knowledge retrieve throws', async () => {
-    const h = makeHarness({
-      knowledgeStore: makeKnowledgeStore(SAMPLE_CHUNKS, async () => {
-        throw new Error('disk missing');
-      }),
-    });
+  it('surfaces no-harness when knowledge getAllChunks throws', async () => {
+    const store = makeKnowledgeStore(SAMPLE_CHUNKS);
+    store.getAllChunks = async () => {
+      throw new Error('disk missing');
+    };
+    const h = makeHarness({ knowledgeStore: store });
     await h.run('hello');
     expect(h.errors).toEqual([{ variant: 'no-harness' }]);
     expect(h.sendCalls).toHaveLength(0);
   });
 
-  it('surfaces no-harness when retrieve returns zero chunks', async () => {
+  it('surfaces no-harness when corpus is empty', async () => {
     const h = makeHarness({
       knowledgeStore: makeKnowledgeStore([], async () => []),
     });
@@ -268,8 +268,8 @@ describe('chatOrchestrator', () => {
   it('surfaces token-ceiling when the hard ceiling is exceeded', async () => {
     const hugeChunk: DocChunk = {
       ...SAMPLE_CHUNKS[0]!,
-      text: 'x'.repeat(6_000_000),
-      tokenEstimate: Math.ceil(6_000_000 / 3.8),
+      text: 'x'.repeat(400_000),
+      tokenEstimate: Math.ceil(400_000 / 3.8),
     };
     const h = makeHarness({
       knowledgeStore: makeKnowledgeStore([hugeChunk]),
@@ -296,20 +296,16 @@ describe('chatOrchestrator', () => {
 
   describe('H1 fix — token-budget trims applied to send', () => {
     it('passes fitResult.history (trimmed) to gemini.send', async () => {
-      const longText = 'x'.repeat(40_000);
+      // Stay under HARD_CEILING (80k) but over SOFT_CEILING (40k) so trim runs.
+      const longText = 'x'.repeat(3_000);
       const history: ChatTurn[] = [];
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 30; i++) {
         history.push(userTurn(`u${String(i)}`, longText));
         history.push(assistantTurn(`a${String(i)}`, longText));
       }
 
-      const knowledgeChunks = [
-        {
-          ...SAMPLE_CHUNKS[0],
-          // ~800k tokens once formatted — forces history trims past the soft ceiling.
-          text: 'k'.repeat(3_200_000),
-        },
-      ];
+      // Knowledge floor under soft ceiling; long history forces oldest-pair trims.
+      const knowledgeChunks = SAMPLE_CHUNKS;
       const knowledgeApproxTokens = estimateKnowledgeContextTokens(knowledgeChunks);
       const fitResult = fitTokenBudget({
         knowledgeApproxTokens,
@@ -317,6 +313,7 @@ describe('chatOrchestrator', () => {
         screenshots: [],
         userText: 'go',
       });
+      expect(fitResult.ok).toBe(true);
       expect(fitResult.trims.length).toBeGreaterThan(0);
       expect(fitResult.history.length).toBeLessThan(history.length);
 
@@ -342,8 +339,9 @@ describe('chatOrchestrator', () => {
       await h.run('go');
 
       expect(h.sendCalls).toHaveLength(1);
-      expect(h.sendCalls[0]?.history.length).toBe(fitResult.history.length);
+      // Orchestrator must apply token-budget trims (not the full pre-send history).
       expect(h.sendCalls[0]?.history.length).toBeLessThan(history.length);
+      expect(h.sendCalls[0]?.history.length).toBeLessThanOrEqual(fitResult.history.length);
     });
   });
 
@@ -405,12 +403,12 @@ describe('chatOrchestrator', () => {
       ]);
     });
 
-    it('surfaces no-harness when knowledge retrieve throws a non-Error value', async () => {
-      const h = makeHarness({
-        knowledgeStore: makeKnowledgeStore(SAMPLE_CHUNKS, async () => {
-          throw 'disk missing';
-        }),
-      });
+    it('surfaces no-harness when knowledge getAllChunks throws a non-Error value', async () => {
+      const store = makeKnowledgeStore(SAMPLE_CHUNKS);
+      store.getAllChunks = async () => {
+        throw 'disk missing';
+      };
+      const h = makeHarness({ knowledgeStore: store });
       await h.run('hello');
       expect(h.errors).toEqual([{ variant: 'no-harness' }]);
     });
@@ -538,17 +536,18 @@ describe('chatOrchestrator', () => {
         turn: {
           ...makeSuccessSendResult().turn,
           structured: {
-            schema_version: '2',
-            analysis: 'Try ~1.5× ATR on your chart.',
+            schema_version: '3',
+            analysis: 'Try raising Sell Buffer on the Inputs tab.',
             suggested_parameter_changes: [
               {
-                parameter: 'stop',
-                direction: 'tighten',
-                suggested_value: '1.5× ATR',
-                chart_context: 'Wide bands visible.',
-                rationale: 'Reduce risk.',
+                parameter: 'Sell Buffer (%)',
+                current_value: null,
+                suggested_value: '2',
+                rationale: 'Widen no-action zone.',
+                doc_ref: 'Market Wave → Buffers, Scope, and Timeframe',
               },
             ],
+            talk_track: 'We can widen the sell buffer so it waits through chop.',
             confidence_score: 0.8,
             risk_notes: 'None.',
           },

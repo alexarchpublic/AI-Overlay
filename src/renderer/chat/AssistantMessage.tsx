@@ -59,15 +59,23 @@ export default function AssistantMessage(props: AssistantMessageProps): ReactEle
           </ReactMarkdown>
         </div>
 
+        {structured && structured.talk_track.trim().length > 0 && (
+          <div className="mt-3 rounded-md border border-sky-400/35 bg-sky-950/40 px-3 py-2 text-[12px] text-sky-50">
+            <div className="mb-1 text-[10px] uppercase tracking-wide text-sky-200/80">
+              Say it to the client
+            </div>
+            {structured.talk_track}
+          </div>
+        )}
+
         {structured && structured.suggested_parameter_changes.length > 0 && (
           <div className="mt-3 overflow-hidden rounded-md border border-white/15">
             <table className="w-full text-[12px]">
               <thead className="bg-ap-elevated text-left text-[10px] uppercase tracking-wide text-white/65">
                 <tr>
                   <th className="px-2 py-1.5">Parameter</th>
-                  <th className="px-2 py-1.5">Direction</th>
-                  <th className="px-2 py-1.5">Try</th>
-                  <th className="px-2 py-1.5">Chart</th>
+                  <th className="px-2 py-1.5">Change</th>
+                  <th className="px-2 py-1.5">Doc</th>
                   <th className="px-2 py-1.5">&nbsp;</th>
                 </tr>
               </thead>
@@ -80,14 +88,14 @@ export default function AssistantMessage(props: AssistantMessageProps): ReactEle
                     <td className="px-2 py-1.5 font-mono text-ap-fg">
                       {row.parameter}
                     </td>
-                    <td className="px-2 py-1.5 font-mono capitalize text-white/85">
-                      {row.direction}
-                    </td>
                     <td className="px-2 py-1.5 font-mono text-ap-green">
-                      {row.suggested_value}
+                      {row.current_value === null || row.current_value.trim().length === 0
+                        ? '—'
+                        : row.current_value}{' '}
+                      → {row.suggested_value}
                     </td>
                     <td className="px-2 py-1.5 text-white/85">
-                      {row.chart_context}
+                      {row.doc_ref}
                     </td>
                     <td className="px-2 py-1.5 text-right">
                       <ApplySuggestion suggestion={row} />
@@ -97,8 +105,8 @@ export default function AssistantMessage(props: AssistantMessageProps): ReactEle
               </tbody>
             </table>
             <div className="border-t border-white/10 bg-ap-elevated px-2 py-1 text-[10px] text-white/60">
-              Apply a suggestion on TradingView, capture a fresh screenshot with
-              the camera button, and send an update to continue tuning.
+              Have the client apply the change on TradingView, capture a fresh
+              screenshot, and send an update to continue.
             </div>
           </div>
         )}

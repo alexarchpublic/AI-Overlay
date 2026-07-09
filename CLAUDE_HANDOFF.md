@@ -617,3 +617,42 @@ meaningful work. Entries are chronological, newest at the bottom.
 - Knowledge source of truth is now published docs at docs.archpublic.com (verbatim snapshots), not abstraction chunks.
 - `npm run ingest:docs` replaces removed `build:knowledge` / `generate:abstractions`.
 - Full-corpus injection mode is ON for current corpus size (28.7k tokens).
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-09-ARCH-PIVOT-P3
+**Timestamp:** 2026-07-09T14:15:00-05:00 (CDT)
+**Model:** Cursor Grok 4.5
+**Focus Area:** Internal co-pilot pivot — Phase 3 persona v3, schema v3, prompt composition (D-P5, D-P6, D-P8)
+
+### Decisions Made
+- Replaced persona with internal sales/CS co-pilot text (compliance boundary; no zero-leakage language).
+- Schema v3: `talk_track` required; suggestions use `parameter` / `current_value` (nullable) / `suggested_value` / `rationale` / `doc_ref`; removed `direction`, `chart_context`, `SCHEMA_V2_FORBIDDEN_FIELDS`.
+- Prompt composition: `selectPromptKnowledge()` — full-corpus injection when `USE_FULL_CORPUS_INJECTION` (current corpus ~28.7k ≤ 50k); otherwise active-doc guide + lexical remainder. Orchestrator uses `getAllChunks()` + blocks; default `activeAlgorithm='market-wave'` until Phase 4 picker.
+- Default model → `gemini-3.1-flash-lite-preview`; soft/hard prompt ceilings → 40k / 80k (D-P8).
+- System-prompt cache keyed on bundle version + active algorithm + knowledge fingerprint (includes chunk text).
+- Minimal renderer updates so schema v3 types compile: talk-track block + suggestion columns; dedicated TalkTrack component / picker deferred to Phase 4.
+
+### Files Modified / Created
+- Core: `persona.ts`, `aiSchema.ts`, `types.ts`, `aiConstants.ts`, `promptContext.ts`, `knowledgeTypes.ts`, `knowledgeStore.ts`, `geminiService.ts`, `chatOrchestrator.ts`, `chartContext.ts`, `tuning/constants.ts`, IPC clipboard/typeGuards, `AssistantMessage.tsx`
+- Tests + snapshot: `aiSchema`, `geminiService` (+ snap), `chatOrchestrator`, `chatPanel.smoke`, `promptContext`, `tokenBudget`, `chartContext`, knowledge store specs
+
+### Open Questions / Risks
+- Full-corpus (~28.7k) + persona + schema + history can approach the 40k soft ceiling quickly — history/screenshot trim will fire earlier than the old 900k ceiling; watch mid-call latency.
+- Algorithm picker not wired yet; orchestrator hard-codes `market-wave` (boost/injection path ready).
+- Talk-track copy button / polished Settings Knowledge panel still Phase 4.
+
+### Verification Results
+- `npm run typecheck && npm run lint && npm test` — **250 tests pass**.
+- System-prompt snapshot updated and reviewed (persona v3 + schema v3 instructions).
+
+### Recommended Next Steps for Next Claude Instance
+1. **Phase 4** — TalkTrack copy UX, quick prompts §3.6, algorithm picker + `knowledge.activeAlgorithm` persistence, Settings Knowledge panel, capture-guidance copy.
+2. Wire picker into orchestrator (replace hard-coded `market-wave`).
+3. Phase 5 docs reset + Phase 6 eval bank.
+
+### Key Context Delta
+- Model output schema is v3; v2 JSON is rejected as invalid-json.
+- Prompt path injects full docs corpus today; retrieval remainder is a no-op until corpus exceeds 50k tokens.
+- Latency posture: Flash-lite default + 40k soft ceiling.

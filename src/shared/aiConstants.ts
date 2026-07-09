@@ -19,23 +19,19 @@ export { TOKEN_CHARS_PER_TOKEN as CHARS_PER_TOKEN };
 // ---------------------------------------------------------------------------
 
 /**
- * Default model used when `ai.model` is unset. PRD D1.
+ * Default model used when `ai.model` is unset. PRD D-P8 — latency is a
+ * top-line requirement for mid-call answers, so the default is the fastest
+ * allowlisted Flash-class tier.
  *
- * Gemini 3 Pro Preview is the flagship of the Gemini 3 lineup
- * (https://ai.google.dev/gemini-api/docs/gemini-3): 1M input / 64k output
- * context, strongest reasoning, strongest vision — the right default for
- * the trading-chart analysis we ship in this app.
- *
- * If a stable (non-preview) Gemini 3 successor lands, flip the default
- * here and re-run the PRD §7 #5 JSON-mode reliability sweep against it
- * before promoting.
+ * If a stable (non-preview) Flash successor lands, flip the default here
+ * and re-run the latency + JSON-mode reliability sweep before promoting.
  */
-export const DEFAULT_MODEL = 'gemini-3.1-pro-preview';
+export const DEFAULT_MODEL = 'gemini-3.1-flash-lite-preview';
 
 /**
  * Model picker allowlist (PRD D2). The settings UI surfaces these and main
  * rejects any value outside the list. Adding a model = updating this array
- * AND running the §7 #5 sweep against the new default.
+ * AND running the latency / JSON-mode sweep against the new default.
  *
  * Only conversational / vision models are included. The two image-generation
  * variants Google ships (`gemini-3.1-flash-image-preview` aka Nano Banana 2,
@@ -44,12 +40,12 @@ export const DEFAULT_MODEL = 'gemini-3.1-pro-preview';
  * those models would produce malformed responses against `OUTPUT_SCHEMA`.
  */
 export const MODEL_ALLOWLIST: readonly string[] = [
+  // Fastest Flash-class (default): 1M / 64k context, lowest latency.
+  'gemini-3.1-flash-lite-preview',
+  // Mid-tier Flash: 1M / 64k context, faster + cheaper than Pro.
+  'gemini-3-flash-preview',
   // Flagship: 1M / 64k context, best reasoning + vision quality.
   'gemini-3.1-pro-preview',
-  // Mid-tier: 1M / 64k context, faster + cheaper than Pro.
-  'gemini-3-flash-preview',
-  // Cheapest tier: 1M / 64k context, suitable for short cheap calls.
-  'gemini-3.1-flash-lite-preview',
 ];
 
 /**
@@ -99,17 +95,18 @@ export const SUMMARY_MAX_OUTPUT_TOKENS = 1_024;
 // ---------------------------------------------------------------------------
 
 /**
- * Soft ceiling on the estimated request size. Above this we trim history
- * (oldest first) then screenshots (oldest first) until the request fits.
- * Below Gemini 1.5 Pro's practical 1 M limit; leaves headroom for output.
+ * Soft ceiling on the estimated request size (PRD D-P8 — ~40k prompt budget
+ * to protect prefill latency). Above this we trim history (oldest first)
+ * then screenshots (oldest first) until the request fits.
  */
-export const SOFT_CEILING_TOKENS = 900_000;
+export const SOFT_CEILING_TOKENS = 40_000;
 
 /**
  * Hard ceiling. Above this we fail with `<ChatError variant="token-ceiling" />`
- * BEFORE making the call.
+ * BEFORE making the call. Kept well above the soft ceiling so a single
+ * oversized knowledge block can still fail closed rather than hang.
  */
-export const HARD_CEILING_TOKENS = 1_500_000;
+export const HARD_CEILING_TOKENS = 80_000;
 
 /**
  * Reserved headroom for the response. Subtracted out implicitly by

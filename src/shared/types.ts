@@ -228,32 +228,30 @@ export interface ChatTurn {
   promptTokenEstimate?: number;
 }
 
-/** Direction for a forward-looking parameter suggestion (schema v2). */
-export type SuggestionDirection = 'increase' | 'decrease' | 'set';
-
 /**
- * One row in the structured `suggested_parameter_changes` array (schema v2).
- * `suggested_value` is a forward recommendation to TRY — never a readout of
- * a proprietary default. `chart_context` grounds the suggestion in what the
- * user sees on their chart or last tried.
+ * One row in the structured `suggested_parameter_changes` array (schema v3).
+ * `parameter` is the exact TradingView Inputs-tab label. `current_value` comes
+ * from the client's screenshot or what the employee stated (null if unknown).
+ * `doc_ref` is the documentation section path used for grounding.
  */
 export interface SuggestedParameterChange {
   parameter: string;
-  direction: SuggestionDirection;
+  current_value: string | null;
   suggested_value: string;
-  chart_context: string;
   rationale: string;
+  doc_ref: string;
 }
 
 /**
- * Locked structured-output schema v2 (security-harness PRD §5.4). No file/path
- * fields; no proprietary `current` value. Adding a field requires a PRD
- * amendment and updates to `aiSchema.spec.ts`.
+ * Locked structured-output schema v3 (PRD D-P6). Adds `talk_track` for
+ * client-safe phrasing. Adding a field requires a PRD amendment and updates
+ * to `aiSchema.spec.ts`.
  */
 export interface AnalysisResponse {
-  schema_version: '2';
+  schema_version: '3';
   analysis: string;
   suggested_parameter_changes: readonly SuggestedParameterChange[];
+  talk_track: string;
   confidence_score: number;
   risk_notes: string;
 }

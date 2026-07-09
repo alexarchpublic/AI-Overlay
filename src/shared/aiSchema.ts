@@ -1,15 +1,13 @@
 /**
  * @file src/shared/aiSchema.ts
  *
- * Why it exists: security-harness PRD §5.4 / D-9 — the locked structured-
- * output schema + natural-language schema reminder. Both live here (and only
- * here) so `geminiService.buildSystemPrompt()` is the only sanctioned composer.
+ * Why it exists: PRD D-P6 — the locked structured-output schema + natural-
+ * language schema reminder. Both live here (and only here) so
+ * `geminiService.buildSystemPrompt()` is the only sanctioned composer.
  *
- * Schema v2 removes leakage-shaped fields (`current`, file/path citations) and
- * replaces them with forward-looking tuning fields (`suggested_value`,
- * `chart_context`, `direction`). `suggested_value` and `chart_context` are
- * typed as `string` in the JSON schema because Gemini's structured-output mode
- * treats numeric strings inconsistently across model versions.
+ * Schema v3 adds `talk_track` and per-suggestion `current_value` / `doc_ref`
+ * for the internal sales/CS co-pilot. Leakage-oriented v2 fields
+ * (`direction`, `chart_context`) and `SCHEMA_V2_FORBIDDEN_FIELDS` are gone.
  *
  * Reviewer grep contract: `responseSchema:` should appear in exactly one
  * place outside this file — `geminiService.send()`.
@@ -26,60 +24,69 @@ export const OUTPUT_SCHEMA = {
     'schema_version',
     'analysis',
     'suggested_parameter_changes',
+    'talk_track',
     'confidence_score',
     'risk_notes',
   ],
   properties: {
-    schema_version: { type: 'string', enum: ['2'] },
+    schema_version: { type: 'string', enum: ['3'] },
     analysis: {
       type: 'string',
       description:
-        'Behavior/regime-level markdown analysis. No code, paths, formulas, or disclosures of algorithm default/internal values.',
+        'Concise markdown analysis grounded in the product docs and screenshots. Cite doc sections when relevant.',
     },
     suggested_parameter_changes: {
       type: 'array',
       items: {
         type: 'object',
-        required: ['parameter', 'direction', 'suggested_value', 'chart_context', 'rationale'],
+        required: [
+          'parameter',
+          'current_value',
+          'suggested_value',
+          'rationale',
+          'doc_ref',
+        ],
         properties: {
           parameter: {
             type: 'string',
             description:
-              'Named parameter role, e.g. volatility_filter — not a file or variable reference.',
+              'Exact TradingView Inputs-tab label, e.g. "Sell Buffer (%)".',
           },
-          direction: { type: 'string', enum: ['increase', 'decrease', 'set'] },
+          current_value: {
+            type: 'string',
+            nullable: true,
+            description:
+              "Value from the client's screenshot or what the employee stated; null when unknown.",
+          },
           suggested_value: {
             type: 'string',
-            description:
-              'A value or range to TRY (forward-looking, rounded), e.g. ~1.5× ATR or 1.4–1.6× ATR.',
-          },
-          chart_context: {
-            type: 'string',
-            description:
-              "What is visible on the user's chart or what they last tried — never the proprietary default.",
+            description: 'Concrete value or direction to try on the Inputs tab.',
           },
           rationale: {
             type: 'string',
-            description: 'Regime/behavior reasoning — no formulas.',
+            description: 'Why this change aligns with the client objective.',
+          },
+          doc_ref: {
+            type: 'string',
+            description:
+              'Doc section path, e.g. "Market Wave → Buffers, Scope, and Timeframe".',
           },
         },
       },
     },
+    talk_track: {
+      type: 'string',
+      description:
+        'One to three plain-English sentences the employee can say to the client. No jargon, no performance promises.',
+    },
     confidence_score: { type: 'number', minimum: 0, maximum: 1 },
-    risk_notes: { type: 'string' },
+    risk_notes: {
+      type: 'string',
+      description:
+        'Material risks to surface (edge-flip, zero trades, auto-sizing, fees/slippage). Always populate when relevant.',
+    },
   },
 } as const;
-
-/** Leakage-shaped field names that must never appear in schema v2. */
-export const SCHEMA_V2_FORBIDDEN_FIELDS = [
-  'current',
-  'proposed',
-  'path',
-  'line',
-  'file',
-  'source',
-  'citation',
-] as const;
 
 /**
  * Natural-language reminder appended to the system prompt. The schema is
@@ -92,11 +99,13 @@ export const SCHEMA_V2_FORBIDDEN_FIELDS = [
  */
 export const OUTPUT_SCHEMA_INSTRUCTIONS = `
 Respond with a single JSON object matching the schema. Do not wrap it in markdown fences.
-Keep 'analysis' at behavior/regime level — no source code, file paths, path:line citations, formulas, or statements of the algorithm's default or internal parameter values.
-For each suggested_parameter_changes row: name the parameter role (not a file or variable); set direction to increase, decrease, or set; give suggested_value as a rounded value or range to TRY; ground chart_context in what the user sees on their chart or last tried — never proprietary defaults.
+'schema_version' must be "3".
+Keep 'analysis' concise and grounded in the product documentation and screenshots; cite section paths when you draw from the docs.
+For each suggested_parameter_changes row: use the exact TradingView input label for 'parameter'; set 'current_value' from the screenshot or employee statement (or null if unknown); give 'suggested_value' as the concrete value or direction to try; explain 'rationale'; set 'doc_ref' to the section path (e.g. "Market Wave → Sell Buffer").
+'talk_track' must be 1–3 plain-English sentences the employee can read aloud to the client — no internal jargon, no performance or returns promises.
 If you have no parameter changes to suggest, return an empty array — do not invent suggestions.
-'confidence_score' must be a number between 0 and 1 reflecting your confidence given the available screenshots and retrieved strategy knowledge.
-'risk_notes' must call out conditions that would invalidate your analysis (low-quality screenshot, missing context, regime change, etc.).
+'confidence_score' must be a number between 0 and 1 reflecting your confidence given the available screenshots and documentation.
+'risk_notes' must call out material risks (pinched buffers / edge-flip, Trend Filter + tight Scope producing few or no trades, auto-sized last trades, fee/slippage headroom) or note when context is insufficient.
 `.trim();
 
 /**

@@ -53,6 +53,7 @@ function makeKnowledgeStore(chunks: readonly DocChunk[] = SAMPLE_CHUNKS): Knowle
       await Promise.resolve();
     },
     retrieve: async () => [...chunks],
+    getAllChunks: async () => [...chunks],
     version: async () => 'test-content-hash',
   };
 }
@@ -98,8 +99,28 @@ function makeService(
     logger: makeLogger(),
     knowledgeStore: makeKnowledgeStore(),
     getApiKey: () => 'test-key',
-    getModel: () => 'gemini-3.1-pro-preview',
+    getModel: () => 'gemini-3.1-flash-lite-preview',
     recordCall: vi.fn(),
+    ...overrides,
+  });
+}
+
+function v3Payload(overrides: Record<string, unknown> = {}): string {
+  return JSON.stringify({
+    schema_version: '3',
+    analysis: 'looks bullish',
+    suggested_parameter_changes: [
+      {
+        parameter: 'Sell Buffer (%)',
+        current_value: '0',
+        suggested_value: '2',
+        rationale: 'widen no-action zone in chop',
+        doc_ref: 'Market Wave → Buffers, Scope, and Timeframe',
+      },
+    ],
+    talk_track: 'We can widen the sell buffer so the algo waits through chop.',
+    confidence_score: 0.82,
+    risk_notes: 'pinched buffers can flip edges',
     ...overrides,
   });
 }
@@ -123,11 +144,12 @@ describe('geminiService.buildSystemPrompt', () => {
     expect(prompt).toMatchSnapshot();
   });
 
-  it('embeds the zero-leakage persona boundary', () => {
+  it('embeds the internal co-pilot persona (no zero-leakage boundary)', () => {
     const svc = makeService();
     const prompt = svc.buildSystemPrompt(SAMPLE_CHUNKS);
-    expect(prompt).toContain('Zero-leakage boundary');
-    expect(prompt).not.toContain('grounding your response in the actual source code');
+    expect(prompt).toContain('internal sales and customer-success');
+    expect(prompt).toContain('never promise returns or performance');
+    expect(prompt).not.toContain('Zero-leakage boundary');
   });
 
   it('returns deterministic output for the same chunks', () => {
@@ -151,11 +173,17 @@ describe('geminiService.buildSystemPrompt', () => {
     expect(after).not.toBe(before);
   });
 
-  it('invalidateSystemPromptCache remains a no-op after scoped retrieval', () => {
+  it('invalidateSystemPromptCache clears the bundle/algorithm cache', () => {
     const svc = makeService();
-    const before = svc.buildSystemPrompt(SAMPLE_CHUNKS);
+    const before = svc.buildSystemPrompt(SAMPLE_CHUNKS, {
+      bundleVersion: 'v1',
+      activeAlgorithm: 'market-wave',
+    });
     svc.invalidateSystemPromptCache();
-    const after = svc.buildSystemPrompt(SAMPLE_CHUNKS);
+    const after = svc.buildSystemPrompt(SAMPLE_CHUNKS, {
+      bundleVersion: 'v1',
+      activeAlgorithm: 'market-wave',
+    });
     expect(after).toBe(before);
   });
 });
@@ -176,22 +204,7 @@ describe('geminiService.send', () => {
 
   it('parses a happy-path JSON response into AnalysisResponse', async () => {
     const recordCall = vi.fn();
-    const happy = JSON.stringify({
-      schema_version: '2',
-      analysis: 'looks bullish',
-      suggested_parameter_changes: [
-        {
-          parameter: 'volatility_filter',
-          direction: 'increase',
-          suggested_value: '~0.7× ATR',
-          chart_context: 'chart shows choppy 5m swings',
-          rationale: 'reduce noise',
-        },
-      ],
-      confidence_score: 0.82,
-      risk_notes: 'regime might shift',
-    });
-    const { factory, calls } = makeFakeSdk(happy);
+    const { factory, calls } = makeFakeSdk(v3Payload());
     const svc = makeService({ recordCall, sdkFactory: factory });
     const result = await svc.send({
       userText: 'current signal?',
@@ -203,23 +216,18 @@ describe('geminiService.send', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.turn.structured?.confidence_score).toBeCloseTo(0.82);
+      expect(result.turn.structured?.talk_track).toContain('sell buffer');
       expect(result.turn.structured?.suggested_parameter_changes).toHaveLength(1);
+      expect(result.turn.structured?.suggested_parameter_changes[0]?.doc_ref).toContain(
+        'Buffers',
+      );
     }
     expect(calls.count).toBe(1);
     expect(recordCall).toHaveBeenCalledWith(expect.objectContaining({ jsonOk: true }));
   });
 
   it('strips a leading ```json fence before parsing', async () => {
-    const fenced =
-      '```json\n' +
-      JSON.stringify({
-        schema_version: '2',
-        analysis: 'OK',
-        suggested_parameter_changes: [],
-        confidence_score: 0.5,
-        risk_notes: 'none',
-      }) +
-      '\n```';
+    const fenced = '```json\n' + v3Payload({ analysis: 'OK', suggested_parameter_changes: [] }) + '\n```';
     const { factory } = makeFakeSdk(fenced);
     const svc = makeService({ sdkFactory: factory });
     const result = await svc.send({
@@ -241,8 +249,7 @@ describe('geminiService.send', () => {
           const text =
             attempt === 1
               ? 'sorry, no JSON for you'
-              : JSON.stringify({
-                  schema_version: '2',
+              : v3Payload({
                   analysis: 'now valid',
                   suggested_parameter_changes: [],
                   confidence_score: 0.4,
@@ -296,15 +303,16 @@ describe('geminiService.send', () => {
     }
   });
 
-  it('rejects legacy schema v1 responses', async () => {
+  it('rejects legacy schema v2 responses', async () => {
     const legacy = JSON.stringify({
-      schema_version: '1',
+      schema_version: '2',
       analysis: 'legacy',
       suggested_parameter_changes: [
         {
           parameter: 'volatility_filter',
-          current: '0.5',
-          proposed: '0.7',
+          direction: 'increase',
+          suggested_value: '0.7',
+          chart_context: 'choppy',
           rationale: 'old shape',
         },
       ],
@@ -328,18 +336,15 @@ describe('geminiService.send', () => {
   });
 
   it('returns model output directly without output gating', async () => {
-    const toxic = JSON.stringify({
-      schema_version: '2',
-      analysis: 'The algorithm uses 2.0 for exits.',
+    const toxic = v3Payload({
+      analysis: 'The algorithm default Sell Buffer is 0.',
       suggested_parameter_changes: [],
-      confidence_score: 0.9,
-      risk_notes: 'none',
     });
     const { factory, calls } = makeFakeSdk(toxic);
     const recordCall = vi.fn();
     const svc = makeService({ recordCall, sdkFactory: factory });
     const result = await svc.send({
-      userText: 'what is the stop?',
+      userText: 'what is the sell buffer default?',
       history: [],
       screenshots: [],
       knowledgeChunks: SAMPLE_CHUNKS,
@@ -348,7 +353,7 @@ describe('geminiService.send', () => {
     expect(result.ok).toBe(true);
     expect(calls.count).toBe(1);
     if (result.ok) {
-      expect(result.turn.text).toContain('algorithm uses');
+      expect(result.turn.text).toContain('Sell Buffer');
       expect(recordCall).toHaveBeenCalledWith(
         expect.objectContaining({ jsonOk: true }),
       );
@@ -358,15 +363,7 @@ describe('geminiService.send', () => {
   it('aborts when the caller signal is aborted before send', async () => {
     const ctrl = new AbortController();
     ctrl.abort();
-    const { factory } = makeFakeSdk(
-      JSON.stringify({
-        schema_version: '2',
-        analysis: 'a',
-        suggested_parameter_changes: [],
-        confidence_score: 0.5,
-        risk_notes: 'r',
-      }),
-    );
+    const { factory } = makeFakeSdk(v3Payload({ analysis: 'a', suggested_parameter_changes: [] }));
     const svc = makeService({ sdkFactory: factory });
     const result = await svc.send({
       userText: 'q',

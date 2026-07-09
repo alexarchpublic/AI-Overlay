@@ -1,7 +1,7 @@
 /**
  * @file tests/tuning/chartContext.spec.ts
  *
- * Phase 0 task 6 — vision-grounded chart context for retrieval + user turns.
+ * Vision-grounded chart context for retrieval + user turns (schema v3).
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -13,7 +13,7 @@ import type { ChatTurn } from '../../src/shared/types';
 import { VISION_CHART_READ_INSTRUCTIONS } from '../../src/shared/tuning/constants';
 
 describe('extractChartContextForRetrieval', () => {
-  it('returns chart_context from the latest assistant structured turn', () => {
+  it('returns parameter + current_value + doc_ref from the latest assistant turn', () => {
     const history: ChatTurn[] = [
       {
         id: 'u1',
@@ -29,25 +29,27 @@ describe('extractChartContextForRetrieval', () => {
         attachedScreenshotIds: [],
         createdAt: 1,
         structured: {
-          schema_version: '2',
+          schema_version: '3',
           analysis: 'analysis',
           suggested_parameter_changes: [
             {
-              parameter: 'volatility_filter',
-              direction: 'increase',
-              suggested_value: '~1.5× ATR',
-              chart_context: 'Wide envelopes on 5m chart',
-              rationale: 'noisy regime',
+              parameter: 'Sell Buffer (%)',
+              current_value: '0',
+              suggested_value: '2',
+              rationale: 'widen no-action zone',
+              doc_ref: 'Market Wave → Buffers, Scope, and Timeframe',
             },
           ],
+          talk_track: 'We can widen the sell buffer so it waits through chop.',
           confidence_score: 0.7,
           risk_notes: '',
         },
       },
     ];
-    expect(extractChartContextForRetrieval(history, 'follow up')).toBe(
-      'Wide envelopes on 5m chart',
-    );
+    const ctx = extractChartContextForRetrieval(history, 'follow up');
+    expect(ctx).toContain('Sell Buffer (%)');
+    expect(ctx).toContain('current=0');
+    expect(ctx).toContain('Market Wave → Buffers');
   });
 
   it('includes user follow-up when they mention applying a change', () => {
@@ -70,7 +72,7 @@ describe('buildVisionAugmentedUserText', () => {
     const out = buildVisionAugmentedUserText('tighten stops', 1, 'prior ctx');
     expect(out.startsWith(VISION_CHART_READ_INSTRUCTIONS)).toBe(true);
     expect(out).toContain('Prior chart context from this session: prior ctx');
-    expect(out).toContain('Trader message: tighten stops');
+    expect(out).toContain('Employee message: tighten stops');
   });
 });
 
@@ -83,17 +85,18 @@ describe('isTuningAssistantTurn', () => {
       attachedScreenshotIds: [],
       createdAt: 0,
       structured: {
-        schema_version: '2',
+        schema_version: '3',
         analysis: 'x',
         suggested_parameter_changes: [
           {
-            parameter: 'p',
-            direction: 'set',
-            suggested_value: '1',
-            chart_context: 'c',
+            parameter: 'Scope',
+            current_value: null,
+            suggested_value: '1.0',
             rationale: 'r',
+            doc_ref: 'Market Wave → Scope',
           },
         ],
+        talk_track: 'Scope controls how tightly the wave hugs price.',
         confidence_score: 0.5,
         risk_notes: '',
       },

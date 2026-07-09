@@ -95,6 +95,9 @@ describe('LocalKnowledgeStore', () => {
     const chunks = await store.retrieve({ text: 'Market Wave inputs', k: 2 });
     expect(chunks.length).toBeGreaterThan(0);
     expect(chunks.every((c) => c.pageSlug === SAMPLE.pageSlug)).toBe(true);
+
+    const all = await store.getAllChunks();
+    expect(all.length).toBeGreaterThanOrEqual(chunks.length);
   });
 
   it('logs knowledge.loaded with docs-bundle source on init', async () => {

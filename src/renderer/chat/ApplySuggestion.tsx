@@ -5,9 +5,9 @@
  * that writes the deterministic plain-text representation to the clipboard.
  * **No** TradingView mutation occurs (auto-apply is Post-MVP).
  *
- * Format (schema v2): `<parameter>: <direction> to <suggested_value> #
- * <chart_context> — <rationale>`. Locked here + in `formatSuggestionForClipboard`
- * in `main/index.ts`; both must stay byte-equivalent.
+ * Format (schema v3): `<parameter>: <current|—> → <suggested_value> (<doc_ref>)
+ * — <rationale>`. Locked here + in `formatSuggestionForClipboard` in
+ * `registerChatAiIpc.ts`; both must stay byte-equivalent.
  */
 
 import { useCallback, useState, type ReactElement } from 'react';

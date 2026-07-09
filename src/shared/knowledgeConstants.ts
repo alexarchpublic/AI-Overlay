@@ -40,9 +40,11 @@ export const FULL_CORPUS_INJECTION_THRESHOLD = 50_000;
 
 /**
  * Set by Phase 2 after the first real ingest. When true, prompt composition
- * (Phase 3) injects the full corpus instead of scoped retrieval.
+ * injects the full corpus instead of scoped retrieval. Cast to `boolean` so
+ * the scoped-retrieval branch stays reachable for lint/TS when the corpus
+ * grows past FULL_CORPUS_INJECTION_THRESHOLD.
  */
-export const USE_FULL_CORPUS_INJECTION = true;
+export const USE_FULL_CORPUS_INJECTION = true as boolean;
 
 /** Docs bundle filename prefix from the ingest pipeline. */
 export const DOCS_BUNDLE_PREFIX = 'docs-';

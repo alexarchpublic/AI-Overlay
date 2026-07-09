@@ -27,7 +27,7 @@ export function isSuggestedChange(v: unknown): v is SuggestedParameterChange {
     typeof o.parameter === 'string' &&
     typeof o.rationale === 'string' &&
     typeof o.suggested_value === 'string' &&
-    typeof o.chart_context === 'string' &&
-    (o.direction === 'increase' || o.direction === 'decrease' || o.direction === 'set')
+    typeof o.doc_ref === 'string' &&
+    (typeof o.current_value === 'string' || o.current_value === null)
   );
 }

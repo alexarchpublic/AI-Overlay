@@ -86,32 +86,35 @@ describe('<AssistantMessage /> happy path', () => {
       text: '## Analysis\n\nlooks bullish',
       attachedScreenshotIds: [],
       structured: {
-        schema_version: '2',
+        schema_version: '3',
         analysis: '## Analysis\n\nlooks bullish',
         suggested_parameter_changes: [
           {
-            parameter: 'volatility_filter',
-            direction: 'increase',
-            suggested_value: '~0.7× ATR',
-            chart_context: 'chart shows choppy 5m swings',
-            rationale: 'reduce noise',
+            parameter: 'Sell Buffer (%)',
+            current_value: '0',
+            suggested_value: '2',
+            rationale: 'widen no-action zone',
+            doc_ref: 'Market Wave → Buffers, Scope, and Timeframe',
           },
         ],
+        talk_track: 'We can widen the sell buffer so it waits through chop.',
         confidence_score: 0.82,
         risk_notes: 'regime might shift',
       },
       createdAt: 0,
       latencyMs: 1234,
-      modelUsed: 'gemini-3.1-pro-preview',
+      modelUsed: 'gemini-3.1-flash-lite-preview',
     };
     render(<AssistantMessage turn={turn} />);
     expect(screen.getByText(/looks bullish/)).toBeTruthy();
-    expect(screen.getByText('volatility_filter')).toBeTruthy();
-    expect(screen.getByText('~0.7× ATR')).toBeTruthy();
-    expect(screen.getByText(/choppy 5m swings/)).toBeTruthy();
+    expect(screen.getByText('Sell Buffer (%)')).toBeTruthy();
+    expect(screen.getByText(/0\s*→\s*2/)).toBeTruthy();
+    expect(screen.getByText(/Buffers, Scope/)).toBeTruthy();
+    expect(screen.getByText(/Say it to the client/)).toBeTruthy();
+    expect(screen.getByText(/widen the sell buffer/)).toBeTruthy();
     expect(screen.getByText('regime might shift')).toBeTruthy();
     expect(screen.getByText(/High confidence/)).toBeTruthy();
-    expect(screen.getByText(/gemini-3.1-pro-preview/)).toBeTruthy();
+    expect(screen.getByText(/gemini-3.1-flash-lite-preview/)).toBeTruthy();
   });
 
   it('escapes raw HTML in the markdown body (XSS smoke)', () => {
@@ -121,9 +124,10 @@ describe('<AssistantMessage /> happy path', () => {
       text: 'safe <script>alert(1)</script> markdown',
       attachedScreenshotIds: [],
       structured: {
-        schema_version: '2',
+        schema_version: '3',
         analysis: 'safe <script>alert(1)</script> markdown',
         suggested_parameter_changes: [],
+        talk_track: '',
         confidence_score: 0.5,
         risk_notes: '',
       },

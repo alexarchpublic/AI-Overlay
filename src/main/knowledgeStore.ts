@@ -184,6 +184,14 @@ export function createLocalKnowledgeStore(deps: LocalKnowledgeStoreDeps): Knowle
       return chunks;
     },
 
+    async getAllChunks(): Promise<readonly DocChunk[]> {
+      await this.init();
+      if (!state) {
+        throw new KnowledgeStoreError('NOT_INITIALIZED', 'Knowledge store failed to initialize');
+      }
+      return state.chunks;
+    },
+
     async version(): Promise<string> {
       await this.init();
       if (!state) {
@@ -216,6 +224,9 @@ export function createRemoteKnowledgeStoreStub(): KnowledgeStore {
       return Promise.reject(new RemoteKnowledgeStoreNotImplementedError());
     },
     retrieve(): Promise<never> {
+      return Promise.reject(new RemoteKnowledgeStoreNotImplementedError());
+    },
+    getAllChunks(): Promise<never> {
       return Promise.reject(new RemoteKnowledgeStoreNotImplementedError());
     },
     version(): Promise<never> {

@@ -5,15 +5,15 @@
  * `@google/generative-ai`. Owns:
  *
  *   - `buildSystemPrompt()` — the **only** code path permitted to compose
- *     the persona + scoped knowledge context + schema reminder. Reviewer
- *     enforces this with a grep at chunk close (PRD §5 DoD #23).
+ *     persona → active-doc / full corpus → retrieved chunks → schema
+ *     instructions (PRD D-P4 / D-P5 / D-P6).
  *   - `send()` — single-shot JSON-mode generation with abort signal,
  *     30s timeout, one auto-retry on transient errors, one auto-retry on
  *     JSON parse failure (D8 / D20 / D21).
  *   - `summarize()` — Flash-model conversation summarizer used by the
  *     truncation path (D12).
- *   - `invalidateSystemPromptCache()` — retained for API stability; no-op
- *     once retrieval became per-turn (Phase 0 task 3).
+ *   - `invalidateSystemPromptCache()` — drops the cached system prompt when
+ *     the bundle version or active algorithm changes.
  *   - `cancelAll()` — called from `app.before-quit` so no in-flight call
  *     writes a stray `gemini.callCompleted` after `app.quit`.
  *
@@ -45,6 +45,7 @@ import {
 import { ulid } from 'ulid';
 import type { AppLogger } from './logger';
 import type {
+  ActiveAlgorithm,
   DocChunk,
   KnowledgeStore,
 } from '../shared/knowledgeTypes';
@@ -55,7 +56,11 @@ import type {
   SuggestedParameterChange,
 } from '../shared/types';
 import { PERSONA_PROMPT } from '../shared/persona';
-import { composeSystemPrompt } from '../shared/knowledge/promptContext';
+import {
+  composeSystemPrompt,
+  flattenPromptKnowledge,
+  type PromptKnowledgeBlocks,
+} from '../shared/knowledge/promptContext';
 import {
   GEMINI_MAX_AUTO_RETRIES,
   GEMINI_RETRY_BACKOFF_MS,
@@ -84,8 +89,19 @@ export interface GeminiSendArgs {
   history: readonly ChatTurn[];
   /** Already capped at D9 by the caller; oldest-first ordering preserved. */
   screenshots: readonly Screenshot[];
-  /** Scoped docs-corpus chunks retrieved for this turn (PRD D-P11). */
-  knowledgeChunks: readonly DocChunk[];
+  /**
+   * Pre-selected prompt knowledge for this turn. Prefer this over
+   * `knowledgeChunks` when the orchestrator has already run
+   * `selectPromptKnowledge`.
+   */
+  knowledgeBlocks?: PromptKnowledgeBlocks;
+  /**
+   * Flat docs-corpus chunks for this turn (legacy / tests). When
+   * `knowledgeBlocks` is omitted, treated as retrieved-only knowledge.
+   */
+  knowledgeChunks?: readonly DocChunk[];
+  /** Active algorithm for cache keying when composing from the store. */
+  activeAlgorithm?: ActiveAlgorithm;
   /** Caller's abort signal (chat-side ESC / window close / quit). */
   signal: AbortSignal;
 }
@@ -170,7 +186,10 @@ export interface GeminiModelLike {
 }
 
 export interface GeminiService {
-  buildSystemPrompt(chunks: readonly DocChunk[]): string;
+  buildSystemPrompt(
+    chunksOrBlocks: readonly DocChunk[] | PromptKnowledgeBlocks,
+    options?: { activeAlgorithm?: ActiveAlgorithm; bundleVersion?: string },
+  ): string;
   send(args: GeminiSendArgs): Promise<GeminiSendResult>;
   summarize(turns: readonly ChatTurn[]): Promise<string | null>;
   invalidateSystemPromptCache(): void;
@@ -199,12 +218,60 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
   const newId = deps.newId ?? ulid;
   const sdkFactory = deps.sdkFactory ?? defaultSdkFactory;
 
+  /** Cache keyed on bundle version + active algorithm (PRD D-P4 / D-P10). */
+  let cachedPrompt: {
+    key: string;
+    prompt: string;
+  } | null = null;
+
   function hashPrompt(text: string): string {
     return createHash('sha256').update(text).digest('hex');
   }
 
-  function buildSystemPrompt(chunks: readonly DocChunk[]): string {
-    return composeSystemPrompt(PERSONA_PROMPT, chunks, OUTPUT_SCHEMA_INSTRUCTIONS);
+  function cacheKey(
+    bundleVersion: string | undefined,
+    activeAlgorithm: ActiveAlgorithm | undefined,
+    knowledgeFingerprint: string,
+  ): string {
+    return `${bundleVersion ?? 'unknown'}|${activeAlgorithm ?? 'market-wave'}|${knowledgeFingerprint}`;
+  }
+
+  function isPromptBlocks(
+    value: readonly DocChunk[] | PromptKnowledgeBlocks,
+  ): value is PromptKnowledgeBlocks {
+    return !Array.isArray(value) && 'activeDocChunks' in value;
+  }
+
+  function knowledgeFingerprint(
+    chunksOrBlocks: readonly DocChunk[] | PromptKnowledgeBlocks,
+  ): string {
+    const chunks = isPromptBlocks(chunksOrBlocks)
+      ? flattenPromptKnowledge(chunksOrBlocks)
+      : chunksOrBlocks;
+    return hashPrompt(
+      chunks.map((c) => `${c.id}:${String(c.tokenEstimate)}:${c.text}`).join('|'),
+    );
+  }
+
+  function buildSystemPrompt(
+    chunksOrBlocks: readonly DocChunk[] | PromptKnowledgeBlocks,
+    options: { activeAlgorithm?: ActiveAlgorithm; bundleVersion?: string } = {},
+  ): string {
+    const key = cacheKey(
+      options.bundleVersion,
+      options.activeAlgorithm,
+      knowledgeFingerprint(chunksOrBlocks),
+    );
+    if (cachedPrompt?.key === key) {
+      return cachedPrompt.prompt;
+    }
+    const prompt = composeSystemPrompt(
+      PERSONA_PROMPT,
+      chunksOrBlocks,
+      OUTPUT_SCHEMA_INSTRUCTIONS,
+    );
+    cachedPrompt = { key, prompt };
+    return prompt;
   }
 
   /** Per-call AbortControllers so `cancelAll()` can abort the in-flight set. */
@@ -349,8 +416,9 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
     }
     if (typeof parsed !== 'object' || parsed === null) return null;
     const o = parsed as Record<string, unknown>;
-    if (o.schema_version !== '2') return null;
+    if (o.schema_version !== '3') return null;
     if (typeof o.analysis !== 'string') return null;
+    if (typeof o.talk_track !== 'string') return null;
     if (typeof o.confidence_score !== 'number') return null;
     if (typeof o.risk_notes !== 'string') return null;
     if (!Array.isArray(o.suggested_parameter_changes)) return null;
@@ -362,23 +430,24 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
         typeof r.parameter !== 'string' ||
         typeof r.rationale !== 'string' ||
         typeof r.suggested_value !== 'string' ||
-        typeof r.chart_context !== 'string' ||
-        (r.direction !== 'increase' && r.direction !== 'decrease' && r.direction !== 'set')
+        typeof r.doc_ref !== 'string' ||
+        !(typeof r.current_value === 'string' || r.current_value === null)
       ) {
         return null;
       }
       suggestions.push({
         parameter: r.parameter,
-        direction: r.direction,
+        current_value: r.current_value,
         suggested_value: r.suggested_value,
-        chart_context: r.chart_context,
         rationale: r.rationale,
+        doc_ref: r.doc_ref,
       });
     }
     return {
-      schema_version: '2',
+      schema_version: '3',
       analysis: o.analysis,
       suggested_parameter_changes: suggestions,
+      talk_track: o.talk_track,
       confidence_score: o.confidence_score,
       risk_notes: o.risk_notes,
     };
@@ -395,7 +464,18 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
     }
 
     const startTs = now();
-    const systemPrompt = buildSystemPrompt(args.knowledgeChunks);
+    const knowledgeInput: readonly DocChunk[] | PromptKnowledgeBlocks =
+      args.knowledgeBlocks ??
+      ({
+        fullCorpus: false,
+        activeDocChunks: [],
+        retrievedChunks: args.knowledgeChunks ?? [],
+      } satisfies PromptKnowledgeBlocks);
+    const systemPrompt = buildSystemPrompt(knowledgeInput, {
+      ...(args.activeAlgorithm !== undefined
+        ? { activeAlgorithm: args.activeAlgorithm }
+        : {}),
+    });
     const promptHash = hashPrompt(systemPrompt);
     const model = deps.getModel();
 
@@ -693,12 +773,10 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
                 parts: [
                   {
                     text:
-                      `Summarize the following conversation between a trader and an AI ` +
-                      `assistant in a single short paragraph (max 120 words). Preserve only ` +
-                      `user-side facts: chart-visible settings they tried, signal labels they ` +
-                      `mentioned, risk posture, and decisions they committed to. Never state or ` +
-                      `imply the algorithm's default, internal, or proprietary parameter values. ` +
-                      `Do not add new information.\n\n${transcript}`,
+                      `Summarize the following conversation between an Arch Public employee ` +
+                      `and the co-pilot in a single short paragraph (max 120 words). Preserve ` +
+                      `client objectives, input changes discussed, visible settings from ` +
+                      `screenshots, and open questions. Do not add new information.\n\n${transcript}`,
                   },
                 ],
               },
@@ -737,7 +815,7 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
   }
 
   function invalidateSystemPromptCache(): void {
-    // Per-turn scoped retrieval — no system-prompt cache to invalidate (task 3).
+    cachedPrompt = null;
   }
 
   return {
