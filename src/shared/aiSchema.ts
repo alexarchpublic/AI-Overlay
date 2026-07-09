@@ -6,8 +6,8 @@
  * `geminiService.buildSystemPrompt()` is the only sanctioned composer.
  *
  * Schema v3 adds `talk_track` and per-suggestion `current_value` / `doc_ref`
- * for the internal sales/CS co-pilot. Leakage-oriented v2 fields
- * (`direction`, `chart_context`) and `SCHEMA_V2_FORBIDDEN_FIELDS` are gone.
+ * for the internal sales/CS co-pilot. Legacy v2-only fields (`direction`,
+ * `chart_context`) were removed with the security-harness teardown.
  *
  * Reviewer grep contract: `responseSchema:` should appear in exactly one
  * place outside this file — `geminiService.send()`.

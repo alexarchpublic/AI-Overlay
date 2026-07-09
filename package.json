@@ -21,6 +21,7 @@
     "lint": "eslint \"src/**/*.{ts,tsx}\" \"scripts/**/*.mjs\"",
     "format": "prettier --write .",
     "ingest:docs": "node scripts/ingest-docs.mjs",
+    "eval:bank": "node scripts/eval-bank.mjs",
     "check:screen-perm": "tsc -p tsconfig.check.json && env -u ELECTRON_RUN_AS_NODE electron dist/main/checkScreenPerm.js"
   },
   "dependencies": {

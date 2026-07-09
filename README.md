@@ -9,9 +9,10 @@ See [`../Context.md`](../Context.md) (v0.3.0) for vision and
 [`../PRD_Internal_Copilot_Pivot.md`](../PRD_Internal_Copilot_Pivot.md) for the
 approved product direction.
 
-**Current status:** Internal co-pilot pivot Phases 0–5 complete in code.
-Phase 6 (eval bank + latency sweep) and Mac acceptance remain. See
-[`project-state.md`](project-state.md) and [`MAC_ACCEPTANCE.md`](MAC_ACCEPTANCE.md).
+**Current status:** Internal co-pilot pivot Phases 0–6 complete in code (offline
+eval bank + grep contracts green). Live eval bank + Mac acceptance remain on
+operator hardware. See [`project-state.md`](project-state.md) and
+[`MAC_ACCEPTANCE.md`](MAC_ACCEPTANCE.md).
 
 ## Prerequisites
 
@@ -72,6 +73,7 @@ push to `main` / `dev`.
 | `npm test` | Vitest unit + smoke suite |
 | `npm run test:coverage` | Vitest with branch thresholds (orchestrator) |
 | `npm run ingest:docs` | Fetch docs.archpublic.com pages, snapshot corpus, emit bundle |
+| `npm run eval:bank` | Live 20-scenario eval sweep (requires `GEMINI_API_KEY`) |
 | `npm run typecheck` | Strict typecheck (three tsconfigs) |
 | `npm run lint` | ESLint — `@typescript-eslint/strict-type-checked` + scripts |
 

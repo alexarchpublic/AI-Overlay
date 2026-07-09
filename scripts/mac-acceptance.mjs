@@ -133,6 +133,27 @@ function auditGrep() {
   return ok;
 }
 
+function auditPivotGrep() {
+  let ok = true;
+  const patterns = [
+    ['firewall|enumerationmonitor|d3pass|deep-fingerprints', 'security-harness remnants'],
+    ['SCHEMA_V2', 'leakage-era schema symbols'],
+  ];
+  for (const [pattern, label] of patterns) {
+    try {
+      execSync(`git grep -iE "${pattern}" -- src/ scripts/ tests/`, {
+        cwd: root,
+        stdio: 'pipe',
+      });
+      console.log(`✗ Pivot grep contract failed (${label})`);
+      ok = false;
+    } catch {
+      console.log(`✓ Pivot grep contract clean (${label})`);
+    }
+  }
+  return ok;
+}
+
 function auditSharp() {
   try {
     execSync('node -e "require(\'sharp\')"', { cwd: root, stdio: 'pipe' });
@@ -213,6 +234,7 @@ const results = [];
 results.push(auditSharp());
 results.push(auditPreload());
 results.push(auditGrep());
+results.push(auditPivotGrep());
 results.push(run('npm run typecheck', 'typecheck'));
 results.push(run('npm run lint', 'lint'));
 results.push(run('npm test', 'vitest'));

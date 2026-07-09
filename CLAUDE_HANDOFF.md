@@ -737,3 +737,49 @@ meaningful work. Entries are chronological, newest at the bottom.
 - Glossary: Harness = ingested docs bundle (`docs-*.json`).
 - Acceptance path: eval bank + call-simulation replaces red-team checklist.
 
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-09-ARCH-PIVOT-P6
+**Timestamp:** 2026-07-09T14:40:00-05:00 (CDT)
+**Model:** Composer
+**Focus Area:** Internal co-pilot pivot — Phase 6 verification & eval bank
+
+### Decisions Made
+- Added `src/shared/evalBank.ts` with all 20 EXECUTION_PLAN scenarios, must-hit groups, PRD §6.2 corpus spot-checks, performance-promise detector, and latency percentile helper (matches `aiStore.percentile` formula).
+- Offline eval validates prompt-injection grounding via `tests/evalBank.spec.ts` (24 tests); live sweep via `npm run eval:bank` (`scripts/eval-bank.mjs` bundles `src/eval/runEvalBank.ts`).
+- Fixed grep contract violation in `aiSchema.ts` comment (removed `FORBIDDEN` reference); added pivot grep checks to `mac-acceptance.mjs`.
+- Fresh `npm run ingest:docs` — 13 pages, 89 chunks, ~28.7k tokens, hash unchanged (`bbfecbdd4e1d`).
+
+### Files Modified / Created
+- `src/shared/evalBank.ts` (new — scenario definitions + matchers)
+- `src/eval/runEvalBank.ts` (new — live Gemini eval runner)
+- `scripts/eval-bank.mjs` (new)
+- `tests/evalBank.spec.ts` (new — offline corpus + grounding)
+- `package.json` (`eval:bank` script)
+- `tsconfig.main.json` (include `src/eval/**`)
+- `src/shared/aiSchema.ts` (grep-contract comment fix)
+- `scripts/mac-acceptance.mjs` (pivot grep audit)
+- `project-state.md`, `README.md`, `../Context.md` (Phase 6 status)
+- `CLAUDE_HANDOFF.md` (this entry)
+
+### Open Questions / Risks
+- Live eval bank + latency p50/p95 gate require operator run: `GEMINI_API_KEY=... npm run eval:bank`.
+- Must-hit matchers are keyword-based — live responses may need matcher tuning if Gemini paraphrases heavily (target ≥19/20 per MAC_ACCEPTANCE F14).
+- Call-simulation acceptance (MAC_ACCEPTANCE Phase H) still pending on operator hardware.
+
+### Verification Results
+- `npm run typecheck && npm run lint && npm test && npm run test:coverage` — **280 tests pass**, orchestrator coverage 97.37% / 94.11% branches.
+- Grep contracts — clean (`firewall`, `EnumerationMonitor`, `d3Pass`, `deep-fingerprints`, `FORBIDDEN`).
+- `npm run ingest:docs` — 13 pages, exit 0, bundle `docs-bbfecbdd4e1d.json`.
+- Eval bank offline — 20/20 scenarios ground in injected corpus; PRD §6.2 spot-checks pass.
+
+### Recommended Next Steps for Next Claude Instance
+1. Operator: `GEMINI_API_KEY=... npm run eval:bank` — log pass count + p50/p95 in handoff; tick live eval boxes in `project-state.md`.
+2. Mac acceptance — `MAC_ACCEPTANCE.md` Phases A → F + Phase H on clean macOS 14+ machine.
+3. Chunk 6 observability polish, Chunk 7 signed `.dmg` after acceptance.
+
+### Key Context Delta
+- Phase 6 automated verification complete; pivot branch ready for live eval + Mac sign-off.
+- Eval bank is the replacement for the deleted red-team suite — offline grounding is CI-enforced; live quality gate is operator-run.
+

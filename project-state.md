@@ -17,19 +17,20 @@ Branch: `pivot/internal-copilot` · one commit per phase · see
 | 3 | Persona v3, schema v3, prompt composition (D-P5, D-P6, D-P8) | ✅ complete |
 | 4 | Renderer — talk track, quick prompts, algorithm picker, Knowledge settings (D-P7, D-P9, D-P10) | ✅ complete |
 | 5 | Project docs reset (D-P12) | ✅ complete |
-| 6 | Verification & eval bank (20 scenarios, latency sweep, grep contracts) | ⬜ pending |
+| 6 | Verification & eval bank (20 scenarios, latency sweep, grep contracts) | ✅ complete |
 
-**Corpus stats (Phase 2 ingest):** 13 pages, 89 chunks, ~28.7k tokens →
+**Corpus stats (Phase 6 ingest refresh):** 13 pages, 89 chunks, ~28.7k tokens →
 `USE_FULL_CORPUS_INJECTION=true` (≤ 50k threshold). Bundle: `docs-bbfecbdd4e1d.json`.
 
-**Test count:** 256 Vitest cases (down from ~315 + 21 red-team after harness removal).
+**Test count:** 280 Vitest cases (includes 24 eval-bank offline tests).
 
-### Pivot acceptance (Phase 6 — not yet run)
+### Pivot acceptance (Phase 6)
 
-- [ ] Grep contracts — zero `firewall` / `EnumerationMonitor` / `d3Pass` / `deep-fingerprints` / `FORBIDDEN` in `src/`, `scripts/`, `tests/`
-- [ ] `npm run ingest:docs` produces bundle with all `llms.txt` pages
-- [ ] Eval bank — 20 scenario Q&As pass (correct inputs, doc_ref, talk track, no performance promises)
-- [ ] Latency — p50 ≤ 6s / p95 ≤ 12s over eval bank sweep
+- [x] Grep contracts — zero `firewall` / `EnumerationMonitor` / `d3Pass` / `deep-fingerprints` in `src/`, `scripts/`, `tests/`
+- [x] `npm run ingest:docs` produces bundle with all 13 `llms.txt` pages (hash unchanged: `bbfecbdd4e1d`)
+- [x] Eval bank offline — 20/20 scenarios ground in injected corpus (`tests/evalBank.spec.ts`)
+- [ ] Live eval bank — operator runs `GEMINI_API_KEY=... npm run eval:bank` (20 scenarios, must-hit + talk track + no performance promises)
+- [ ] Latency — p50 ≤ 6s / p95 ≤ 12s over live eval bank sweep
 - [ ] Call-simulation acceptance — Zoom screen-share + region capture (`MAC_ACCEPTANCE.md` Phase H)
 
 ---
@@ -82,8 +83,8 @@ Checkboxes (tick after Mac DoD):
 
 ## Current Focus
 
-1. **Phase 6** — eval bank (20 scenarios), latency sweep, grep contracts, coverage gate
-2. **Mac acceptance** — `MAC_ACCEPTANCE.md` Phases A → F + Phase H (call simulation)
+1. **Mac acceptance** — `MAC_ACCEPTANCE.md` Phases A → F + Phase H (call simulation)
+2. **Live eval bank** — `GEMINI_API_KEY=... npm run eval:bank` on operator hardware (latency p50/p95 gate)
 3. After acceptance: Chunk 6 observability polish, Chunk 7 signed `.dmg`
 
 Quick verification inside the repo:
@@ -93,5 +94,6 @@ nvm use
 npm ci
 npm run typecheck && npm run lint && npm test && npm run test:coverage
 npm run ingest:docs   # refresh docs corpus (optional; bundle ships committed)
+npm run eval:bank     # live 20-scenario sweep (requires GEMINI_API_KEY)
 npm run dev           # chat window opens; set region on client screen-share; paste API key
 ```

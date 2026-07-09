@@ -17,5 +17,5 @@
   // preload ends up with no external relative requires. Type-checking for
   // preload lives in `tsconfig.preload.json`, which `npm run typecheck`
   // also invokes.
-  "include": ["src/main/**/*.ts", "src/shared/**/*.ts"]
+  "include": ["src/main/**/*.ts", "src/shared/**/*.ts", "src/eval/**/*.ts"]
 }
