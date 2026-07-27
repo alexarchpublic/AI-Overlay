@@ -72,7 +72,7 @@ Checkboxes (tick after Mac DoD):
 - [ ] **Chunk 3 — Screenshot Engine & Region Picker**
 - [ ] **Chunk 5 — Gemini Chat + Vision**
 - [ ] **Chunk 6 — Rich Logging, Handoff & Observability**
-- [ ] **Chunk 7 — Packaging, Windows Port & Internal Distribution** (Phases 0–4 done; **Phase 5** CI + release workflow + `AI-Overlay-releases` wired — tag publish + Gate 5.7/5.8 Windows update loop pending; Phase 6 remain)
+- [ ] **Chunk 7 — Packaging, Windows Port & Internal Distribution** (Phases 0–5 pipeline done; `v0.2.0-alpha.1` published with `.exe`/`.dmg`/`.zip`/`latest.yml`/`latest-mac.yml`; Gate 5.7/5.8 Windows update loop + Phase 6 remain)
 
 ## Superseded (archived — do not extend)
 
@@ -86,14 +86,14 @@ Checkboxes (tick after Mac DoD):
 | Phase | Status |
 |-------|--------|
 | 0–4 Preflight → Key provisioning | ✅ complete |
-| 5 CI, release pipeline, first publish | 🔄 in progress — `ci.yml` matrix, `release.yml`, public `alexarchpublic/AI-Overlay-releases`, `RELEASES_TOKEN` |
+| 5 CI, release pipeline, first publish | ✅ artifacts published — [v0.2.0-alpha.1](https://github.com/alexarchpublic/AI-Overlay-releases/releases/tag/v0.2.0-alpha.1); Gate 5.7/5.8 update loop still needs real Windows |
 | 6 Acceptance docs + pilot | ⏳ pending |
 
-**Gate 5:** CI/release pipeline landed; **Windows alpha.1→alpha.2 update loop** not yet verified on hardware.
+**Gate 5:** **PARTIAL** — both-platform release assets live; **Windows alpha.1→alpha.2 update loop** not yet verified on hardware (local Parallels VM unusable).
 
 ## Current Focus
 
-1. **Chunk 7 Phase 5** — tag `v0.2.0-alpha.1`, confirm publish to `AI-Overlay-releases`, e2e update loop on Windows (Gate 5.7/5.8)
+1. **Chunk 7 Gate 5.7/5.8** — install `0.2.0-alpha.1` on real Windows, publish `0.2.0-alpha.2`, confirm silent download + install-on-quit (unsigned signature path)
 2. **Chunk 7 Phase 6** — WIN_ACCEPTANCE, pilot rollout, Context.md amendments
 3. Mac acceptance remains open (D14 — not a hard gate for Chunk 7)
 
