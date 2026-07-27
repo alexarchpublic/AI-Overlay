@@ -69,7 +69,10 @@ push to `main` / `dev`.
 |---|---|
 | `npm run dev` | Vite + main watch + preload bundle + Electron |
 | `npm run build` | Typecheck → Vite renderer → tsc main → preload bundle |
-| `npm run package` | Local unsigned `.app` inspection (`electron-builder --dir`) |
+| `npm run package` | Local unsigned unpacked dir (`electron-builder --dir`) |
+| `npm run package:mac` | macOS arm64 `.dmg` + `.zip` (publish never) |
+| `npm run package:win` | Windows x64 NSIS installer (publish never; run on Windows) |
+| `npm run release` | Build win+mac and publish to `AI-Overlay-releases` (CI) |
 | `npm test` | Vitest unit + smoke suite |
 | `npm run test:coverage` | Vitest with branch thresholds (orchestrator) |
 | `npm run ingest:docs` | Fetch docs.archpublic.com pages, snapshot corpus, emit bundle |

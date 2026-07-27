@@ -8,11 +8,17 @@
  * everywhere else.
  *
  * Naming rule: `'{namespace}:{verb}'`. Namespaces so far: `log`, `widget`,
- * `perms`, `capture`, `region`, `chat`, `ai`. Keep verbs imperative
+ * `perms`, `capture`, `region`, `chat`, `ai`, `app`. Keep verbs imperative
  * (`get`, `set`, `open`, `emit`, `report`).
  */
 
 export const IPC_LOG_MESSAGE = 'log:message';
+
+// ---------------------------------------------------------------------------
+// App channels (Chunk 7 — version from package.json via app.getVersion)
+// ---------------------------------------------------------------------------
+
+export const IPC_APP_GET_VERSION = 'app:getVersion';
 
 // ---------------------------------------------------------------------------
 // Widget channels (Chunk 2)

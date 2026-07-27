@@ -5,7 +5,7 @@
  */
 
 import fsp from 'node:fs/promises';
-import { BrowserWindow, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron';
+import { BrowserWindow, app, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron';
 import type { AppContext } from '../appContext';
 import type { PermissionSyncHandle } from '../permissionSync';
 import { popupWidgetMenu } from '../contextMenu';
@@ -15,6 +15,7 @@ import { openSettingsWindow } from '../settingsWindow';
 import type { CaptureStateStore } from '../captureStore';
 import type { ScreenshotService } from '../screenshotService';
 import {
+  IPC_APP_GET_VERSION,
   IPC_CAPTURE_GET_LOOP_STATE,
   IPC_CAPTURE_GET_RECENT,
   IPC_CAPTURE_GET_THUMBNAIL,
@@ -65,6 +66,8 @@ export function registerCoreIpc(
   permissionSync: PermissionSyncHandle,
 ): void {
   const { logger: log, widgetState: store, capture: captureStore, permissions: perms, screenshotService: service } = ctx;
+
+  ipcMain.handle(IPC_APP_GET_VERSION, (): string => app.getVersion());
 
   ipcMain.handle(IPC_WIDGET_GET_STATUS, (): WidgetStatus => store.getStatus());
 

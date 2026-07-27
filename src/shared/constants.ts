@@ -11,8 +11,11 @@
 /** User-visible product name. Also used as the `base.app` field in pino logs. */
 export const APP_NAME = 'Arch Public AI Overlay';
 
-/** Semver of the app; mirrored in package.json. Bump both together. */
-export const APP_VERSION = '0.1.0';
+/**
+ * App version lives in `package.json` only (Chunk 7 §3.9 / D11).
+ * Main reads it via `app.getVersion()`; the renderer gets it over IPC
+ * (`window.api.app.getVersion`). Do not reintroduce a hardcoded `APP_VERSION`.
+ */
 
 // ---------------------------------------------------------------------------
 // Logging

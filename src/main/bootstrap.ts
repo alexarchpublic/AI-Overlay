@@ -33,7 +33,7 @@ import { flashWidgetCapturing } from './widgetFlash';
 import { registerCoreIpc } from './ipc/registerCoreIpc';
 import { registerChatAiIpc } from './ipc/registerChatAiIpc';
 import { getCurrentDisplays, isRegionStillValid } from './displayUtils';
-import { APP_VERSION, CAPTURE_TEMP_SUBDIR, VITE_DEV_SERVER_PORT } from '../shared/constants';
+import { CAPTURE_TEMP_SUBDIR, VITE_DEV_SERVER_PORT } from '../shared/constants';
 import {
   IPC_CAPTURE_CAPTURED,
   IPC_CAPTURE_LOOP_STATE_CHANGED,
@@ -87,7 +87,7 @@ export async function bootstrapApp(
   registerProcessTraps(logger);
 
   logger.info('app.ready', {
-    appVersion: APP_VERSION,
+    appVersion: app.getVersion(),
     electron: process.versions.electron,
     node: process.versions.node,
     platform: process.platform,

@@ -1,17 +1,11 @@
-# electron-builder.yml
-# Minimal dev-only config for Chunk 1. Full macOS .dmg + entitlements land in
-# Chunk 7 (Packaging, Permissions & Demo Polish). Keep this file small so the
-# Chunk 7 PRD owns the real packaging story end-to-end.
-
 appId: com.archpublic.ai-overlay
 productName: Arch Public AI Overlay
+copyright: Copyright © 2026 Arch Public
 
 directories:
   output: release
   buildResources: build
 
-# `files` overrides electron-builder's defaults, so node_modules is listed
-# explicitly here — without it native deps (sharp, libvips) are dropped.
 files:
   - dist/**/*
   - package.json
@@ -19,26 +13,63 @@ files:
 
 asar: true
 
-# `sharp` ships a native `.node` binding plus the `@img/sharp-libvips-*`
-# package that contains `libvips-cpp.42.dylib`. macOS's dynamic loader
-# cannot resolve dylibs from inside an asar archive, so we keep both paths
-# unpacked. Without these the packaged app crashes with:
-#   "Library not loaded: @rpath/libvips-cpp.42.dylib"
-#
-# The trailing `/**/*` is required — `node_modules/sharp/**` does NOT match
-# files inside the directory in some electron-builder versions, only the
-# directory entry itself, leaving the actual .node + .dylib stuck in asar.
+# Native binaries and worker-thread entrypoints cannot be loaded from inside an
+# asar archive and must stay unpacked:
+#   sharp / @img  — platform native binding (.node) plus libvips
+#                   (libvips-cpp.42.dylib on macOS, libvips-42.dll on Windows).
+#   pino chain    — pino transports spawn a thread-stream worker that resolves
+#                   its target module from disk at runtime. See Chunk 7 §3.7 B3.
+# The trailing `/**/*` is required — `node_modules/sharp/**` matches only the
+# directory entry in some electron-builder versions, leaving files in the asar.
+# Do NOT use a `pino*` glob — it would also unpack pino-pretty, which is removed
+# from the packaged path (Phase 1.1 / B3).
 asarUnpack:
   - "node_modules/sharp/**/*"
   - "node_modules/@img/**/*"
-
-mac:
-  category: public.app-category.finance
-  target:
-    - dir
+  - "node_modules/pino/**/*"
+  - "node_modules/pino-std-serializers/**/*"
+  - "node_modules/thread-stream/**/*"
+  - "node_modules/sonic-boom/**/*"
 
 extraResources:
   - from: knowledge/bundles
     to: knowledge/bundles
-    filter:
-      - "**/*"
+    filter: ["**/*"]
+
+publish:
+  provider: github
+  owner: alexarchpublic
+  repo: AI-Overlay-releases
+  releaseType: prerelease
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+  artifactName: ArchPublicAIOverlay-Setup-${version}.${ext}
+  # Signing is intentionally absent (Chunk 7 D2). When a cert exists, CI supplies
+  # WIN_CSC_LINK + WIN_CSC_KEY_PASSWORD and electron-builder signs with no config
+  # change here.
+
+nsis:
+  oneClick: false
+  perMachine: false          # per-user install → no UAC → silent auto-update (D8)
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Arch Public AI Overlay
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+
+mac:
+  category: public.app-category.finance
+  icon: build/icon.icns
+  target:
+    - target: dmg
+      arch: [arm64]
+    - target: zip           # REQUIRED for latest-mac.yml generation
+      arch: [arm64]
+  artifactName: ArchPublicAIOverlay-${version}-${arch}.${ext}
+  # Unsigned + un-notarized (Chunk 7 D2). Consequence: macOS is notify-only (D7),
+  # and first launch requires right-click → Open.

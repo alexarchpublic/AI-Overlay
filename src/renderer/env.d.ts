@@ -97,6 +97,9 @@ declare global {
         listModels: () => Promise<readonly string[]>;
         getStats: () => Promise<GeminiCallStats>;
       };
+      app: {
+        getVersion: () => Promise<string>;
+      };
     };
   }
 }

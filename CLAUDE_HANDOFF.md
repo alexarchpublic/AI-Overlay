@@ -912,3 +912,52 @@ meaningful work. Entries are chronological, newest at the bottom.
 ### Phase Gate Status
 - Gate 0: PASS
 - Gate 1: **PASS (macOS)** — `npm run typecheck && npm run lint && npm test` → 323/323; grep contract #1 empty. Windows runner not yet in CI (Phase 5.1).
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-27-1127-ARCH-CHUNK7-003
+**Timestamp:** 2026-07-27T11:40:00-05:00
+**Model:** Cursor Grok 4.5
+**Focus Area:** Chunk 7 Phase 2 — Packaging Configuration
+
+### Decisions Made
+- Rewrote `electron-builder.yml` exactly per PRD §3.4 (win/nsis/mac dmg+zip/publish to `AI-Overlay-releases`, asarUnpack for sharp + pino chain individually — no `pino*` glob).
+- Added `@img/sharp-win32-x64` + `@img/sharp-libvips-win32-x64` @ `0.33.5` as `optionalDependencies` (D17). Not installed on darwin (expected); `npm ci` on `windows-latest` will resolve them.
+- Killed `APP_VERSION` hardcoded string; main uses `app.getVersion()`; renderer via `window.api.app.getVersion` / `IPC_APP_GET_VERSION`. Minimal Settings → About panel shows version (Phase 3 will expand with update controls).
+- Bumped version to `0.2.0-alpha.1` (D11).
+- **Did not cross-build Windows artifacts from macOS** (D17). Gate 2 Windows installable artifact deferred to a Windows machine / Phase 5 CI.
+
+### Files Modified / Created
+- `electron-builder.yml` — full rewrite (§3.4)
+- `package.json` / `package-lock.json` — version `0.2.0-alpha.1`, optionalDeps, `package:win` / `package:mac` / `release` scripts
+- `src/shared/constants.ts` — removed hardcoded `APP_VERSION`
+- `src/main/bootstrap.ts` — `app.getVersion()` in `app.ready`
+- `src/shared/ipcChannels.ts` / `registerCoreIpc.ts` / `preload` / `env.d.ts` — `app:getVersion`
+- `src/renderer/settings/AboutSettings.tsx` (new) + `SettingsShell.tsx` mount
+- `tests/appVersion.spec.ts` (new) — grep-contract #2 guard
+- `README.md` — package/release scripts
+- `CLAUDE_HANDOFF.md` — this entry
+
+### Open Questions / Risks
+- Windows `package:win` / smoke-launch still needs a native Windows runner (D17). Config is ready.
+- Smoke-launch of the mac `.app` **from the iCloud working tree** fails codesign / launch due to resource-fork / xattr detritus. Copying the `.app` to `/tmp` + ad-hoc sign works. Reinforces 0.3 relocate recommendation.
+- Do not leave `ELECTRON_RUN_AS_NODE` set in the shell when smoke-testing — it makes the stub binary exit immediately with no logs.
+- Top-level `pino-std-serializers` lands nested under `app.asar.unpacked/node_modules/pino/node_modules/` (via `pino/**/*`); functionally present. Top-level unpack glob is still declared for when npm hoists it.
+
+### Recommended Next Steps for Next Claude Instance
+1. Begin **Phase 3 — Update Service** (`electron-updater`, `updaterService.ts`, `UpdateBanner`, expand `AboutSettings`).
+2. Re-run iCloud 0.2 duplicate check at Phase 3 start.
+3. Windows packaging smoke: on `windows-latest` or a Win box, `npm ci && npm run package:win`, then confirm `logs/app-*.jsonl` from the installed exe (Gate 2 Windows half).
+
+### Key Context Delta
+- Version source of truth is **only** `package.json` (`0.2.0-alpha.1`). Grep contract #2 holds.
+- Local mac artifacts produced: `release/ArchPublicAIOverlay-0.2.0-alpha.1-arm64.{dmg,zip}`, `latest-mac.yml`, unpacked `release/mac-arm64/`.
+- Packaged logging **verified**: `app.ready` with `isPackaged:true`, `appVersion:"0.2.0-alpha.1"`, chat window opened, JSONL written under `~/Library/Application Support/arch-public-ai-overlay/logs/`.
+- asarUnpack contains: `sharp`, `@img`, `pino`, `thread-stream`, `sonic-boom` (+ nested `pino-std-serializers`); `pino-pretty` absent from unpacked.
+- Test count after Phase 2: **325** (323 + 2 appVersion guards).
+
+### Phase Gate Status
+- Gate 0: PASS
+- Gate 1: PASS (macOS)
+- Gate 2: **PASS (macOS)** — installable `.dmg`/`.zip` + unpacked app; packaged logging confirmed. **Windows half deferred** to native runner (D17 / Phase 5.1).

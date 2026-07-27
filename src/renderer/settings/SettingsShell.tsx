@@ -11,6 +11,7 @@ import CaptureSettings from './CaptureSettings';
 import RecentCapturesPanel from './RecentCapturesPanel';
 import AISettings from './AISettings';
 import KnowledgeSettings from './KnowledgeSettings';
+import AboutSettings from './AboutSettings';
 
 function useDevPanelEnabled(): boolean {
   const [enabled] = useState<boolean>(() => import.meta.env.DEV);
@@ -36,6 +37,7 @@ export default function SettingsShell(): ReactElement {
         <CaptureSettings />
         <KnowledgeSettings />
         <AISettings />
+        <AboutSettings />
         {showDevPanel && <RecentCapturesPanel />}
       </div>
     </main>

@@ -31,6 +31,7 @@ import {
   IPC_AI_LIST_MODELS,
   IPC_AI_SET_API_KEY,
   IPC_AI_SET_MODEL,
+  IPC_APP_GET_VERSION,
   IPC_CAPTURE_CAPTURED,
   IPC_CAPTURE_GET_LOOP_STATE,
   IPC_CAPTURE_GET_RECENT,
@@ -323,6 +324,14 @@ const ai: AiApi = {
     ipcRenderer.invoke(IPC_AI_GET_STATS) as Promise<GeminiCallStats>,
 };
 
+interface AppApi {
+  getVersion(): Promise<string>;
+}
+
+const appApi: AppApi = {
+  getVersion: () => ipcRenderer.invoke(IPC_APP_GET_VERSION) as Promise<string>,
+};
+
 const api = {
   log: {
     debug: emit('debug'),
@@ -337,6 +346,7 @@ const api = {
   chat,
   knowledge,
   ai,
+  app: appApi,
 } as const;
 
 contextBridge.exposeInMainWorld('api', api);
