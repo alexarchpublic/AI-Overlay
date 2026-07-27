@@ -35,6 +35,10 @@ import { registerCoreIpc } from './ipc/registerCoreIpc';
 import { registerChatAiIpc } from './ipc/registerChatAiIpc';
 import { registerUpdateIpc } from './ipc/registerUpdateIpc';
 import { getCurrentDisplays, isRegionStillValid } from './displayUtils';
+import {
+  defaultSharedConfigDir,
+  runProvisioning,
+} from './provisioning';
 import { CAPTURE_TEMP_SUBDIR, VITE_DEV_SERVER_PORT } from '../shared/constants';
 import {
   IPC_CAPTURE_CAPTURED,
@@ -303,6 +307,25 @@ export async function bootstrapApp(
   }
 
   registerChatAiIpc(ctx, chatLifecycle);
+
+  // First-launch team-config provisioning (Chunk 7 D3/D6). Uses the shared
+  // electron-store handle so `provisioning.completed` lands in the same
+  // config file as capture/ai/knowledge. Never throws — malformed config
+  // falls through to the manual Settings → AI key flow.
+  runProvisioning({
+    store: rawCaptureStore,
+    aiStore,
+    knowledgeStore: knowledgeStoreWrapper,
+    captureStore: capture,
+    logger,
+    getExecDir: () => path.dirname(process.execPath),
+    getUserDataPath: () => app.getPath('userData'),
+    getSharedConfigDir: () => defaultSharedConfigDir(platformInfo),
+    fs: {
+      existsSync: (p) => fs.existsSync(p),
+      readFileSync: (p, encoding) => fs.readFileSync(p, encoding),
+    },
+  });
 
   // electron-updater is a runtime dependency; require here (not at module
   // scope of updaterService) so the service stays Vitest-friendly.

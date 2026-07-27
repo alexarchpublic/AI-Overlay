@@ -1011,3 +1011,47 @@ meaningful work. Entries are chronological, newest at the bottom.
 ### Phase Gate Status
 - Gate 0–2: PASS (prior)
 - Gate 3: **PASS** — `npm run typecheck && npm run lint && npm test` → 342/342; no live release published (by design).
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-27-1200-ARCH-CHUNK7-005
+**Timestamp:** 2026-07-27T12:00:00-05:00
+**Model:** Cursor Grok 4.5
+**Focus Area:** Chunk 7 Phase 4 — Key Provisioning
+
+### Decisions Made
+- Proceeded with PRD defaults; operator confirmed "defaults are ok" for §11 open questions.
+- Key never ships in the binary (D6). First-launch reads `team-config.json` from: (1) exec dir, (2) userData, (3) `%PROGRAMDATA%\ArchPublic` / `/Library/Application Support/ArchPublic`.
+- Key written only through existing `aiStore.setApiKey` → `secretsStore` (DPAPI/Keychain). No second storage path.
+- Strict schema — unknown keys rejected; malformed JSON → `provisioning.invalid` + manual Settings flow; never crashes boot.
+- `team-config.json` is **not** deleted after apply (D6).
+- Key rotation documented as operator procedure (new JSON + clear `provisioning.completed`, or re-paste in Settings). Owner/quota placeholders left for operator to fill (§11 Q1).
+
+### Files Modified / Created
+- `src/main/provisioning.ts` (new) — injectable lookup + schema + apply
+- `src/main/bootstrap.ts` — run provisioning after stores / before chat launch
+- `tests/provisioning.spec.ts` (new) — 20 cases (3 locations, absent, invalid, apply, redaction)
+- `team-config.example.json` (new)
+- `DISTRIBUTION.md` (new) — operator runbook incl. §Key Rotation
+- `INSTALL_WINDOWS.md` (new) — CS install + SmartScreen + provisioning
+- `project-state.md` / `CLAUDE_HANDOFF.md` — Phase 4 status
+
+### Open Questions / Risks
+- Gate 4 VM proof ("clean Windows VM with team-config beside installer") still needs a native Windows machine — deferred to Phase 5/6 acceptance. Unit tests cover all three lookup paths.
+- §11 Q1–Q3 still open for operator naming (key owner, SharePoint vs share path, pilot users) — docs have placeholders.
+- Phase 6 will expand INSTALL/DISTRIBUTION with acceptance phases and screenshot SmartScreen steps.
+
+### Recommended Next Steps for Next Claude Instance
+1. Begin **Phase 5 — CI, Release Pipeline & First Publish** (`release.yml`, `AI-Overlay-releases` repo, tag `v0.2.0-alpha.1`, e2e update loop).
+2. Re-run iCloud 0.2 duplicate check at Phase 5 start.
+3. Confirm `RELEASES_TOKEN` secret + create public releases repo before tagging.
+
+### Key Context Delta
+- Test count after Phase 4: **362** (342 + 20 provisioning).
+- Provisioning events: `provisioning.applied`, `.invalid`, `.absent`. Grep contract #3 holds.
+- Recommended IT drop path for CS: `%PROGRAMDATA%\ArchPublic\team-config.json`.
+
+### Phase Gate Status
+- Gate 0–3: PASS (prior)
+- Gate 4: **PASS** (unit) — `npm run typecheck && npm run lint && npm test` → 362/362; docs + example config present. Windows VM end-to-end deferred to Phase 5/6 hardware.

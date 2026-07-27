@@ -59,7 +59,7 @@ Implementation status in code vs. Mac acceptance:
 | 4 — Harness Loader | superseded by docs-corpus pipeline² | n/a |
 | 5 — Gemini Chat + Vision | yes (schema v3 + talk track) | pending |
 | 6 — Rich Logging & Observability | partial (D28 events enforced) | pending |
-| 7 — Packaging & Demo Polish | in progress (Chunk 7 Phases 0–3) | pending |
+| 7 — Packaging & Demo Polish | in progress (Chunk 7 Phases 0–4) | pending |
 
 ¹ Chunk 2's overlay pill was removed during the chat-first UX pivot.
 ² Chunk 4's full-source harness and Phase 0 abstraction pipeline were removed
@@ -72,7 +72,7 @@ Checkboxes (tick after Mac DoD):
 - [ ] **Chunk 3 — Screenshot Engine & Region Picker**
 - [ ] **Chunk 5 — Gemini Chat + Vision**
 - [ ] **Chunk 6 — Rich Logging, Handoff & Observability**
-- [ ] **Chunk 7 — Packaging, Windows Port & Internal Distribution** (Phases 0–3 done; 4–6 remain)
+- [ ] **Chunk 7 — Packaging, Windows Port & Internal Distribution** (Phases 0–4 done; 5–6 remain)
 
 ## Superseded (archived — do not extend)
 
@@ -83,8 +83,8 @@ Checkboxes (tick after Mac DoD):
 
 ## Current Focus
 
-1. **Chunk 7 Phase 4** — team-config key provisioning (`provisioning.ts`)
-2. **Chunk 7 Phase 5** — release CI + first publish + e2e update loop on Windows
+1. **Chunk 7 Phase 5** — release CI + first publish + e2e update loop on Windows
+2. **Chunk 7 Phase 6** — WIN_ACCEPTANCE, pilot rollout, Context.md amendments
 3. Mac acceptance remains open (D14 — not a hard gate for Chunk 7)
 
 Quick verification inside the repo:
