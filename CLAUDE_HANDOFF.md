@@ -1092,3 +1092,19 @@ meaningful work. Entries are chronological, newest at the bottom.
 ### Phase Gate Status
 - Gate 0–4: PASS (prior)
 - Gate 5: **PARTIAL** — pipeline + docs committed; first tag publish + Windows update loop verification pending workflow run / hardware.
+
+### Phase 5 publish evidence (2026-07-27T17:12Z)
+- **Push SHA:** `8f6bcd8a4d048fa03985b4ac3723b64bf38cc3b7` (`chunk-7/packaging-windows` pushed to origin)
+- **Tag:** `v0.2.0-alpha.1` (annotated, pushed)
+- **Release workflow:** https://github.com/alexarchpublic/AI-Overlay/actions/runs/30287961618 — **conclusion: failure** (Windows job failed; macOS job succeeded)
+  - `build (macos-14, --mac)`: Test/Build/Package and publish **passed** (~1m54s); no GH_TOKEN 401/403 observed
+  - `build (windows-latest, --win)`: **Test failed** (5 tests: `contextMenu.spec.ts` quit-label expectations on Windows runner; `logger.smoke.spec.ts` `ENOTEMPTY` on temp cleanup); Build/Package skipped
+- **Release (AI-Overlay-releases):** https://github.com/alexarchpublic/AI-Overlay-releases/releases/tag/v0.2.0-alpha.1 (prerelease, published from macOS leg)
+- **Artifact checklist:**
+  - [x] `.dmg` — `ArchPublicAIOverlay-0.2.0-alpha.1-arm64.dmg`
+  - [x] `.zip` — `ArchPublicAIOverlay-0.2.0-alpha.1-arm64.zip`
+  - [x] `latest-mac.yml`
+  - [ ] `.exe` — not published (Windows CI leg did not reach package step)
+  - [ ] `latest.yml` — not published (Windows CI leg did not reach package step)
+- **Gate 5.7 / 5.8:** deferred — Parallels `Windows 10.pvm` unusable for manual install/update proof (tiny HDD); requires real Windows hardware or fresh VM. Alpha update loop on Windows blocked until Windows release artifacts + environment exist.
+- **Gate 5 status:** **PARTIAL** — macOS first publish succeeded; Windows CI test failures block `.exe`/`latest.yml`; manual Windows update verification still pending hardware/VM.
