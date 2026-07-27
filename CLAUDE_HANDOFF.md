@@ -1108,3 +1108,19 @@ meaningful work. Entries are chronological, newest at the bottom.
   - [ ] `latest.yml` — not published (Windows CI leg did not reach package step)
 - **Gate 5.7 / 5.8:** deferred — Parallels `Windows 10.pvm` unusable for manual install/update proof (tiny HDD); requires real Windows hardware or fresh VM. Alpha update loop on Windows blocked until Windows release artifacts + environment exist.
 - **Gate 5 status:** **PARTIAL** — macOS first publish succeeded; Windows CI test failures block `.exe`/`latest.yml`; manual Windows update verification still pending hardware/VM.
+
+### alpha.1 Windows republish evidence after CI test fixes (2026-07-27T17:17Z)
+- **Fixes:** already in working tree (uncommitted) — `platformInfo: buildPlatformInfo('darwin')` in `tests/contextMenu.spec.ts`; `maxRetries: 10, retryDelay: 50` on logger `afterEach` rmSync
+- **Commit:** `c2d1845702cf47b6e822de14791c0dded3aae827` — "Fix Windows CI test failures blocking alpha.1 NSIS publish."
+- **Tag:** `v0.2.0-alpha.1` moved to HEAD and re-pushed
+- **Release workflow:** https://github.com/alexarchpublic/AI-Overlay/actions/runs/30288243386 — **conclusion: failure**
+  - `build (macos-14, --mac)`: **success** (~3m35s); Test/Build/Package and publish passed
+  - `build (windows-latest, --win)`: **Test failed** — `contextMenu.spec.ts` **passed** (20/20); `logger.smoke.spec.ts` **2 failed** — `ENOTEMPTY` on `afterEach` rmSync despite `maxRetries: 10` (pretty-gating describe block)
+- **Local tests:** `tests/contextMenu.spec.ts` + `tests/logger.smoke.spec.ts` — 30/30 passed (vitest EPERM on `results.json` in iCloud sandbox only)
+- **Artifact checklist (AI-Overlay-releases v0.2.0-alpha.1):**
+  - [x] `.dmg` — `ArchPublicAIOverlay-0.2.0-alpha.1-arm64.dmg`
+  - [x] `.zip` — `ArchPublicAIOverlay-0.2.0-alpha.1-arm64.zip`
+  - [x] `latest-mac.yml`
+  - [ ] `.exe` — not published (Windows leg still fails before package)
+  - [ ] `latest.yml` — not published
+- **Next:** strengthen logger smoke teardown on Windows (close pino destination before rmSync, or retry loop for ENOTEMPTY); then retag/re-run Release.
