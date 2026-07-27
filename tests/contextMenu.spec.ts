@@ -48,6 +48,9 @@ function makeDeps(o: MakeDepsOverrides = {}): BuildContextMenuDeps {
     captureNow: vi.fn(),
     toggleAutoCapture: vi.fn(),
     openRegionPicker: vi.fn(),
+    // Default to darwin so Quit-label assertions are stable on windows-latest CI
+    // (live `platformInfo` would otherwise flip the label to Exit).
+    platformInfo: buildPlatformInfo('darwin'),
   };
 }
 

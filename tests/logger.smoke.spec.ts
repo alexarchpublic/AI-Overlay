@@ -177,7 +177,9 @@ describe('createAppLogger — pretty gating is fail-safe (Chunk 7 B3)', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    // Windows: pino.destination may still hold the log file briefly → ENOTEMPTY/
+    // EBUSY on a bare rmSync. Node retries those codes when maxRetries is set.
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
   });
 
   it('pretty: false writes plain JSONL via pino.destination, never the dev transport', async () => {
