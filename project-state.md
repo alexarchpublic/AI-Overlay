@@ -38,7 +38,7 @@ Branch: `pivot/internal-copilot` · one commit per phase · see
 ## Infrastructure
 
 - [x] Git repository + baseline history
-- [x] CI on `macos-latest` (typecheck, lint, test, coverage)
+- [x] CI matrix `macos-latest` + `windows-latest` (typecheck, lint, test; coverage macOS only)
 - [x] `runChatSend` extracted to `chatOrchestrator.ts` with characterization tests
 - [x] Legacy harness loader / widget tree removed
 - [x] Token-estimate constants unified (`src/shared/tokenEstimate.ts`)
@@ -59,7 +59,7 @@ Implementation status in code vs. Mac acceptance:
 | 4 — Harness Loader | superseded by docs-corpus pipeline² | n/a |
 | 5 — Gemini Chat + Vision | yes (schema v3 + talk track) | pending |
 | 6 — Rich Logging & Observability | partial (D28 events enforced) | pending |
-| 7 — Packaging & Demo Polish | in progress (Chunk 7 Phases 0–4) | pending |
+| 7 — Packaging & Demo Polish | in progress (Chunk 7 Phases 0–5 pipeline) | pending |
 
 ¹ Chunk 2's overlay pill was removed during the chat-first UX pivot.
 ² Chunk 4's full-source harness and Phase 0 abstraction pipeline were removed
@@ -72,7 +72,7 @@ Checkboxes (tick after Mac DoD):
 - [ ] **Chunk 3 — Screenshot Engine & Region Picker**
 - [ ] **Chunk 5 — Gemini Chat + Vision**
 - [ ] **Chunk 6 — Rich Logging, Handoff & Observability**
-- [ ] **Chunk 7 — Packaging, Windows Port & Internal Distribution** (Phases 0–4 done; 5–6 remain)
+- [ ] **Chunk 7 — Packaging, Windows Port & Internal Distribution** (Phases 0–4 done; **Phase 5** CI + release workflow + `AI-Overlay-releases` wired — tag publish + Gate 5.7/5.8 Windows update loop pending; Phase 6 remain)
 
 ## Superseded (archived — do not extend)
 
@@ -81,9 +81,19 @@ Checkboxes (tick after Mac DoD):
 - ~~Manual red-team checklist (`RED_TEAM.md`)~~ — deleted; eval bank replaces it
 - ~~Client-facing zero-leakage boundary~~ — trusted internal users; full docs corpus
 
+## Chunk 7 — Packaging (branch `chunk-7/packaging-windows`)
+
+| Phase | Status |
+|-------|--------|
+| 0–4 Preflight → Key provisioning | ✅ complete |
+| 5 CI, release pipeline, first publish | 🔄 in progress — `ci.yml` matrix, `release.yml`, public `alexarchpublic/AI-Overlay-releases`, `RELEASES_TOKEN` |
+| 6 Acceptance docs + pilot | ⏳ pending |
+
+**Gate 5:** CI/release pipeline landed; **Windows alpha.1→alpha.2 update loop** not yet verified on hardware.
+
 ## Current Focus
 
-1. **Chunk 7 Phase 5** — release CI + first publish + e2e update loop on Windows
+1. **Chunk 7 Phase 5** — tag `v0.2.0-alpha.1`, confirm publish to `AI-Overlay-releases`, e2e update loop on Windows (Gate 5.7/5.8)
 2. **Chunk 7 Phase 6** — WIN_ACCEPTANCE, pilot rollout, Context.md amendments
 3. Mac acceptance remains open (D14 — not a hard gate for Chunk 7)
 

@@ -1055,3 +1055,40 @@ meaningful work. Entries are chronological, newest at the bottom.
 ### Phase Gate Status
 - Gate 0–3: PASS (prior)
 - Gate 4: **PASS** (unit) — `npm run typecheck && npm run lint && npm test` → 362/362; docs + example config present. Windows VM end-to-end deferred to Phase 5/6 hardware.
+
+## Session Handoff Log
+**Session ID:** 2026-07-27-1200-ARCH-CHUNK7-006
+**Timestamp:** 2026-07-27T12:15:00-05:00
+**Model:** Cursor Grok 4.5
+**Focus Area:** Chunk 7 Phase 5 — CI, Release Pipeline & First Publish
+
+### Decisions Made
+- D5 public releases repo created: alexarchpublic/AI-Overlay-releases
+- RELEASES_TOKEN set from gh OAuth (repo scope); operator should rotate to fine-grained PAT contents:write on releases repo only
+- CI matrix: macos-latest + windows-latest; coverage macOS only
+- release.yml per PRD §3.6; WIN_CSC_* forwarded for signing-ready (D2)
+- Defaults accepted for all D* / §11
+
+### Files Modified / Created
+- `.github/workflows/ci.yml` — matrix macOS + Windows; coverage gated to macOS
+- `.github/workflows/release.yml` (new) — tag-triggered build/publish via electron-builder
+- `DISTRIBUTION.md` — cutting-a-release steps, CI secrets table, unsigned update note (5.8)
+- `project-state.md` / `CLAUDE_HANDOFF.md` — Phase 5 status
+
+### Open Questions / Risks
+- OAuth-derived RELEASES_TOKEN may fail electron-builder publish — rotate to fine-grained PAT if publish 401/403
+- Gate 5.7/5.8 Windows update loop status
+
+### Recommended Next Steps for Next Claude Instance
+1. Confirm release artifacts on AI-Overlay-releases
+2. Complete alpha.1→alpha.2 update loop on Windows if not done
+3. Phase 6 acceptance docs
+
+### Key Context Delta
+- Version at tag: `0.2.0-alpha.1` (`package.json`). Publish target: `alexarchpublic/AI-Overlay-releases` with `GH_TOKEN=RELEASES_TOKEN`.
+- CI branch list includes `chunk-7/packaging-windows` for pre-merge green checks.
+- Expected release assets: `.exe`, `.dmg`, `.zip`, `latest.yml`, `latest-mac.yml`.
+
+### Phase Gate Status
+- Gate 0–4: PASS (prior)
+- Gate 5: **PARTIAL** — pipeline + docs committed; first tag publish + Windows update loop verification pending workflow run / hardware.

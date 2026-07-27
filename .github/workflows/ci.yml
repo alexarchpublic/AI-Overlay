@@ -2,13 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, dev, pivot/internal-copilot, chunk-7/packaging-windows]
   pull_request:
     branches: [main, dev]
 
 jobs:
   check:
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,5 +33,7 @@ jobs:
       - name: Test
         run: npm test
 
+      # Coverage only on macOS to save minutes (Chunk 7 §5.1).
       - name: Coverage
+        if: runner.os == 'macOS'
         run: npm run test:coverage

@@ -12,12 +12,22 @@ Operator guide for cutting releases, provisioning the shared Gemini key, and rol
 ## Cutting a release
 
 1. Ensure `chunk-7/packaging-windows` (or mainline after merge) is green: `npm run typecheck && npm run lint && npm test`.
-2. Bump with `npm version prerelease --preid=alpha`.
+2. Bump with `npm version prerelease --preid=alpha` (creates commit + `v*` tag).
 3. `git push --follow-tags`.
-4. Phase 5 CI (`.github/workflows/release.yml`) builds Windows + macOS and publishes artifacts to the public binaries repo `alexarchpublic/AI-Overlay-releases`.
+4. Tag-triggered CI (`.github/workflows/release.yml`) builds on `macos-14` + `windows-latest` and publishes to the public binaries repo [`alexarchpublic/AI-Overlay-releases`](https://github.com/alexarchpublic/AI-Overlay-releases).
 5. Confirm the release page has: `.exe`, `.dmg`, `.zip`, `latest.yml`, `latest-mac.yml`.
 
-Until Phase 5 lands, produce local artifacts with `npm run package:win` / `npm run package:mac` on native runners.
+Local-only packaging (no publish): `npm run package:win` / `npm run package:mac` on native runners.
+
+### CI secrets (source repo `alexarchpublic/AI-Overlay`)
+
+| Secret | Required | Purpose |
+|--------|----------|---------|
+| `RELEASES_TOKEN` | **yes** | Fine-grained PAT with **`contents: write` on `AI-Overlay-releases` only**. Used as `GH_TOKEN` by electron-builder. Do **not** use the default `GITHUB_TOKEN` — it cannot write to the other repo. |
+| `WIN_CSC_LINK` | no | Base64-encoded Windows code-signing cert (or file path CI can read). Empty → unsigned build (alpha default, D2). |
+| `WIN_CSC_KEY_PASSWORD` | no | Password for `WIN_CSC_LINK`. |
+
+Rotate `RELEASES_TOKEN` if the creating credential was a broad OAuth/`repo`-scoped token — replace with a fine-grained PAT scoped to the releases repo only.
 
 ## Rollback
 
@@ -74,8 +84,9 @@ Procedure:
 
 ## Code signing (later)
 
-- Windows: unsigned for alpha (SmartScreen expected). When an OV/EV cert exists, set Actions secrets `WIN_CSC_LINK` + `WIN_CSC_KEY_PASSWORD` — no `electron-builder.yml` change required.
+- Windows: unsigned for alpha (SmartScreen expected). When an OV/EV cert exists, set Actions secrets `WIN_CSC_LINK` + `WIN_CSC_KEY_PASSWORD` — **no `electron-builder.yml` change required** (D2). `release.yml` already forwards those env vars; electron-builder signs when they are non-empty and skips when empty.
 - macOS: unsigned / un-notarized → notify-only updates; first launch needs right-click → Open.
+- **Unsigned update verification (task 5.8):** with no `publisherName` configured, electron-updater is expected to skip Win code-signature checks. If a live Windows update fails with a signature error, set `verifyUpdateCodeSignature: false` on the updater in `bootstrap.ts` as an **alpha-only** concession and remove it when a cert lands.
 
 ## Reading a diagnostics bundle
 

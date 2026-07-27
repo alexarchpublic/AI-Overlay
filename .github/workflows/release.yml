@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            args: --mac
+          - os: windows-latest
+            args: --win
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Package and publish
+        run: npx electron-builder ${{ matrix.args }} --publish always
+        env:
+          # Fine-grained PAT with contents:write on AI-Overlay-releases only (D5).
+          # Must NOT use the default GITHUB_TOKEN — it cannot write to the other repo.
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          # Windows signing — populated only once a certificate exists (D2).
+          # electron-builder skips signing when these are empty; no config change
+          # is needed to turn signing on.
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
