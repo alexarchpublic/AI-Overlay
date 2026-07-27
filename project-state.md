@@ -2,7 +2,7 @@
 
 Living backlog tracked against the MVP chunking plan and the internal co-pilot
 pivot (`../PRD_Internal_Copilot_Pivot.md`). Tick a box only after end-to-end
-verification on a clean macOS 14+ machine (`MAC_ACCEPTANCE.md`).
+verification on clean hardware (`MAC_ACCEPTANCE.md` / `WIN_ACCEPTANCE.md`).
 
 ## Internal Co-Pilot Pivot (2026-07-09)
 
@@ -22,7 +22,7 @@ Branch: `pivot/internal-copilot` · one commit per phase · see
 **Corpus stats (Phase 6 ingest refresh):** 13 pages, 89 chunks, ~28.7k tokens →
 `USE_FULL_CORPUS_INJECTION=true` (≤ 50k threshold). Bundle: `docs-bbfecbdd4e1d.json`.
 
-**Test count:** 280 Vitest cases (includes 24 eval-bank offline tests).
+**Test count (Chunk 7):** ~362 Vitest cases (pivot baseline was 280).
 
 ### Pivot acceptance (Phase 6)
 
@@ -45,7 +45,11 @@ Branch: `pivot/internal-copilot` · one commit per phase · see
 - [x] Electron upgraded to supported major (40+)
 - [x] Docs ingestion pipeline (`npm run ingest:docs`)
 - [x] OS-keychain API key encryption (fail-closed when unavailable)
-- [ ] Mac acceptance run — **no chunk ticked yet** (operator hardware)
+- [x] Public releases repo `alexarchpublic/AI-Overlay-releases` + tag-triggered `release.yml`
+- [x] Windows NSIS + macOS dmg/zip artifacts for `v0.2.0-alpha.1`
+- [ ] Mac acceptance run — **no chunk ticked yet** (operator hardware; D14 not a Chunk 7 hard gate)
+- [ ] Windows acceptance Phases A–H on two machines (`WIN_ACCEPTANCE.md`)
+- [ ] S1 pilot — two CS users, ≥1 real client call each
 
 ## MVP Chunks
 
@@ -59,20 +63,20 @@ Implementation status in code vs. Mac acceptance:
 | 4 — Harness Loader | superseded by docs-corpus pipeline² | n/a |
 | 5 — Gemini Chat + Vision | yes (schema v3 + talk track) | pending |
 | 6 — Rich Logging & Observability | partial (D28 events enforced) | pending |
-| 7 — Packaging & Demo Polish | in progress (Chunk 7 Phases 0–5 pipeline) | pending |
+| 7 — Packaging, Windows Port & Internal Distribution | yes (Phases 0–6 docs/pipeline) | pending hardware + pilot |
 
 ¹ Chunk 2's overlay pill was removed during the chat-first UX pivot.
 ² Chunk 4's full-source harness and Phase 0 abstraction pipeline were removed
 during the internal co-pilot pivot (2026-07-09). Knowledge is now the ingested
 docs corpus (`knowledge/bundles/docs-*.json`).
 
-Checkboxes (tick after Mac DoD):
+Checkboxes (tick after DoD):
 
 - [ ] **Chunk 1 — App Shell & Dev Foundation**
 - [ ] **Chunk 3 — Screenshot Engine & Region Picker**
 - [ ] **Chunk 5 — Gemini Chat + Vision**
 - [ ] **Chunk 6 — Rich Logging, Handoff & Observability**
-- [ ] **Chunk 7 — Packaging, Windows Port & Internal Distribution** (Phases 0–5 pipeline done; `v0.2.0-alpha.1` published with `.exe`/`.dmg`/`.zip`/`latest.yml`/`latest-mac.yml`; Gate 5.7/5.8 Windows update loop + Phase 6 remain)
+- [ ] **Chunk 7 — Packaging, Windows Port & Internal Distribution** (code + docs Phases 0–6; Gate 5.7/5.8 update loop + Gate 6.5/6.7 hardware/pilot remain)
 
 ## Superseded (archived — do not extend)
 
@@ -86,16 +90,23 @@ Checkboxes (tick after Mac DoD):
 | Phase | Status |
 |-------|--------|
 | 0–4 Preflight → Key provisioning | ✅ complete |
-| 5 CI, release pipeline, first publish | ✅ artifacts published — [v0.2.0-alpha.1](https://github.com/alexarchpublic/AI-Overlay-releases/releases/tag/v0.2.0-alpha.1); Gate 5.7/5.8 update loop still needs real Windows |
-| 6 Acceptance docs + pilot | ⏳ pending |
+| 5 CI, release pipeline, first publish | ✅ [v0.2.0-alpha.1](https://github.com/alexarchpublic/AI-Overlay-releases/releases/tag/v0.2.0-alpha.1) artifacts (`.exe`/`.dmg`/`.zip`/`latest.yml`/`latest-mac.yml`); Gate 5.7/5.8 update loop still needs real Windows |
+| 6 Acceptance docs + rollout | ✅ docs/scripts landed (`WIN_ACCEPTANCE.md`, `win-acceptance.mjs`, `INSTALL_WINDOWS.md`, `DISTRIBUTION.md`); **Context.md §3** Windows now In Scope; Gate 6.5/6.7 hardware + pilot **pending operator** |
 
-**Gate 5:** **PARTIAL** — both-platform release assets live; **Windows alpha.1→alpha.2 update loop** not yet verified on hardware (local Parallels VM unusable).
+**Distribution channel:** GitHub Releases on public binaries repo `alexarchpublic/AI-Overlay-releases` + `electron-updater` (Windows silent; macOS notify-only).
+
+**Windows support:** first-class target (10/11 x64). Platform branching via `src/main/platform.ts`.
+
+**Gate 5:** **PARTIAL** — both-platform release assets live; Windows alpha.1→alpha.2 update loop not yet verified on hardware.
+
+**Gate 6:** **PARTIAL** — acceptance + install + distribution docs complete; two-machine A–H pass + two-pilot-user real-call gate still open.
 
 ## Current Focus
 
-1. **Chunk 7 Gate 5.7/5.8** — install `0.2.0-alpha.1` on real Windows, publish `0.2.0-alpha.2`, confirm silent download + install-on-quit (unsigned signature path)
-2. **Chunk 7 Phase 6** — WIN_ACCEPTANCE, pilot rollout, Context.md amendments
-3. Mac acceptance remains open (D14 — not a hard gate for Chunk 7)
+1. **Gate 5.7/5.8** — install `0.2.0-alpha.1` on real Windows, publish `0.2.0-alpha.2`, confirm silent download + install-on-quit
+2. **Gate 6.5** — execute `WIN_ACCEPTANCE.md` A–H on two distinct Windows machines (iGPU + discrete ideally)
+3. **Gate 6.7 / S1** — two CS pilot users, one Slack thread, ≥1 real client call each
+4. Mac acceptance remains open (D14 — not a hard gate for Chunk 7)
 
 Quick verification inside the repo:
 
@@ -103,6 +114,7 @@ Quick verification inside the repo:
 nvm use
 npm ci
 npm run typecheck && npm run lint && npm test && npm run test:coverage
+node scripts/win-acceptance.mjs   # Windows automated slice (also runs typecheck/lint/test/build)
 npm run ingest:docs   # refresh docs corpus (optional; bundle ships committed)
 npm run eval:bank     # live 20-scenario sweep (requires GEMINI_API_KEY)
 npm run dev           # chat window opens; set region on client screen-share; paste API key

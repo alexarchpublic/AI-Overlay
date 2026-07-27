@@ -1143,3 +1143,48 @@ meaningful work. Entries are chronological, newest at the bottom.
 - **Gate 5.7 / 5.8:** Windows `.exe`/`latest.yml` now published; manual install + alpha update loop on real Windows hardware/VM still pending.
 - **Gate 5 status:** **PARTIAL** — both OS release artifacts present; Windows update verification deferred.
 
+
+## Session Handoff Log
+**Session ID:** 2026-07-27-1248-ARCH-CHUNK7-007
+**Timestamp:** 2026-07-27T12:48:00-05:00
+**Model:** Cursor Grok 4.5
+**Focus Area:** Chunk 7 Phase 6 — Acceptance, Docs & Rollout
+
+### Decisions Made
+- Phase 6 docs/scripts authored against PRD §3.2 Phase 6; Gate 6.5 (two-machine A–H) and Gate 6.7 (two CS pilots) remain **operator-owned** — no usable Windows hardware in this session (same constraint as Gate 5.7/5.8).
+- `win-acceptance.mjs` uses `execFileSync` + arg arrays (npm.cmd on win32); file-walk greps instead of `git grep`; sharp failure hint uses `--os=win32 --cpu=x64` (B24 / task 6.2).
+- `Context.md` amended per PRD §10 (Windows In Scope; cross-platform constraint; electron-updater stack row; Chunk 7 logging events; roadmap). Operator may still formally confirm per Role.md §6.
+- INSTALL_WINDOWS SmartScreen path documented with ASCII UI diagram (More info → Run anyway); live screenshots still welcome from first pilot walkthrough.
+- Gate 6 marked **PARTIAL** in project-state — docs complete, hardware/pilot open.
+
+### Files Modified / Created
+- `WIN_ACCEPTANCE.md` (new) — Phases A–H with sign-off + pilot matrices
+- `scripts/win-acceptance.mjs` (new) — automated slice + Chunk 7 §3.8 contracts
+- `INSTALL_WINDOWS.md` — SmartScreen illustrated walkthrough + releases URL
+- `DISTRIBUTION.md` — S1 pilot / acceptance / support-model section
+- `project-state.md` — Chunk 7 Phase 6 status, Windows In Scope, Gate 6 PARTIAL
+- `README.md` — Windows prerequisites, acceptance pointers, scripts
+- `../Context.md` (outside repo) — §3/§4/§8/§9/§10 amendments
+- `CLAUDE_HANDOFF.md` — this entry
+
+### Open Questions / Risks
+- Gate 5.7/5.8 + 6.5 still blocked on real Windows (or fresh VM) — Parallels HDD too small previously.
+- §11 Q1–Q3 still open: key owner, SharePoint vs share path, named pilot users + hardware.
+- Role.md §6: Context.md amendments applied as part of Phase 6 task 6.6; confirm if operator wants any wording tweaks.
+- Gate 6 full PASS requires two pilots on real client calls — cannot close Chunk 7 DoD from this session alone.
+
+### Recommended Next Steps for Next Claude Instance
+1. On Windows hardware: install `v0.2.0-alpha.1` → run `WIN_ACCEPTANCE.md` A–F; publish `alpha.2` → complete G (update loop) + H.
+2. Repeat A–H on a second machine (different GPU/scaling); fill sign-off matrix.
+3. Operator names two S1 pilots; drop installer + `team-config.json` on internal share; open one Slack thread.
+4. After Gate 6.5/6.7 green: tick Chunk 7 DoD in project-state; consider merge of `chunk-7/packaging-windows`.
+
+### Key Context Delta
+- Active repo path: `Claude/Projects/AP Agent Overlay/arch-public-ai-overlay` on branch `chunk-7/packaging-windows` (not the older `AP Agent Overlay` workspace copy).
+- `node scripts/win-acceptance.mjs` → exit 0 on darwin (362 tests); warns non-win32 for manual phases.
+- Context.md version bumped to **0.3.1**; Windows moved from Out of Scope → In Scope.
+
+### Phase Gate Status
+- Gate 0–4: PASS (prior)
+- Gate 5: **PARTIAL** — artifacts published; Windows update loop pending hardware
+- Gate 6: **PARTIAL** — tasks 6.1–6.4 + 6.6 done; 6.5/6.7 pending operator hardware + CS pilots

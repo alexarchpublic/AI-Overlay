@@ -96,3 +96,26 @@ Settings → About → **Copy diagnostics** puts the log directory path, version
 
 - Reinstalling the NSIS app **preserves** `%APPDATA%\arch-public-ai-overlay` (provisioned key survives).
 - To wipe: quit the app, delete `%APPDATA%\arch-public-ai-overlay` (Windows) or `~/Library/Application Support/arch-public-ai-overlay` (macOS).
+
+## Acceptance & pilot rollout
+
+| Doc | Audience |
+|-----|----------|
+| [`INSTALL_WINDOWS.md`](./INSTALL_WINDOWS.md) | CS end users |
+| [`WIN_ACCEPTANCE.md`](./WIN_ACCEPTANCE.md) | Operator hardware matrix (Phases A–H) |
+| [`scripts/win-acceptance.mjs`](./scripts/win-acceptance.mjs) | Automated Windows slice (`node scripts/win-acceptance.mjs`) |
+| [`MAC_ACCEPTANCE.md`](./MAC_ACCEPTANCE.md) | macOS regression (D14 — not a Chunk 7 hard gate) |
+
+### S1 pilot (PRD §8)
+
+1. Operator completes `WIN_ACCEPTANCE.md` on **two** distinct Windows machines (record GPU + scaling in `CLAUDE_HANDOFF.md`).
+2. Drop `ArchPublicAIOverlay-Setup-*.exe` + `team-config.json` on the internal share.
+3. Pilot with **exactly two** CS users for one week — one Slack feedback thread, no SLA language.
+4. Gate to full CS team: ≥1 real client call each, one applied auto-update, zero P0 bugs, `INSTALL_WINDOWS.md` validated by a non-technical reader.
+5. Never publish a release on a Friday.
+
+### Support model (alpha)
+
+- One Slack channel, one owner.
+- Users paste **Copy diagnostics** output (Settings → About) into the thread.
+- No telemetry / crash reporter (D15).
