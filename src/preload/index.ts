@@ -73,7 +73,14 @@ import {
   IPC_KNOWLEDGE_GET_ACTIVE_ALGORITHM,
   IPC_KNOWLEDGE_GET_BUNDLE_INFO,
   IPC_KNOWLEDGE_SET_ACTIVE_ALGORITHM,
+  IPC_APP_COPY_DIAGNOSTICS,
+  IPC_UPDATE_CHECK,
+  IPC_UPDATE_GET_STATE,
+  IPC_UPDATE_INSTALL,
+  IPC_UPDATE_OPEN_RELEASE_PAGE,
+  IPC_UPDATE_STATE_CHANGED,
 } from '../shared/ipcChannels';
+import type { UpdateStateSnapshot } from '../shared/updateTypes';
 
 type LogFn = (event: string, context?: LogContext) => void;
 
@@ -326,10 +333,39 @@ const ai: AiApi = {
 
 interface AppApi {
   getVersion(): Promise<string>;
+  copyDiagnostics(): Promise<string>;
 }
 
 const appApi: AppApi = {
   getVersion: () => ipcRenderer.invoke(IPC_APP_GET_VERSION) as Promise<string>,
+  copyDiagnostics: () =>
+    ipcRenderer.invoke(IPC_APP_COPY_DIAGNOSTICS) as Promise<string>,
+};
+
+interface UpdatesApi {
+  getState(): Promise<UpdateStateSnapshot>;
+  check(): Promise<UpdateStateSnapshot>;
+  install(): Promise<void>;
+  openReleasePage(): Promise<void>;
+  onStateChanged(cb: (snapshot: UpdateStateSnapshot) => void): () => void;
+}
+
+const updates: UpdatesApi = {
+  getState: () =>
+    ipcRenderer.invoke(IPC_UPDATE_GET_STATE) as Promise<UpdateStateSnapshot>,
+  check: () => ipcRenderer.invoke(IPC_UPDATE_CHECK) as Promise<UpdateStateSnapshot>,
+  install: () => ipcRenderer.invoke(IPC_UPDATE_INSTALL) as Promise<void>,
+  openReleasePage: () =>
+    ipcRenderer.invoke(IPC_UPDATE_OPEN_RELEASE_PAGE) as Promise<void>,
+  onStateChanged: (cb) => {
+    const listener = (_e: Electron.IpcRendererEvent, snapshot: UpdateStateSnapshot): void => {
+      cb(snapshot);
+    };
+    ipcRenderer.on(IPC_UPDATE_STATE_CHANGED, listener);
+    return () => {
+      ipcRenderer.removeListener(IPC_UPDATE_STATE_CHANGED, listener);
+    };
+  },
 };
 
 const api = {
@@ -347,6 +383,7 @@ const api = {
   knowledge,
   ai,
   app: appApi,
+  updates,
 } as const;
 
 contextBridge.exposeInMainWorld('api', api);

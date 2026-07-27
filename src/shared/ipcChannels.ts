@@ -19,6 +19,20 @@ export const IPC_LOG_MESSAGE = 'log:message';
 // ---------------------------------------------------------------------------
 
 export const IPC_APP_GET_VERSION = 'app:getVersion';
+/** Copy log-dir path + version + platform to the clipboard (D15). */
+export const IPC_APP_COPY_DIAGNOSTICS = 'app:copyDiagnostics';
+
+// ---------------------------------------------------------------------------
+// Update channels (Chunk 7 Phase 3)
+// ---------------------------------------------------------------------------
+
+export const IPC_UPDATE_GET_STATE = 'update:getState';
+export const IPC_UPDATE_CHECK = 'update:check';
+export const IPC_UPDATE_INSTALL = 'update:install';
+/** Open the GitHub release page for the currently advertised update (macOS). */
+export const IPC_UPDATE_OPEN_RELEASE_PAGE = 'update:openReleasePage';
+/** main → renderer push: UpdateStateSnapshot changed. */
+export const IPC_UPDATE_STATE_CHANGED = 'update:stateChanged';
 
 // ---------------------------------------------------------------------------
 // Widget channels (Chunk 2)

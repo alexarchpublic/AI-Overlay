@@ -17,6 +17,7 @@ import InputBar from './InputBar';
 import QuickPrompts from './QuickPrompts';
 import ChatErrorView from './ChatError';
 import ChatHeader from './ChatHeader';
+import UpdateBanner from './UpdateBanner';
 
 export default function ChatPanel(): ReactElement {
   const turns = useChatStore((s) => s.turns);
@@ -154,6 +155,8 @@ export default function ChatPanel(): ReactElement {
           void window.api.chat.close();
         }}
       />
+
+      <UpdateBanner />
 
       {error && (
         <ChatErrorView

@@ -23,6 +23,7 @@ import type {
   WidgetStatus,
 } from '../shared/types';
 import type { ActiveAlgorithm, KnowledgeBundleInfo } from '../shared/knowledgeTypes';
+import type { UpdateStateSnapshot } from '../shared/updateTypes';
 
 declare global {
   interface Window {
@@ -99,6 +100,14 @@ declare global {
       };
       app: {
         getVersion: () => Promise<string>;
+        copyDiagnostics: () => Promise<string>;
+      };
+      updates: {
+        getState: () => Promise<UpdateStateSnapshot>;
+        check: () => Promise<UpdateStateSnapshot>;
+        install: () => Promise<void>;
+        openReleasePage: () => Promise<void>;
+        onStateChanged: (cb: (snapshot: UpdateStateSnapshot) => void) => () => void;
       };
     };
   }

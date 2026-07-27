@@ -13,6 +13,7 @@ import type { GeminiService } from './geminiService';
 import type { AppLogger } from './logger';
 import type { PermissionsHelper } from './permissions';
 import type { ScreenshotService } from './screenshotService';
+import type { UpdaterServiceHandle } from './updaterService';
 import type { WidgetStateStore } from './widgetState';
 import type { KnowledgeStore } from '../shared/knowledgeTypes';
 import type { KnowledgeStateStore } from './knowledgeStoreState';
@@ -34,4 +35,10 @@ export interface AppContext {
   chatState: ChatState;
   isDev: boolean;
   devServerUrl: string;
+  /** `app.getVersion()` — package.json is the single source of truth. */
+  appVersion: string;
+  /** `app.getPath('userData')` — for diagnostics / log path. */
+  userDataPath: string;
+  /** Chunk 7 Phase 3 — null only before the updater is wired. */
+  updaterService: UpdaterServiceHandle | null;
 }

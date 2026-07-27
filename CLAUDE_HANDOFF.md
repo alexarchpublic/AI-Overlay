@@ -961,3 +961,53 @@ meaningful work. Entries are chronological, newest at the bottom.
 - Gate 0: PASS
 - Gate 1: PASS (macOS)
 - Gate 2: **PASS (macOS)** — installable `.dmg`/`.zip` + unpacked app; packaged logging confirmed. **Windows half deferred** to native runner (D17 / Phase 5.1).
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-27-1140-ARCH-CHUNK7-004
+**Timestamp:** 2026-07-27T11:55:00-05:00
+**Model:** Cursor Grok 4.5
+**Focus Area:** Chunk 7 Phase 3 — Update Service
+
+### Decisions Made
+- Added `electron-updater@^6.8.9` as a **runtime** dependency (paired with electron-builder 25 / D12).
+- `updaterService.ts` uses injectable `AppUpdaterLike` — no `electron`/`electron-updater` import at module scope. Production wires `autoUpdater` via `require` in `bootstrap.ts`.
+- Windows: `autoDownload=true`, `autoInstallOnAppQuit=true`. macOS: both false → `notify-only` state + release-page link (D7).
+- **Never set `autoUpdater.channel`** (D11). About UI shows channel label `'default'`.
+- `allowDowngrade=false` (D18). Scheduled checks: 10s after start, then every 4h; skipped when `!isPackaged`.
+- Progress logs throttled to ≤1/5s (`update.downloadProgress`).
+- Diagnostics copy lands on `app:copyDiagnostics` (log dir + version + platform + update state).
+
+### Files Modified / Created
+- `package.json` / `package-lock.json` — `electron-updater` dependency
+- `src/shared/updateTypes.ts` (new) — `UpdateState` + `UpdateStateSnapshot`
+- `src/main/updaterService.ts` (new) — injectable updater wrapper
+- `src/main/ipc/registerUpdateIpc.ts` (new) — `update:*` + `app:copyDiagnostics`
+- `src/shared/ipcChannels.ts` — update + diagnostics channels
+- `src/main/appContext.ts` / `bootstrap.ts` — wire updater + register IPC
+- `src/preload/index.ts` / `src/renderer/env.d.ts` — `window.api.updates` + `app.copyDiagnostics`
+- `src/renderer/chat/UpdateBanner.tsx` (new) + `ChatPanel.tsx` mount
+- `src/renderer/settings/AboutSettings.tsx` — channel, last check, check-now, copy diagnostics
+- `tests/updaterService.spec.ts` (new) — 12 cases incl. macOS notify-only + channel untouched
+- `tests/updateBanner.smoke.spec.tsx` (new) — all visible UpdateState variants
+- `project-state.md` / `CLAUDE_HANDOFF.md` — Phase 3 status
+
+### Open Questions / Risks
+- Live update apply still blocked on Phase 5 (releases repo + first publish). Unit tests cover the state machine only.
+- Unpackaged `npm run dev` skips scheduled checks; Settings → About "Check for updates" will error without `app-update.yml` — expected.
+- Operator §11 questions (key owner, team-config path, pilot users) still block Phase 4 only.
+
+### Recommended Next Steps for Next Claude Instance
+1. Begin **Phase 4 — Key Provisioning** (`provisioning.ts`, `team-config.example.json`) once §11 answers land — or proceed with defaults if operator confirms.
+2. Re-run iCloud 0.2 duplicate check at Phase 4 start.
+3. Do not publish a release until Phase 5 workflow + `AI-Overlay-releases` repo exist.
+
+### Key Context Delta
+- Test count after Phase 3: **342** (325 + 12 updater + 5 banner).
+- Update taxonomy events: `update.checkStarted`, `.available`, `.notAvailable`, `.downloadProgress`, `.downloaded`, `.error`, `.installScheduled`.
+- Release notes URL builder: `https://github.com/alexarchpublic/AI-Overlay-releases/releases/tag/v{version}`.
+
+### Phase Gate Status
+- Gate 0–2: PASS (prior)
+- Gate 3: **PASS** — `npm run typecheck && npm run lint && npm test` → 342/342; no live release published (by design).

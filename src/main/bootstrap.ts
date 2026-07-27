@@ -24,14 +24,16 @@ import { createKnowledgeStoreState } from './knowledgeStoreState';
 import { createAppLogger, registerRendererLogBridge, type AppLogger } from './logger';
 import { createPermissionSync, type PermissionSyncHandle } from './permissionSync';
 import { createPermissionsHelper } from './permissions';
-import { isWindows } from './platform';
+import { isWindows, platformInfo } from './platform';
 import { createScreenshotService } from './screenshotService';
 import { openSettingsWindow } from './settingsWindow';
 import { createTrayService, type TrayServiceHandle } from './trayService';
+import { createUpdaterService, type UpdaterServiceHandle } from './updaterService';
 import { createWidgetStateStore } from './widgetState';
 import { flashWidgetCapturing } from './widgetFlash';
 import { registerCoreIpc } from './ipc/registerCoreIpc';
 import { registerChatAiIpc } from './ipc/registerChatAiIpc';
+import { registerUpdateIpc } from './ipc/registerUpdateIpc';
 import { getCurrentDisplays, isRegionStillValid } from './displayUtils';
 import { CAPTURE_TEMP_SUBDIR, VITE_DEV_SERVER_PORT } from '../shared/constants';
 import {
@@ -42,6 +44,7 @@ import {
 import type { WidgetStatus } from '../shared/types';
 
 let trayHandle: TrayServiceHandle | null = null;
+let updaterHandle: UpdaterServiceHandle | null = null;
 
 /**
  * Resolve the tray icon path. Tries the packaged `build/icon.ico` relative
@@ -192,6 +195,9 @@ export async function bootstrapApp(
     chatState: 'idle',
     isDev,
     devServerUrl,
+    appVersion: app.getVersion(),
+    userDataPath: app.getPath('userData'),
+    updaterService: null,
   };
 
   const permissionSync = createPermissionSync(ctx);
@@ -298,6 +304,21 @@ export async function bootstrapApp(
 
   registerChatAiIpc(ctx, chatLifecycle);
 
+  // electron-updater is a runtime dependency; require here (not at module
+  // scope of updaterService) so the service stays Vitest-friendly.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { autoUpdater } = require('electron-updater') as typeof import('electron-updater');
+  updaterHandle = createUpdaterService({
+    autoUpdater,
+    logger,
+    platform: platformInfo,
+    getVersion: () => app.getVersion(),
+    isPackaged: app.isPackaged,
+  });
+  ctx.updaterService = updaterHandle;
+  registerUpdateIpc(ctx);
+  updaterHandle.start();
+
   chatLifecycle.launchChatWindow();
   conversationStore.startSession();
   chatLifecycle.setChatState('idle');
@@ -373,5 +394,8 @@ export function shutdownApp(ctx: AppContext, permissionSync: PermissionSyncHandl
   closeChatWindow('shutdown');
   trayHandle?.destroy();
   trayHandle = null;
+  updaterHandle?.stop();
+  updaterHandle = null;
+  ctx.updaterService = null;
   void ctx.screenshotService.shutdown();
 }
