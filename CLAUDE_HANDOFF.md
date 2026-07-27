@@ -1124,3 +1124,22 @@ meaningful work. Entries are chronological, newest at the bottom.
   - [ ] `.exe` — not published (Windows leg still fails before package)
   - [ ] `latest.yml` — not published
 - **Next:** strengthen logger smoke teardown on Windows (close pino destination before rmSync, or retry loop for ENOTEMPTY); then retag/re-run Release.
+### alpha.1 Windows publish after logger teardown fix (2026-07-27T17:24Z)
+- **Fix:** `tests/logger.smoke.spec.ts` — `afterEach` wraps `fs.rmSync` in try/catch (Node `maxRetries` ignored on win32; pino keeps log fd open → ENOTEMPTY/EBUSY)
+- **Commit:** `57536a3295334800968c71e534b9bea52a25e9e6` — "Fix Windows logger smoke teardown: ignore locked-temp ENOTEMPTY."
+- **Branch push:** `chunk-7/packaging-windows` → origin (`6288c95..57536a3`)
+- **CI (branch push):** https://github.com/alexarchpublic/AI-Overlay/actions/runs/30288583324 — **success** (~1m31s)
+- **Tag:** `v0.2.0-alpha.1` moved to `57536a3` and re-pushed
+- **Release workflow:** https://github.com/alexarchpublic/AI-Overlay/actions/runs/30288817187 — **success** (~3m46s)
+  - `build (windows-latest, --win)`: Test/Build/Package and publish **passed** (~2m14s)
+  - `build (macos-14, --mac)`: Test/Build/Package and publish **passed** (~3m42s)
+- **Release:** https://github.com/alexarchpublic/AI-Overlay-releases/releases/tag/v0.2.0-alpha.1
+- **Artifact checklist:**
+  - [x] `.dmg` — `ArchPublicAIOverlay-0.2.0-alpha.1-arm64.dmg`
+  - [x] `.zip` — `ArchPublicAIOverlay-0.2.0-alpha.1-arm64.zip`
+  - [x] `latest-mac.yml`
+  - [x] `.exe` — `ArchPublicAIOverlay-Setup-0.2.0-alpha.1.exe`
+  - [x] `latest.yml`
+- **Gate 5.7 / 5.8:** Windows `.exe`/`latest.yml` now published; manual install + alpha update loop on real Windows hardware/VM still pending.
+- **Gate 5 status:** **PARTIAL** — both OS release artifacts present; Windows update verification deferred.
+
