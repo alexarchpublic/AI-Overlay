@@ -43,3 +43,7 @@ scripts/.cache/
 coverage/
 .vite/
 *.log
+
+# iCloud Drive sync-collision duplicates (Chunk 7 task 0.2)
+*\ 2.*
+*\ 2/

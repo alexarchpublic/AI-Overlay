@@ -783,3 +783,53 @@ meaningful work. Entries are chronological, newest at the bottom.
 - Phase 6 automated verification complete; pivot branch ready for live eval + Mac sign-off.
 - Eval bank is the replacement for the deleted red-team suite — offline grounding is CI-enforced; live quality gate is operator-run.
 
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-27-1054-ARCH-CHUNK7-000
+**Timestamp:** 2026-07-27T10:59:00-05:00
+**Model:** Cursor Grok 4.5
+**Focus Area:** Chunk 7 Phase 0 — Preflight & Baseline
+
+### Decisions Made
+- Executed Phase 0 immediately per PRD §0 ("Phase 0 may proceed immediately"). **D5/D6 still need explicit operator confirm/override before Phase 1** (releases-repo + team-config key provisioning).
+- **Task 0.3 iCloud relocate:** clone **remains** on iCloud Drive (`~/Library/Mobile Documents/com~apple~CloudDocs/Claude/Projects/AP Agent Overlay/arch-public-ai-overlay`). Operator has not approved relocation to e.g. `~/dev/arch-public-ai-overlay`. Per PRD: re-run the 0.2 duplicate check at the start of every subsequent phase; treat build anomalies as sync artifacts until proven otherwise.
+- App icons generated from a new Arch Public "AP" monogram source PNG (1024×1024) — no prior brand asset existed in-repo. ICO embeds 16/24/32/48/64/128/256.
+- Working Cursor workspace (`AP Agent Overlay/`) is a stale non-git copy; **canonical repo** is the Claude Projects path above.
+
+### Files Modified / Created
+- `.gitignore` — ignore iCloud `* 2.*` / `* 2/` collision duplicates (task 0.2)
+- `build/icon.png` — 512×512 source of truth
+- `build/icon.ico` — Windows multi-size ICO (7 sizes)
+- `build/icon.icns` — macOS icon
+- `src/main/platform.ts` — `isWindows`/`isMac`/`isLinux` + injectable `PlatformInfo` / `buildPlatformInfo()` (task 0.7)
+- `CLAUDE_HANDOFF.md` — this entry
+
+### Open Questions / Risks
+- **Confirm or override D5** (`alexarchpublic/AI-Overlay-releases` public binaries repo) and **D6** (no secret in binary; `team-config.json` provisioning) before Phase 1 begins.
+- **0.3 relocate** still recommended — iCloud already produced 3,839 `node_modules` collision dupes once; staying put means mandatory 0.2 re-check every phase.
+- Node engine mismatch: package wants `>=20 <21`, environment is Node v22.22.0 — tests passed but worth aligning with `.nvmrc` (20) for CI parity.
+- Icon is a generated AP monogram placeholder; swap for official brand art anytime by regenerating from a ≥1024 PNG into `build/`.
+
+### Recommended Next Steps for Next Claude Instance
+1. Operator confirms/overrides **D5** and **D6** in writing.
+2. Re-run `find . -name "* 2.*" -not -path "./node_modules/*"` and `find node_modules -name "* 2.*" | wc -l` (must be empty / 0).
+3. Begin **Phase 1 — Windows Correctness** on `chunk-7/packaging-windows` (B3 logger first, then B1/B2 screenshot blockers).
+4. Optionally relocate clone off iCloud, then re-run full suite from the new path.
+
+### Key Context Delta
+- `origin/pivot/internal-copilot` now exists at `2b95eda` (was previously laptop-only — critical risk closed).
+- Regression baseline for Chunk 7: **280 tests** passed (`npm run typecheck && npm run lint && npm test && npm run test:coverage`). Coverage: orchestrator 97.37% stmts / 94.11% branches.
+- Branch `chunk-7/packaging-windows` created off `2b95eda`.
+- All subsequent platform branching must go through `src/main/platform.ts` (PRD §3.8 grep contract).
+
+### Phase Gate Status
+- Gate 0: **PASS**
+  - 0.1 `git ls-remote --heads origin` lists `pivot/internal-copilot` at `2b95eda`; upstream was set on push
+  - 0.2 outside-nm duplicates empty; `node_modules` duplicates = 0; `ls node_modules/@img` = `sharp-darwin-arm64`, `sharp-libvips-darwin-arm64`
+  - 0.3 operator decision recorded (stay on iCloud for now)
+  - 0.4 on `chunk-7/packaging-windows`; `2b95eda` is ancestor
+  - 0.5 baseline = **280** tests
+  - 0.6 `build/icon.{ico,icns,png}` present; `file build/icon.ico` → valid MS Windows icon resource, 7 sizes
+  - 0.7 `src/main/platform.ts` exists and typechecks
