@@ -174,6 +174,14 @@ export default function RegionPicker(): ReactElement {
         <span>
           <span className={styles.kbd}>Esc</span>cancel
         </span>
+        <button
+          type="button"
+          className={styles.cancelButton}
+          onClick={sendCancel}
+          aria-label="Cancel region selection"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

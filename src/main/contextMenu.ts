@@ -23,6 +23,7 @@
 
 import { app, Menu, type BrowserWindow } from 'electron';
 import type { AppLogger } from './logger';
+import { platformInfo as defaultPlatformInfo, type PlatformInfo } from './platform';
 import {
   MENU_ACTION_CAPTURE_NOW,
   MENU_ACTION_OPEN_SETTINGS,
@@ -62,6 +63,12 @@ export interface BuildContextMenuDeps {
   toggleAutoCapture: () => void;
   /** Open the region picker. Hooked to `regionPicker.openRegionPicker()`. */
   openRegionPicker: () => void;
+  /**
+   * Injectable platform snapshot — defaults to the live `platformInfo`.
+   * Tests pass `buildPlatformInfo('win32')` etc. to assert on the
+   * Windows-specific "Exit" label without stubbing the OS.
+   */
+  platformInfo?: PlatformInfo;
 }
 
 /**
@@ -152,9 +159,16 @@ export function buildWidgetMenuTemplate(
     );
   }
 
+  const platform = deps.platformInfo ?? defaultPlatformInfo;
+  const quitLabel = platform.isWindows ? 'Exit' : 'Quit Arch Public AI Overlay';
+
   template.push(
     { type: 'separator' },
-    { label: 'Quit Arch Public AI Overlay', role: 'quit', click: fire(MENU_ACTION_QUIT) },
+    // No `role: 'quit'` here — it double-fires alongside `click` on some
+    // platforms (the role's built-in accelerator + our own quit handler),
+    // so `click` alone (which itself calls `app.quit()`) is the single
+    // source of truth for this item.
+    { label: quitLabel, click: fire(MENU_ACTION_QUIT) },
   );
 
   return template;

@@ -6,11 +6,21 @@
  * so `registerRendererLogBridge` is intentionally untouched here.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import pino from 'pino';
 import { Writable } from 'node:stream';
-import { buildLoggerOptions, wrapPino, REDACT_PATHS, sanitizeLogContext, LOG_TRUNCATE_KEYS } from '../src/main/logger';
-import { APP_NAME, REDACT_PLACEHOLDER } from '../src/shared/constants';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {
+  buildLoggerOptions,
+  wrapPino,
+  createAppLogger,
+  REDACT_PATHS,
+  sanitizeLogContext,
+  LOG_TRUNCATE_KEYS,
+} from '../src/main/logger';
+import { APP_NAME, REDACT_PLACEHOLDER, LOG_DIR_NAME } from '../src/shared/constants';
 
 function collectLogs(): { stream: Writable; records: () => Record<string, unknown>[] } {
   const chunks: string[] = [];
@@ -133,5 +143,66 @@ describe('AppLogger — shape and redaction', () => {
   it('exposes truncate keys for model-output log fields', () => {
     expect(LOG_TRUNCATE_KEYS).toContain('rawSnippet');
     expect(LOG_TRUNCATE_KEYS).toContain('detail.firstSnippet');
+  });
+});
+
+/**
+ * Poll `logDir` until it contains a non-empty log file (the pino
+ * `destination` write is async, so the file may not exist — or may be
+ * empty — for a few ticks after the synchronous `logger.info()` call).
+ */
+async function waitForLogFileContent(logDir: string, timeoutMs = 2000): Promise<string> {
+  const start = Date.now();
+  for (;;) {
+    if (fs.existsSync(logDir)) {
+      const files = fs.readdirSync(logDir);
+      const file = files[0];
+      if (file) {
+        const content = fs.readFileSync(path.join(logDir, file), 'utf8');
+        if (content.trim().length > 0) return content;
+      }
+    }
+    if (Date.now() - start > timeoutMs) {
+      throw new Error(`Timed out waiting for a written log file in ${logDir}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
+
+describe('createAppLogger — pretty gating is fail-safe (Chunk 7 B3)', () => {
+  let tmp: string;
+
+  beforeEach(() => {
+    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'logger-pretty-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  });
+
+  it('pretty: false writes plain JSONL via pino.destination, never the dev transport', async () => {
+    const logger = createAppLogger({ baseDir: tmp, pretty: false });
+    expect(() => {
+      logger.info('smoke.prettyFalse', { k: 'v' });
+    }).not.toThrow();
+
+    const content = await waitForLogFileContent(path.join(tmp, LOG_DIR_NAME));
+    const [firstLine] = content.split('\n').filter((l) => l.trim().length > 0);
+    const record = JSON.parse(firstLine as string) as Record<string, unknown>;
+    expect(record.event).toBe('smoke.prettyFalse');
+    expect(record.k).toBe('v');
+  });
+
+  it('pretty omitted (undefined) also writes plain JSONL — never inferred from NODE_ENV', async () => {
+    const logger = createAppLogger({ baseDir: tmp });
+    expect(() => {
+      logger.info('smoke.prettyUndefined', { k: 'v2' });
+    }).not.toThrow();
+
+    const content = await waitForLogFileContent(path.join(tmp, LOG_DIR_NAME));
+    const [firstLine] = content.split('\n').filter((l) => l.trim().length > 0);
+    const record = JSON.parse(firstLine as string) as Record<string, unknown>;
+    expect(record.event).toBe('smoke.prettyUndefined');
+    expect(record.k).toBe('v2');
   });
 });

@@ -130,6 +130,11 @@ export function buildPermissionsHelper(
     },
 
     async openSystemSettings() {
+      if (deps.platform !== 'darwin') {
+        // No equivalent deep-link on Windows/Linux — the permission model
+        // itself is a macOS-only concept (see `read()` above).
+        return;
+      }
       await deps.shell.openExternal(MACOS_SCREEN_RECORDING_PREF_URL);
     },
   };

@@ -11,6 +11,7 @@
 import path from 'node:path';
 import { BrowserWindow, screen, type Display } from 'electron';
 import type { AppLogger } from './logger';
+import { isWindows } from './platform';
 import { buildRendererUrl } from './overlayWindow';
 import {
   clampPosition,
@@ -52,6 +53,21 @@ export function focusChatWindow(): boolean {
     return true;
   }
   return false;
+}
+
+/**
+ * Bring the live chat window to the very front. Used by the Windows tray
+ * "Show Overlay" action, where a plain `focus()` is not always enough to
+ * beat other always-on-top windows (e.g. the meeting client sharing the
+ * screen). No-op when no window is open.
+ */
+export function raiseChatWindow(): boolean {
+  if (!existing || existing.isDestroyed()) return false;
+  existing.show();
+  existing.setAlwaysOnTop(true);
+  existing.moveTop();
+  existing.focus();
+  return true;
 }
 
 /** Idempotent close. No-op when no window is open. */
@@ -105,18 +121,18 @@ export function openChatWindow(deps: OpenChatWindowDeps): BrowserWindow {
     x,
     y,
     frame: false,
-    transparent: true,
+    transparent: !isWindows,
     alwaysOnTop: true,
     resizable: false,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
-    skipTaskbar: true,
+    skipTaskbar: isWindows ? false : true,
     hasShadow: false,
-    roundedCorners: false,
-    backgroundColor: '#00000000',
+    backgroundColor: isWindows ? '#0b1220' : '#00000000',
     title: `${APP_NAME} — Chat`,
     show: false,
+    ...(isWindows ? {} : { roundedCorners: false }),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -125,8 +141,22 @@ export function openChatWindow(deps: OpenChatWindowDeps): BrowserWindow {
     },
   });
 
-  win.setAlwaysOnTop(true, 'screen-saver');
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  if (isWindows) {
+    win.setAlwaysOnTop(true);
+  } else {
+    win.setAlwaysOnTop(true, 'screen-saver');
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  }
+
+  if (isWindows) {
+    let lastMoveTop = 0;
+    win.on('blur', () => {
+      const now = Date.now();
+      if (now - lastMoveTop < 500) return;
+      lastMoveTop = now;
+      if (!win.isDestroyed()) win.moveTop();
+    });
+  }
 
   const url = buildRendererUrl({
     view: 'chat',

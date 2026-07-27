@@ -19,8 +19,9 @@
  */
 
 import path from 'node:path';
-import { BrowserWindow, ipcMain, screen, type IpcMainEvent } from 'electron';
+import { BrowserWindow, app, ipcMain, screen, type IpcMainEvent } from 'electron';
 import type { AppLogger } from './logger';
+import { isWindows } from './platform';
 import type { CaptureRegion } from '../shared/types';
 import {
   IPC_REGION_PICKER_CANCEL,
@@ -104,6 +105,7 @@ export function openRegionPicker(deps: OpenRegionPickerDeps): Promise<CaptureReg
           width: display.bounds.width,
           height: display.bounds.height,
         },
+        label: display.label,
       };
       const region = buildCaptureRegion(info, payload.rect, Date.now());
       deps.logger.info('region.set', {
@@ -170,7 +172,7 @@ function createPickerWindow(
     skipTaskbar: true,
     backgroundColor: '#00000000',
     show: false,
-    enableLargerThanScreen: true,
+    ...(isWindows ? {} : { enableLargerThanScreen: true }),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -183,8 +185,12 @@ function createPickerWindow(
     },
   });
 
-  win.setAlwaysOnTop(true, 'screen-saver');
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  if (isWindows) {
+    win.setAlwaysOnTop(true);
+  } else {
+    win.setAlwaysOnTop(true, 'screen-saver');
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  }
 
   const url = buildPickerUrl({
     displayId: display.id,
@@ -201,7 +207,13 @@ function createPickerWindow(
   }
 
   win.once('ready-to-show', () => {
+    win.setBounds(display.bounds); // re-assert
     win.show();
+    if (isWindows) {
+      app.focus({ steal: true });
+      win.setAlwaysOnTop(true);
+      win.moveTop();
+    }
     win.focus();
   });
 

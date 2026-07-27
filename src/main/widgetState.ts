@@ -78,7 +78,9 @@ export function wrapStore(store: StoreLike): WidgetStateStore {
     },
     getStatus() {
       const raw = store.get(KEY_STATUS);
-      if (raw === 'ready' || raw === 'paused' || raw === 'permDenied') return raw;
+      if (raw === 'ready' || raw === 'paused' || raw === 'permDenied' || raw === 'captureUnhealthy') {
+        return raw;
+      }
       return DEFAULT_WIDGET_STATE.status;
     },
     setStatus(status) {

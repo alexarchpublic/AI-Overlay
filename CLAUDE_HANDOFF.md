@@ -833,3 +833,82 @@ meaningful work. Entries are chronological, newest at the bottom.
   - 0.5 baseline = **280** tests
   - 0.6 `build/icon.{ico,icns,png}` present; `file build/icon.ico` → valid MS Windows icon resource, 7 sizes
   - 0.7 `src/main/platform.ts` exists and typechecks
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-27-1102-ARCH-CHUNK7-001
+**Timestamp:** 2026-07-27T11:02:00-05:00
+**Model:** Cursor Grok 4.5
+**Focus Area:** Chunk 7 — D5/D6 operator confirmation
+
+### Decisions Made
+- **D5 CONFIRMED** by operator 2026-07-27: keep public releases repo `alexarchpublic/AI-Overlay-releases` (binaries only). Do not flip to private GitHub or generic/S3.
+- **D6 remains locked** as a consequence: shared Gemini key must **not** ship in the binary; provision via `team-config.json` → OS keychain (Phase 4).
+
+### Files Modified / Created
+- `CLAUDE_HANDOFF.md` (this entry)
+
+### Open Questions / Risks
+- Phase 1 is now unblocked on D5/D6. Remaining §11 items (key owner, team-config distribution path, pilot users, IT AppLocker) do not block Phases 0–3.
+
+### Recommended Next Steps for Next Claude Instance
+1. Begin **Phase 1 — Windows Correctness** on `chunk-7/packaging-windows` when operator requests.
+2. Re-run iCloud duplicate check (0.2) at Phase 1 start.
+
+### Key Context Delta
+- D5 + D6 are operator-locked. Phase 1 may proceed.
+
+### Phase Gate Status
+- Gate 0: PASS (unchanged)
+- D5/D6: CONFIRMED — Phase 1 unblocked
+
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-27-1102-ARCH-CHUNK7-002
+**Timestamp:** 2026-07-27T11:25:00-05:00
+**Model:** Cursor Grok 4.5
+**Focus Area:** Chunk 7 Phase 1 — Windows Correctness
+
+### Decisions Made
+- Implemented all Phase 1 tasks 1.1–1.15 (B1–B26 except cosmetic B25) on `chunk-7/packaging-windows`.
+- Platform branching goes through `src/main/platform.ts` only (grep contract #1 clean).
+- Removed unused direct `chokidar` dependency (1.15); transitive copy remains under `tailwindcss` only.
+- Gate 1 Windows runner leg deferred to Phase 5.1 (`ci.yml` matrix) — macOS gate is green now.
+
+### Files Modified / Created
+- `src/main/logger.ts` / `bootstrap.ts` — packaged logging fail-safe (`pretty: !app.isPackaged`)
+- `src/main/screenshotService.ts` — `pickSourceForDisplay`, `reconcileExtractRect`, capture health
+- `src/main/displayUtils.ts` / `captureStore.ts` / `types.ts` — fingerprint + ±2px / scale epsilon
+- `src/main/chatWindow.ts` / `regionPicker.ts` — Windows always-on-top, transparency, picker focus
+- `src/main/trayService.ts` (new) — Windows tray recovery
+- `src/main/index.ts` / `settingsWindow.ts` — menu bar suppression
+- `src/main/permissions.ts` / `registerCoreIpc.ts` — gate `openSystemSettings`
+- `src/main/secretsStore.ts` / `aiStore.ts` — decrypt-fail → null + clear
+- `src/main/contextMenu.ts` — Exit label, no `role: 'quit'`
+- `src/renderer/chat/{ChatHeader,InputBar}.tsx` / `regionPicker/*` — health dot, Ctrl hint, Cancel
+- `scripts/dev.mjs` — 127.0.0.1 + taskkill on win32
+- `package.json` — drop chokidar
+- Tests: logger, screenshot, displayUtils, secrets, permissions, contextMenu, trayService
+
+### Open Questions / Risks
+- Gate 1 Windows verification still needed on a real Win box or after Phase 5.1 matrix lands.
+- Manual acceptance items (always-on-top over Zoom, Intel iGPU black corners, mixed-DPI picker) remain for `WIN_ACCEPTANCE.md` Phase 6.
+- iCloud clone still in place — re-run 0.2 duplicate check at Phase 2 start.
+
+### Recommended Next Steps for Next Claude Instance
+1. Re-run iCloud duplicate check (0.2).
+2. Begin **Phase 2 — Packaging Configuration** (`electron-builder.yml`, sharp win32 optionalDeps, version drift kill).
+3. Do not start Phase 4 until §11 key-owner / team-config path questions are answered (Phases 2–3 are unblocked).
+
+### Key Context Delta
+- Test count after Phase 1: **323** (was 280 baseline).
+- New widget status: `captureUnhealthy` (do not reuse `permDenied` on Windows).
+- New exports: `pickSourceForDisplay`, `reconcileExtractRect`, `resolveDisplayForRegion`, `raiseChatWindow`, `createTrayService`.
+- Packaged logging is fixed at the caller (`pretty: !app.isPackaged`); real packaged verification is Phase 2.7.
+
+### Phase Gate Status
+- Gate 0: PASS
+- Gate 1: **PASS (macOS)** — `npm run typecheck && npm run lint && npm test` → 323/323; grep contract #1 empty. Windows runner not yet in CI (Phase 5.1).

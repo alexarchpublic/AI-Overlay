@@ -15,6 +15,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { buildWidgetMenuTemplate, type BuildContextMenuDeps } from '../src/main/contextMenu';
+import { buildPlatformInfo } from '../src/main/platform';
 import type { CaptureLoopState, PermissionState, WidgetStatus } from '../src/shared/types';
 
 interface MakeDepsOverrides {
@@ -192,5 +193,45 @@ describe('contextMenu — capture items reflect regionValid + permission', () =>
     const item = template.find((t) => t.label === 'Toggle auto-capture');
     (item?.click as () => void)();
     expect(deps.toggleAutoCapture).toHaveBeenCalledOnce();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Chunk 7 Phase 1 — the Quit item's label is platform-dependent, and no
+// longer carries `role: 'quit'` (it would double-fire alongside `click`).
+// ---------------------------------------------------------------------------
+
+describe('contextMenu — Quit/Exit label is platform-dependent', () => {
+  it('shows "Quit Arch Public AI Overlay" on darwin (default platformInfo)', () => {
+    const template = buildWidgetMenuTemplate(makeDeps());
+    const labels = template.map((t) => t.label);
+    expect(labels).toContain('Quit Arch Public AI Overlay');
+    expect(labels).not.toContain('Exit');
+  });
+
+  it('shows "Exit" when platformInfo is injected as win32', () => {
+    const deps = makeDeps();
+    deps.platformInfo = buildPlatformInfo('win32');
+    const template = buildWidgetMenuTemplate(deps);
+    const labels = template.map((t) => t.label);
+    expect(labels).toContain('Exit');
+    expect(labels).not.toContain('Quit Arch Public AI Overlay');
+  });
+
+  it('the Quit/Exit item does not carry role: "quit" (click is the sole handler)', () => {
+    const template = buildWidgetMenuTemplate(makeDeps());
+    const item = template.find(
+      (t) => t.label === 'Quit Arch Public AI Overlay' || t.label === 'Exit',
+    );
+    expect(item?.role).toBeUndefined();
+  });
+
+  it('the Exit item has a click handler wired (app.quit() requires a real Electron runtime, not exercised here)', () => {
+    const deps = makeDeps();
+    deps.platformInfo = buildPlatformInfo('win32');
+    const template = buildWidgetMenuTemplate(deps);
+    const item = template.find((t) => t.label === 'Exit');
+    expect(item).toBeDefined();
+    expect(typeof item?.click).toBe('function');
   });
 });

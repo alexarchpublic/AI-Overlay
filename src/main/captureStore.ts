@@ -63,23 +63,46 @@ export function clampIntervalMs(raw: unknown): number {
   return rounded;
 }
 
+function isDisplayFingerprint(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  if (typeof v.label !== 'string') return false;
+  const b = v.bounds;
+  if (typeof b !== 'object' || b === null) return false;
+  const bb = b as Record<string, unknown>;
+  return (
+    typeof bb.x === 'number' &&
+    typeof bb.y === 'number' &&
+    typeof bb.width === 'number' &&
+    typeof bb.height === 'number'
+  );
+}
+
 function isCaptureRegion(value: unknown): value is CaptureRegion {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
-  return (
-    typeof v.id === 'string' &&
-    typeof v.displayId === 'number' &&
-    typeof v.scaleFactor === 'number' &&
-    typeof v.x === 'number' &&
-    typeof v.y === 'number' &&
-    typeof v.w === 'number' &&
-    typeof v.h === 'number' &&
-    typeof v.px === 'number' &&
-    typeof v.py === 'number' &&
-    typeof v.pw === 'number' &&
-    typeof v.ph === 'number' &&
-    typeof v.createdAt === 'number'
-  );
+  if (
+    !(
+      typeof v.id === 'string' &&
+      typeof v.displayId === 'number' &&
+      typeof v.scaleFactor === 'number' &&
+      typeof v.x === 'number' &&
+      typeof v.y === 'number' &&
+      typeof v.w === 'number' &&
+      typeof v.h === 'number' &&
+      typeof v.px === 'number' &&
+      typeof v.py === 'number' &&
+      typeof v.pw === 'number' &&
+      typeof v.ph === 'number' &&
+      typeof v.createdAt === 'number'
+    )
+  ) {
+    return false;
+  }
+  if (v.displayFingerprint !== undefined && !isDisplayFingerprint(v.displayFingerprint)) {
+    return false;
+  }
+  return true;
 }
 
 /**

@@ -19,14 +19,16 @@ import type { CaptureRegion } from '../shared/types';
 
 /**
  * Minimal display descriptor we depend on. Mirrors Electron's
- * `Display.{ id, scaleFactor, bounds }` so tests can fabricate one without
- * importing Electron.
+ * `Display.{ id, scaleFactor, bounds, label }` so tests can fabricate one
+ * without importing Electron.
  */
 export interface DisplayInfoFull {
   id: number;
   scaleFactor: number;
   /** Logical CSS pixels — Electron's `Display.bounds`. */
   bounds: { x: number; y: number; width: number; height: number };
+  /** Electron's `Display.label` — empty string when the OS doesn't report one. */
+  label: string;
 }
 
 /**
@@ -129,6 +131,10 @@ export function buildCaptureRegion(
     pw: physical.pw,
     ph: physical.ph,
     createdAt: now,
+    displayFingerprint: {
+      label: display.label,
+      bounds: { ...display.bounds },
+    },
   };
 }
 
@@ -149,29 +155,82 @@ export function hashRegionId(displayId: number, p: PhysicalRect): string {
   return `rg_${hash.toString(36)}`;
 }
 
+/** ±2 physical px slop on the fit check — rounding noise, not a real overflow. */
+const REGION_EDGE_TOLERANCE_PX = 2;
+/** Max summed per-edge bounds delta (px) for a fingerprint fallback match to count as "the same monitor". */
+const DISPLAY_FALLBACK_MAX_BOUNDS_DISTANCE = 8;
+/** Float-safe scaleFactor comparison — avoid `!==` on values that may arrive as e.g. 1.5000000000000002. */
+const SCALE_FACTOR_EPSILON = 1e-3;
+
+/**
+ * Resolve the live display a saved region belongs to. Tries an exact
+ * `Display.id` match first. If that display is gone and the region carries
+ * a `displayFingerprint` (Chunk 7 — OS reassigned ids happen on some
+ * Windows sleep/wake and dock-replug sequences), falls back to the display
+ * whose bounds are closest to the fingerprint's — summed absolute deltas on
+ * x/y/width/height — preferring an exact label match among candidates.
+ * The fallback is only accepted when the winning distance is small enough
+ * (≤ `DISPLAY_FALLBACK_MAX_BOUNDS_DISTANCE`, ≈2px per edge) to rule out
+ * mistaking a different-but-similarly-sized monitor for the original one.
+ */
+export function resolveDisplayForRegion(
+  region: CaptureRegion,
+  displays: readonly DisplayInfoFull[],
+): DisplayInfoFull | null {
+  const byId = displays.find((d) => d.id === region.displayId);
+  if (byId) return byId;
+
+  const fp = region.displayFingerprint;
+  if (!fp || displays.length === 0) return null;
+
+  const boundsDistance = (d: DisplayInfoFull): number =>
+    Math.abs(d.bounds.x - fp.bounds.x) +
+    Math.abs(d.bounds.y - fp.bounds.y) +
+    Math.abs(d.bounds.width - fp.bounds.width) +
+    Math.abs(d.bounds.height - fp.bounds.height);
+
+  const labelMatches = fp.label.length > 0 ? displays.filter((d) => d.label === fp.label) : [];
+  const candidates = labelMatches.length > 0 ? labelMatches : displays;
+
+  let best: DisplayInfoFull | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const d of candidates) {
+    const distance = boundsDistance(d);
+    if (distance < bestDistance) {
+      best = d;
+      bestDistance = distance;
+    }
+  }
+
+  if (!best || bestDistance > DISPLAY_FALLBACK_MAX_BOUNDS_DISTANCE) return null;
+  return best;
+}
+
 /**
  * Decide whether a saved `CaptureRegion` is still usable given the current
- * display topology. PRD §0 D9: if the saved `displayId` is gone, the region
- * is invalid and the widget flips to amber rather than auto-falling-back.
+ * display topology. PRD §0 D9: if the saved display can't be resolved (by
+ * id or, failing that, by fingerprint fallback), the region is invalid and
+ * the widget flips to amber rather than auto-falling-back.
  */
 export function isRegionStillValid(
   region: CaptureRegion | null,
   displays: readonly DisplayInfoFull[],
 ): boolean {
   if (!region) return false;
-  const d = displays.find((x) => x.id === region.displayId);
+  const d = resolveDisplayForRegion(region, displays);
   if (!d) return false;
-  // Sanity: physical rect must fit inside the display's physical bounds.
-  // A user might unplug-and-replug a display whose bounds changed; in that
-  // case the same `displayId` is present but the rect no longer fits.
+  // Sanity: physical rect must fit inside the display's physical bounds
+  // (within a small tolerance for rounding noise). A user might
+  // unplug-and-replug a display whose bounds changed; in that case the
+  // display resolves but the rect no longer fits.
   const phys = displayPhysicalSize(d);
-  if (region.px < 0 || region.py < 0) return false;
-  if (region.px + region.pw > phys.width) return false;
-  if (region.py + region.ph > phys.height) return false;
+  if (region.px < -REGION_EDGE_TOLERANCE_PX || region.py < -REGION_EDGE_TOLERANCE_PX) return false;
+  if (region.px + region.pw > phys.width + REGION_EDGE_TOLERANCE_PX) return false;
+  if (region.py + region.ph > phys.height + REGION_EDGE_TOLERANCE_PX) return false;
   // Must also still match the scaleFactor at draw time — a Display.scaleFactor
   // change (rare, e.g. user changed scaling in System Settings) means the
   // physical rect is no longer self-consistent with the logical one.
-  if (region.scaleFactor !== d.scaleFactor) return false;
+  if (Math.abs(region.scaleFactor - d.scaleFactor) > SCALE_FACTOR_EPSILON) return false;
   return true;
 }
 
@@ -188,5 +247,6 @@ export function getCurrentDisplays(): DisplayInfoFull[] {
     id: d.id,
     scaleFactor: d.scaleFactor,
     bounds: { x: d.bounds.x, y: d.bounds.y, width: d.bounds.width, height: d.bounds.height },
+    label: d.label,
   }));
 }

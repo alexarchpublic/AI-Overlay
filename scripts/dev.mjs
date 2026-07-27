@@ -30,7 +30,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 
 const VITE_PORT = 5173;
-const VITE_URL = `http://localhost:${VITE_PORT}`;
+// 127.0.0.1 (not `localhost`) — on Windows, `localhost` can resolve to `::1`
+// first, which Vite's `--strictPort` dev server doesn't always bind to,
+// causing spurious connection-refused loops in `waitForHttp` below.
+const VITE_URL = `http://127.0.0.1:${VITE_PORT}`;
 const MAIN_BUNDLE = path.join(root, 'dist', 'main', 'index.js');
 const PRELOAD_BUNDLE = path.join(root, 'dist', 'preload', 'index.js');
 const READY_TIMEOUT_MS = 45_000;
@@ -59,12 +62,18 @@ function shutdown(exitCode = 0) {
   if (shuttingDown) return;
   shuttingDown = true;
   for (const { child } of children) {
-    if (!child.killed) {
-      try {
+    if (child.killed) continue;
+    try {
+      if (process.platform === 'win32') {
+        // Windows has no SIGINT signal delivery for child processes spawned
+        // without a shell — `taskkill /T` kills the whole process tree
+        // (vite/tsc/esbuild/electron all spawn their own subprocesses).
+        spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+      } else {
         child.kill('SIGINT');
-      } catch {
-        /* noop */
       }
+    } catch {
+      /* noop */
     }
   }
   // Hard-exit shortly after, in case any child ignores SIGINT.
@@ -107,7 +116,14 @@ function waitForFile(filepath, timeoutMs) {
 
 async function main() {
   console.log('[dev] starting vite + tsc:main + esbuild:preload watchers');
-  run('vite', 'npx', ['vite', '--port', String(VITE_PORT), '--strictPort']);
+  run('vite', 'npx', [
+    'vite',
+    '--port',
+    String(VITE_PORT),
+    '--strictPort',
+    '--host',
+    '127.0.0.1',
+  ]);
   run('tsc:main', 'npx', [
     'tsc',
     '-p',
@@ -134,7 +150,7 @@ async function main() {
   const electronEnv = {
     ...process.env,
     NODE_ENV: 'development',
-    VITE_DEV_SERVER_URL: VITE_URL,
+    VITE_DEV_SERVER_URL: VITE_URL, // 127.0.0.1 — see VITE_URL comment above
   };
   delete electronEnv.ELECTRON_RUN_AS_NODE;
   const child = spawn('npx', ['electron', '.'], {

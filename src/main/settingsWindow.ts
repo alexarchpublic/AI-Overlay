@@ -43,6 +43,7 @@ export function openSettingsWindow(deps: OpenSettingsWindowDeps): BrowserWindow 
     maximizable: false,
     resizable: false,
     fullscreenable: false,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

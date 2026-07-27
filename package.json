@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.20.0",
-    "chokidar": "^4.0.3",
     "electron-store": "^10.0.0",
     "pino": "^9.0.0",
     "react": "^18.3.0",

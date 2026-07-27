@@ -78,3 +78,25 @@
   font-size: 11px;
   margin-right: 4px;
 }
+
+/*
+ * Keyboard-independent escape hatch (Chunk 7 Phase 1 — Windows focus can
+ * swallow Esc when a screen-share client steals the keyboard). The hint bar
+ * itself is `pointer-events: none` so we opt this control back in.
+ */
+.cancelButton {
+  pointer-events: auto;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  color: #fecaca;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background: rgba(239, 68, 68, 0.3);
+}

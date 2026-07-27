@@ -185,7 +185,13 @@ export interface CreateAppLoggerInput {
   baseDir?: string;
   /** Inject a stream — used by tests to capture JSONL output in memory. */
   destination?: DestinationStream;
-  /** Override the pretty-print dev transport gating (defaults to `NODE_ENV !== 'production'`). */
+  /**
+   * Fail-safe pretty-print gate: the dev transport is only used when this is
+   * explicitly `true`. `false` or `undefined` (including an omitted field)
+   * always take the plain `pino.destination` JSONL path — never inferred
+   * from `NODE_ENV` so a misconfigured production build can't accidentally
+   * spawn the pino-pretty worker thread.
+   */
   pretty?: boolean;
 }
 
@@ -203,7 +209,7 @@ export function createAppLogger(input: CreateAppLoggerInput = {}): AppLogger {
   }
 
   const logFilePath = path.join(resolveLogDir(baseDir), formatLogFilename(new Date()));
-  const shouldPretty = input.pretty ?? process.env.NODE_ENV !== 'production';
+  const shouldPretty = input.pretty === true;
 
   if (shouldPretty) {
     // Dev transport: JSONL file is always authoritative; pretty-print mirrors

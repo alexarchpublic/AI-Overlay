@@ -23,6 +23,7 @@ const STATUS_LABEL: Record<WidgetStatus, string> = {
   paused: 'Paused',
   permDenied: 'Screen recording required',
   capturing: 'Capturing…',
+  captureUnhealthy: 'Capture unhealthy — check the shared screen',
 };
 
 function statusDotClass(status: WidgetStatus): string {
@@ -35,6 +36,8 @@ function statusDotClass(status: WidgetStatus): string {
       return 'bg-amber-500';
     case 'capturing':
       return 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]';
+    case 'captureUnhealthy':
+      return 'bg-amber-500 animate-pulse';
   }
 }
 

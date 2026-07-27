@@ -38,6 +38,7 @@ import {
   resolveSafeStorage,
   writeStoredSecret,
 } from './secretsStore';
+import { platformInfo } from './platform';
 import { importESM } from './importESM';
 
 export interface WrapAiStoreOptions {
@@ -135,7 +136,13 @@ export function wrapAiStore(store: StoreLike, options: WrapAiStoreOptions = {}):
   return {
     getApiKey() {
       const raw = store.get(AI_STORE_KEY_API_KEY);
-      const plain = readStoredSecret(raw, safeStorage);
+      const plain = readStoredSecret(raw, safeStorage, {
+        keyName: AI_STORE_KEY_API_KEY,
+        platform: platformInfo.platform,
+        clearCorrupt: () => {
+          store.delete(AI_STORE_KEY_API_KEY);
+        },
+      });
       if (plain === null) return null;
 
       // One-time migration from legacy plaintext (pre task 7).

@@ -117,6 +117,11 @@ export const CAPTURE_FLASH_MS = 600;
 /** PRD D15 — minimum gap between *manual* `captureNow()` invocations. */
 export const CAPTURE_MANUAL_DEBOUNCE_MS = 500;
 
+/** Chunk 7 — consecutive suspiciously-small captures before flipping to `'captureUnhealthy'`. */
+export const CAPTURE_UNHEALTHY_THRESHOLD = 3;
+/** Chunk 7 — a capture below this byte count is treated as a black/blank frame. */
+export const CAPTURE_UNHEALTHY_MIN_BYTES = 1500;
+
 /** Slider IPC debounce so a drag from 60s → 5s doesn't spam main. */
 export const CAPTURE_INTERVAL_SLIDER_DEBOUNCE_MS = 150;
 

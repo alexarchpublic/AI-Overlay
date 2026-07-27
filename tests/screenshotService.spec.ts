@@ -8,9 +8,14 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import path from 'node:path';
+import os from 'node:os';
 import {
   createScreenshotService,
+  pickSourceForDisplay,
+  reconcileExtractRect,
   type DesktopCapturerLike,
+  type DesktopCapturerSource,
   type FsLike,
   type ScreenshotServiceDeps,
   type SharpLike,
@@ -20,6 +25,8 @@ import {
   CAPTURE_DEFAULT_INTERVAL_MS,
   CAPTURE_MANUAL_DEBOUNCE_MS,
   CAPTURE_RING_BUFFER_SIZE,
+  CAPTURE_UNHEALTHY_MIN_BYTES,
+  CAPTURE_UNHEALTHY_THRESHOLD,
 } from '../src/shared/constants';
 import type { CaptureRegion, Screenshot } from '../src/shared/types';
 import { CapturePermissionError } from '../src/shared/types';
@@ -30,10 +37,13 @@ import type { DisplayInfoFull } from '../src/main/displayUtils';
 // Test fakes
 // ---------------------------------------------------------------------------
 
+const CAPTURES_DIR = path.join(os.tmpdir(), 'captures');
+
 const display: DisplayInfoFull = {
   id: 1,
   scaleFactor: 2,
   bounds: { x: 0, y: 0, width: 1280, height: 720 },
+  label: '',
 };
 
 function makeRegion(overrides: Partial<CaptureRegion> = {}): CaptureRegion {
@@ -288,7 +298,7 @@ function build(opts: BuildOpts = {}): {
     fs: fsParts.fs,
     permissions: { isGranted },
     getDisplays: opts.displays ?? (() => [display]),
-    capturesDir: '/tmp/captures',
+    capturesDir: CAPTURES_DIR,
     newId: opts.newId ?? (() => `ulid_${String(++idCounter.n)}`),
     now,
     setTimer: timers.setTimer,
@@ -330,7 +340,7 @@ describe('screenshotService — captureNow happy path', () => {
     expect(result?.width).toBe(1024);
     expect(result?.height).toBe(1024);
     expect(result?.bytes).toBe(12345);
-    expect(result?.filepath).toContain('/tmp/captures/');
+    expect(result?.filepath.startsWith(CAPTURES_DIR)).toBe(true);
     expect(captured).toHaveLength(1);
     expect(captured[0]?.id).toBe(result?.id);
   });
@@ -618,5 +628,173 @@ describe('screenshotService — loop state transitions emit events', () => {
     ctx.service.onLoopStateChanged((s) => events.push(s.intervalMs));
     ctx.service.setIntervalMs(20_000);
     expect(events.at(-1)).toBe(20_000);
+  });
+});
+
+describe('pickSourceForDisplay (Chunk 7 B1)', () => {
+  function makeSource(id: string, displayId: string): DesktopCapturerSource {
+    return {
+      id,
+      display_id: displayId,
+      thumbnail: {
+        toPNG: () => Buffer.from([]),
+        getSize: () => ({ width: 100, height: 100 }),
+      },
+    };
+  }
+
+  it('returns null for an empty source list', () => {
+    expect(pickSourceForDisplay([], 5, [])).toBeNull();
+  });
+
+  it('matches on exact display_id', () => {
+    const sources = [makeSource('screen:1:0', '5')];
+    const displays: DisplayInfoFull[] = [
+      { id: 5, scaleFactor: 1, bounds: { x: 0, y: 0, width: 100, height: 100 }, label: '' },
+    ];
+    expect(pickSourceForDisplay(sources, 5, displays)).toBe(sources[0]);
+  });
+
+  it('returns null when display_id is mismatched with no ordinal or single-source fallback available', () => {
+    const displays: DisplayInfoFull[] = [
+      { id: 10, scaleFactor: 1, bounds: { x: 0, y: 0, width: 100, height: 100 }, label: '' },
+      { id: 20, scaleFactor: 1, bounds: { x: 100, y: 0, width: 100, height: 100 }, label: '' },
+    ];
+    const sources = [makeSource('screen:99:0', '999'), makeSource('screen:98:0', '998')];
+    expect(pickSourceForDisplay(sources, 10, displays)).toBeNull();
+  });
+
+  it('returns null for two displays with empty source ids (ambiguous — not the single-fallback case)', () => {
+    const displays: DisplayInfoFull[] = [
+      { id: 10, scaleFactor: 1, bounds: { x: 0, y: 0, width: 100, height: 100 }, label: '' },
+      { id: 20, scaleFactor: 1, bounds: { x: 100, y: 0, width: 100, height: 100 }, label: '' },
+    ];
+    const sources = [makeSource('weird:0', ''), makeSource('weird:1', '')];
+    expect(pickSourceForDisplay(sources, 10, displays)).toBeNull();
+  });
+
+  it('falls back to the ordinal index parsed from screen:<n>:0 when display_id is empty', () => {
+    const displays: DisplayInfoFull[] = [
+      { id: 10, scaleFactor: 1, bounds: { x: 0, y: 0, width: 100, height: 100 }, label: '' },
+      { id: 20, scaleFactor: 1, bounds: { x: 100, y: 0, width: 100, height: 100 }, label: '' },
+    ];
+    const sources = [makeSource('screen:0:0', ''), makeSource('screen:1:0', '')];
+    expect(pickSourceForDisplay(sources, 20, displays)).toBe(sources[1]);
+  });
+
+  it('falls back to the single source when there is exactly one display and one source', () => {
+    const displays: DisplayInfoFull[] = [
+      { id: 1, scaleFactor: 1, bounds: { x: 0, y: 0, width: 100, height: 100 }, label: '' },
+    ];
+    const sources = [makeSource('weird-id', '')];
+    expect(pickSourceForDisplay(sources, 1, displays)).toBe(sources[0]);
+  });
+});
+
+describe('reconcileExtractRect (Chunk 7 B2)', () => {
+  it('ratio 1.0 — passes the rect through unchanged and is not mismatched', () => {
+    const result = reconcileExtractRect(
+      { px: 10, py: 20, pw: 100, ph: 50 },
+      { width: 200, height: 200 },
+      { width: 200, height: 200 },
+    );
+    expect(result).toEqual({ left: 10, top: 20, width: 100, height: 50, ratioX: 1, ratioY: 1, mismatched: false });
+  });
+
+  it('ratio 0.5 — scales the rect down and flags mismatched', () => {
+    const result = reconcileExtractRect(
+      { px: 100, py: 100, pw: 200, ph: 200 },
+      { width: 400, height: 400 },
+      { width: 200, height: 200 },
+    );
+    expect(result.left).toBe(50);
+    expect(result.top).toBe(50);
+    expect(result.width).toBe(100);
+    expect(result.height).toBe(100);
+    expect(result.ratioX).toBe(0.5);
+    expect(result.ratioY).toBe(0.5);
+    expect(result.mismatched).toBe(true);
+  });
+
+  it('ratio 1.25 — scales the rect up and flags mismatched', () => {
+    const result = reconcileExtractRect(
+      { px: 100, py: 100, pw: 200, ph: 200 },
+      { width: 400, height: 400 },
+      { width: 500, height: 500 },
+    );
+    expect(result.ratioX).toBe(1.25);
+    expect(result.ratioY).toBe(1.25);
+    expect(result.left).toBe(125);
+    expect(result.top).toBe(125);
+    expect(result.width).toBe(250);
+    expect(result.height).toBe(250);
+    expect(result.mismatched).toBe(true);
+  });
+
+  it('clamps a rect that would overflow the actual image bounds', () => {
+    const result = reconcileExtractRect(
+      { px: 190, py: 190, pw: 50, ph: 50 },
+      { width: 200, height: 200 },
+      { width: 200, height: 200 },
+    );
+    expect(result.left + result.width).toBeLessThanOrEqual(200);
+    expect(result.top + result.height).toBeLessThanOrEqual(200);
+    expect(result.width).toBeGreaterThanOrEqual(1);
+    expect(result.height).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('screenshotService — capture health (PRD Chunk 7 B26)', () => {
+  function buildHealthCtx(sizes: number[]): ReturnType<typeof build> {
+    let call = 0;
+    const toFile = vi.fn(async () => ({
+      size: sizes[Math.min(call++, sizes.length - 1)] ?? 50_000,
+      width: 10,
+      height: 10,
+    }));
+    const instance: SharpInstanceLike = {
+      extract: () => instance,
+      resize: () => instance,
+      jpeg: () => instance,
+      withMetadata: () => instance,
+      toFile,
+    };
+    const sharp = ((_b: Buffer) => instance) as SharpLike;
+    return build({ sharp });
+  }
+
+  it(`trips 'false' after ${String(CAPTURE_UNHEALTHY_THRESHOLD)} consecutive tiny-byte frames`, async () => {
+    const tiny = CAPTURE_UNHEALTHY_MIN_BYTES - 1;
+    const ctx = buildHealthCtx([tiny, tiny, tiny]);
+    const events: boolean[] = [];
+    ctx.service.onCaptureHealthChanged((h) => events.push(h));
+
+    for (let i = 0; i < CAPTURE_UNHEALTHY_THRESHOLD; i++) {
+      await ctx.service.captureNow();
+      await ctx.fakes.timers.advance(CAPTURE_MANUAL_DEBOUNCE_MS + 1);
+    }
+    expect(events).toEqual([false]);
+  });
+
+  it('clears back to healthy on the next valid-sized frame', async () => {
+    const tiny = CAPTURE_UNHEALTHY_MIN_BYTES - 1;
+    const ctx = buildHealthCtx([tiny, tiny, tiny, 50_000]);
+    const events: boolean[] = [];
+    ctx.service.onCaptureHealthChanged((h) => events.push(h));
+
+    for (let i = 0; i < CAPTURE_UNHEALTHY_THRESHOLD; i++) {
+      await ctx.service.captureNow();
+      await ctx.fakes.timers.advance(CAPTURE_MANUAL_DEBOUNCE_MS + 1);
+    }
+    await ctx.service.captureNow();
+    expect(events).toEqual([false, true]);
+  });
+
+  it('does not emit when every frame stays healthy-sized', async () => {
+    const ctx = build();
+    const events: boolean[] = [];
+    ctx.service.onCaptureHealthChanged((h) => events.push(h));
+    await ctx.service.captureNow();
+    expect(events).toEqual([]);
   });
 });

@@ -156,4 +156,32 @@ describe('permissions — openSystemSettings', () => {
     const call = (deps.shell.openExternal as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(call?.[0]).toMatch(/^x-apple\.systempreferences:/);
   });
+
+  it('is a no-op on win32 — does NOT call shell.openExternal', async () => {
+    const deps = fakeDeps({ platform: 'win32' });
+    const helper = buildPermissionsHelper(deps);
+    await helper.openSystemSettings();
+    expect(deps.shell.openExternal).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Chunk 7 Phase 1 — win32 permission model (no real TCC-style permission)
+// ---------------------------------------------------------------------------
+
+describe('permissions — win32 behaves like the non-macOS dev-ergonomics path', () => {
+  it('getScreenRecordingStatus returns granted on win32 without touching systemPreferences', () => {
+    const deps = fakeDeps({ platform: 'win32' });
+    const helper = buildPermissionsHelper(deps);
+    expect(helper.getScreenRecordingStatus()).toBe('granted');
+    expect(deps.systemPreferences.getMediaAccessStatus).not.toHaveBeenCalled();
+  });
+
+  it('requestScreenRecording short-circuits to granted on win32', async () => {
+    const deps = fakeDeps({ platform: 'win32' });
+    const helper = buildPermissionsHelper(deps);
+    const result = await helper.requestScreenRecording();
+    expect(result).toBe('granted');
+    expect(deps.desktopCapturer.getSources).not.toHaveBeenCalled();
+  });
 });

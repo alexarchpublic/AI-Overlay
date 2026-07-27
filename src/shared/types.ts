@@ -39,11 +39,14 @@ export interface RendererLogMessage {
  * - `permDenied` — amber widget, screen-recording permission missing
  * - `capturing`  — Chunk 3 600ms flash on capture (PRD §0 D11). Auto-resets
  *                  back to `'ready'` unless `'paused'` wins the race.
+ * - `captureUnhealthy` — Chunk 7 — consecutive captures are landing
+ *                  suspiciously small (black/blank frames). Distinct from
+ *                  `permDenied` so the user gets a different remediation hint.
  *
  * Do not extend here without updating every consumer of the union
  * (widgetStore, Widget.tsx, contextMenu stubs).
  */
-export type WidgetStatus = 'ready' | 'paused' | 'permDenied' | 'capturing';
+export type WidgetStatus = 'ready' | 'paused' | 'permDenied' | 'capturing' | 'captureUnhealthy';
 
 /** Rectangular bounds used by the widget and by later capture code. */
 export interface Bounds {
@@ -156,6 +159,23 @@ export interface CaptureRegion {
   ph: number;
   /** Epoch ms when the picker confirmed the rect. */
   createdAt: number;
+  /**
+   * Chunk 7 — snapshot of the display's label + bounds at draw time. Used by
+   * `resolveDisplayForRegion` as a fallback match when `displayId` changes
+   * (observed on some Windows multi-monitor reconnect sequences) but the
+   * physical monitor is otherwise unchanged.
+   */
+  displayFingerprint?: DisplayFingerprint;
+}
+
+/**
+ * Chunk 7 — identifying snapshot of a display at region-draw time, used to
+ * re-associate a `CaptureRegion` with its monitor when the OS reassigns
+ * `Display.id` (e.g. after a sleep/wake or docking-station replug).
+ */
+export interface DisplayFingerprint {
+  label: string;
+  bounds: { x: number; y: number; width: number; height: number };
 }
 
 /**

@@ -44,6 +44,8 @@ import {
   CAPTURE_PRUNE_INTERVAL_MS,
   CAPTURE_RING_BUFFER_SIZE,
   CAPTURE_DISK_TTL_MS,
+  CAPTURE_UNHEALTHY_MIN_BYTES,
+  CAPTURE_UNHEALTHY_THRESHOLD,
 } from '../shared/constants';
 import type { CaptureStateStore } from './captureStore';
 import type { AppLogger } from './logger';
@@ -149,8 +151,109 @@ export interface ScreenshotService {
   /** Subscribe to per-capture events; returns an unsubscribe fn. */
   onCaptured(cb: (s: Screenshot) => void): () => void;
   onLoopStateChanged(cb: (s: CaptureLoopState) => void): () => void;
+  /**
+   * Chunk 7 — subscribe to capture-health transitions. Fires `false` once
+   * `CAPTURE_UNHEALTHY_THRESHOLD` consecutive captures land under
+   * `CAPTURE_UNHEALTHY_MIN_BYTES` (a proxy for black/blank frames), and
+   * `true` the next time a healthy-sized capture lands.
+   */
+  onCaptureHealthChanged(cb: (healthy: boolean) => void): () => void;
   /** Tear down timers + listeners. Idempotent. Called from `app.before-quit`. */
   shutdown(): Promise<void>;
+}
+
+// ---------------------------------------------------------------------------
+// Pure helpers — exported at module scope so tests exercise them directly
+// ---------------------------------------------------------------------------
+
+/**
+ * Pick the right desktopCapturer source for a given displayId (PRD Chunk 7
+ * B1). Resolution order:
+ *
+ *   (a) exact `source.display_id === String(displayId)` — the normal path
+ *       on macOS/Linux where Electron populates `display_id` faithfully.
+ *   (b) parse `screen:<n>:0` from `source.id` and match `<n>` against the
+ *       *ordinal index* of `displays` (index of the display whose
+ *       `id === displayId`) — some Windows builds report an empty/garbage
+ *       `display_id` but the source list order still lines up with
+ *       `screen.getAllDisplays()`.
+ *   (c) if there's exactly one display and exactly one source, assume
+ *       they're the same screen (single-monitor fallback).
+ *   (d) otherwise, unresolved — return `null`.
+ */
+export function pickSourceForDisplay(
+  sources: readonly DesktopCapturerSource[],
+  displayId: number,
+  displays: readonly DisplayInfoFull[],
+): DesktopCapturerSource | null {
+  if (sources.length === 0) return null;
+
+  const target = String(displayId);
+  const exact = sources.find((s) => s.display_id === target);
+  if (exact) return exact;
+
+  const ordinal = displays.findIndex((d) => d.id === displayId);
+  if (ordinal >= 0) {
+    const ordinalMatch = sources.find((s) => {
+      const parts = s.id.split(':');
+      return parts[0] === 'screen' && parts[1] === String(ordinal);
+    });
+    if (ordinalMatch) return ordinalMatch;
+  }
+
+  if (displays.length === 1 && sources.length === 1) {
+    return sources[0] ?? null;
+  }
+
+  return null;
+}
+
+/** Rect + reconciliation metadata returned by `reconcileExtractRect`. */
+export interface ReconciledExtractRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  ratioX: number;
+  ratioY: number;
+  /** `true` when either axis' ratio deviates from 1.0 by more than 1%. */
+  mismatched: boolean;
+}
+
+/**
+ * Reconcile the requested physical extract rect against the thumbnail size
+ * Electron actually returned (PRD Chunk 7 B2). The two can disagree — e.g.
+ * some Windows DPI configurations round `thumbnailSize` differently than
+ * the display's reported physical size — so scale the region by the
+ * observed/requested ratio and clamp to the actual image bounds before
+ * handing it to `sharp.extract()`.
+ */
+export function reconcileExtractRect(
+  region: { px: number; py: number; pw: number; ph: number },
+  expected: { width: number; height: number },
+  actual: { width: number; height: number },
+): ReconciledExtractRect {
+  const ratioX = expected.width > 0 ? actual.width / expected.width : 1;
+  const ratioY = expected.height > 0 ? actual.height / expected.height : 1;
+
+  const scaledLeft = Math.round(region.px * ratioX);
+  const scaledTop = Math.round(region.py * ratioY);
+  const scaledWidth = Math.round(region.pw * ratioX);
+  const scaledHeight = Math.round(region.ph * ratioY);
+
+  const maxLeft = Math.max(actual.width - 1, 0);
+  const maxTop = Math.max(actual.height - 1, 0);
+  const left = Math.min(Math.max(scaledLeft, 0), maxLeft);
+  const top = Math.min(Math.max(scaledTop, 0), maxTop);
+
+  const maxWidth = Math.max(actual.width - left, 1);
+  const maxHeight = Math.max(actual.height - top, 1);
+  const width = Math.min(Math.max(scaledWidth, 1), maxWidth);
+  const height = Math.min(Math.max(scaledHeight, 1), maxHeight);
+
+  const mismatched = Math.abs(ratioX - 1) > 0.01 || Math.abs(ratioY - 1) > 0.01;
+
+  return { left, top, width, height, ratioX, ratioY, mismatched };
 }
 
 // ---------------------------------------------------------------------------
@@ -164,6 +267,10 @@ interface InternalState {
   lastManualTs: number;
   lastCaptureTs: number | null;
   regionValid: boolean;
+  /** Chunk 7 — consecutive captures under `CAPTURE_UNHEALTHY_MIN_BYTES`. */
+  consecutiveUnhealthy: number;
+  /** Chunk 7 — mirrors the last `captureHealthChanged` emission. */
+  captureHealthy: boolean;
 }
 
 export function createScreenshotService(deps: ScreenshotServiceDeps): ScreenshotService {
@@ -191,6 +298,8 @@ export function createScreenshotService(deps: ScreenshotServiceDeps): Screenshot
     lastManualTs: Number.NEGATIVE_INFINITY,
     lastCaptureTs: deps.store.getLastCaptureTs(),
     regionValid: isRegionStillValid(deps.store.getRegion(), deps.getDisplays()),
+    consecutiveUnhealthy: 0,
+    captureHealthy: true,
   };
 
   let loopHandle: ReturnType<typeof setTimer> | null = null;
@@ -207,6 +316,35 @@ export function createScreenshotService(deps: ScreenshotServiceDeps): Screenshot
 
   function emitLoopState(): void {
     emitter.emit('loopStateChanged', snapshotLoopState());
+  }
+
+  /**
+   * Chunk 7 — track a run of suspiciously small captures (proxy for
+   * black/blank frames on a stalled capture pipeline). Trips
+   * `'captureUnhealthy'` after `CAPTURE_UNHEALTHY_THRESHOLD` in a row and
+   * clears it on the next healthy-sized frame.
+   */
+  function trackCaptureHealth(bytes: number): void {
+    if (bytes < CAPTURE_UNHEALTHY_MIN_BYTES) {
+      internal.consecutiveUnhealthy++;
+      if (internal.consecutiveUnhealthy === CAPTURE_UNHEALTHY_THRESHOLD) {
+        deps.logger.warn('capture.unhealthy', {
+          consecutiveUnhealthy: internal.consecutiveUnhealthy,
+          bytes,
+          thresholdBytes: CAPTURE_UNHEALTHY_MIN_BYTES,
+        });
+      }
+      if (internal.consecutiveUnhealthy >= CAPTURE_UNHEALTHY_THRESHOLD && internal.captureHealthy) {
+        internal.captureHealthy = false;
+        emitter.emit('captureHealthChanged', false);
+      }
+      return;
+    }
+    internal.consecutiveUnhealthy = 0;
+    if (!internal.captureHealthy) {
+      internal.captureHealthy = true;
+      emitter.emit('captureHealthChanged', true);
+    }
   }
 
   function clearLoopTimer(): void {
@@ -278,6 +416,7 @@ export function createScreenshotService(deps: ScreenshotServiceDeps): Screenshot
 
       internal.lastCaptureTs = result.timestamp;
       deps.store.setLastCaptureTs(result.timestamp);
+      trackCaptureHealth(result.bytes);
 
       const latencyMs = now() - startTs;
       deps.logger.info('capture.captured', {
@@ -347,8 +486,16 @@ export function createScreenshotService(deps: ScreenshotServiceDeps): Screenshot
       throw new CapturePermissionError();
     }
 
-    const source = pickSourceForDisplay(sources, region.displayId);
+    const displays = deps.getDisplays();
+    const source = pickSourceForDisplay(sources, region.displayId, displays);
     if (!source) {
+      deps.logger.warn('capture.sourceUnresolved', {
+        displayId: region.displayId,
+        sourceCount: sources.length,
+        sourceIds: sources.map((s) => s.id),
+        sources: sources.map((s) => ({ id: s.id, display_id: s.display_id })),
+        displays: displays.map((d) => ({ id: d.id, label: d.label })),
+      });
       throw new Error(`capture: no source returned for displayId ${String(region.displayId)}`);
     }
 
@@ -356,6 +503,21 @@ export function createScreenshotService(deps: ScreenshotServiceDeps): Screenshot
     const id = deps.newId();
     const finalPath = path.join(deps.capturesDir, `${id}.jpg`);
     const tmpPath = `${finalPath}.tmp`;
+
+    // Chunk 7 B2 — the thumbnail Electron actually returns can differ in
+    // size from the `thumbnailSize` we requested (observed on some Windows
+    // DPI configurations). Reconcile the physical extract rect against the
+    // real thumbnail dimensions instead of trusting the request verbatim.
+    const actualSize = source.thumbnail.getSize();
+    const reconciled = reconcileExtractRect(region, physicalSize, actualSize);
+    if (reconciled.mismatched) {
+      deps.logger.warn('capture.thumbnailMismatch', {
+        requested: physicalSize,
+        actual: actualSize,
+        ratioX: reconciled.ratioX,
+        ratioY: reconciled.ratioY,
+      });
+    }
 
     // Compute the resize so the LONGEST edge equals CAPTURE_MAX_EDGE_PX while
     // preserving aspect ratio (PRD D4). Use sharp's `fit: 'inside'` with both
@@ -368,10 +530,10 @@ export function createScreenshotService(deps: ScreenshotServiceDeps): Screenshot
     const meta = await deps
       .sharp(png)
       .extract({
-        left: region.px,
-        top: region.py,
-        width: region.pw,
-        height: region.ph,
+        left: reconciled.left,
+        top: reconciled.top,
+        width: reconciled.width,
+        height: reconciled.height,
       })
       .resize({
         ...(resizeWidth !== undefined ? { width: resizeWidth } : {}),
@@ -393,26 +555,6 @@ export function createScreenshotService(deps: ScreenshotServiceDeps): Screenshot
       height: meta.height,
       bytes: meta.size,
     };
-  }
-
-  /**
-   * Pick the right desktopCapturer source for a given displayId. Electron's
-   * `Source.display_id` is a string match against `Display.id` for the
-   * `'screen'` type. Falls back to first source if `display_id` is empty
-   * (older Electron builds on a single-display setup).
-   */
-  function pickSourceForDisplay(
-    sources: readonly DesktopCapturerSource[],
-    displayId: number,
-  ): DesktopCapturerSource | null {
-    if (sources.length === 0) return null;
-    const target = String(displayId);
-    const match = sources.find((s) => s.display_id === target);
-    if (match) return match;
-    if (sources.length === 1 && (sources[0]?.display_id ?? '') === '') {
-      return sources[0] ?? null;
-    }
-    return null;
   }
 
   function handlePermissionLost(): void {
@@ -574,6 +716,11 @@ export function createScreenshotService(deps: ScreenshotServiceDeps): Screenshot
     onLoopStateChanged(cb) {
       emitter.on('loopStateChanged', cb);
       return () => emitter.off('loopStateChanged', cb);
+    },
+
+    onCaptureHealthChanged(cb) {
+      emitter.on('captureHealthChanged', cb);
+      return () => emitter.off('captureHealthChanged', cb);
     },
 
     async shutdown() {

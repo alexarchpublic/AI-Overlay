@@ -32,6 +32,13 @@ export interface ResolveSafeStorageOptions {
    * fail-closed stub instead of the deterministic test double.
    */
   allowFallback?: boolean;
+  /**
+   * Chunk 7 — invoked when the fail-closed stub is selected (OS keychain
+   * unavailable in production). Lets callers surface this to the user /
+   * widget state instead of it being a silent no-op until the first write
+   * throws.
+   */
+  onFailClosed?: () => void;
 }
 
 /** Fail-closed stub — reads report unavailable; writes throw. */
@@ -95,25 +102,48 @@ export function resolveSafeStorage(
     return createTestSafeStorage();
   }
 
+  if (typeof opts.onFailClosed === 'function') {
+    opts.onFailClosed();
+  } else {
+    console.warn('[secretsStore] OS keychain unavailable — fail-closed stub selected');
+  }
   return createUnavailableSafeStorage();
+}
+
+/** Chunk 7 B22/B23 — options for `readStoredSecret`'s fail-safe decrypt path. */
+export interface ReadStoredSecretOptions {
+  /** Store key name — included in the failure log, never the ciphertext/plaintext. */
+  keyName?: string;
+  /** Platform string for the failure log (pass `platformInfo.platform`, never branch on it here). */
+  platform?: string;
+  logger?: { warn(event: string, ctx: Record<string, unknown>): void };
+  /** Invoked so the caller can drop the corrupt value instead of re-reading it forever. */
+  clearCorrupt?: () => void;
 }
 
 /**
  * Read a secret from electron-store, migrating legacy plaintext on first access.
- * Returns `null` when unset or empty.
+ * Returns `null` when unset, empty, or on ANY decrypt failure — corrupt
+ * ciphertext must never throw and crash the caller; it's logged (without the
+ * ciphertext) and treated as absent.
  */
 export function readStoredSecret(
   raw: unknown,
   safeStorage: SafeStorageLike,
+  options: ReadStoredSecretOptions = {},
 ): string | null {
   if (typeof raw !== 'string' || raw.length === 0) return null;
 
   if (isEncryptedSecret(raw)) {
     try {
       return decryptSecret(raw, safeStorage);
-    } catch (err) {
-      if (err instanceof SecretEncryptionUnavailableError) return null;
-      throw err;
+    } catch {
+      options.logger?.warn('secrets.decryptFailed', {
+        keyName: options.keyName,
+        platform: options.platform,
+      });
+      options.clearCorrupt?.();
+      return null;
     }
   }
 

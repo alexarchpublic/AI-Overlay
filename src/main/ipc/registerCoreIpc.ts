@@ -9,6 +9,7 @@ import { BrowserWindow, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } fr
 import type { AppContext } from '../appContext';
 import type { PermissionSyncHandle } from '../permissionSync';
 import { popupWidgetMenu } from '../contextMenu';
+import { isMac } from '../platform';
 import { openRegionPicker } from '../regionPicker';
 import { openSettingsWindow } from '../settingsWindow';
 import type { CaptureStateStore } from '../captureStore';
@@ -72,7 +73,8 @@ export function registerCoreIpc(
       next !== 'ready' &&
       next !== 'paused' &&
       next !== 'permDenied' &&
-      next !== 'capturing'
+      next !== 'capturing' &&
+      next !== 'captureUnhealthy'
     ) {
       return;
     }
@@ -105,6 +107,10 @@ export function registerCoreIpc(
         openSettingsWindow({ logger: log, isDev: ctx.isDev, devServerUrl: ctx.devServerUrl });
       },
       openSystemSettings: (): void => {
+        if (!isMac) {
+          log.info('perms.openSystemSettingsSkipped', { trigger: 'menu', reason: 'not-macos' });
+          return;
+        }
         log.info('perms.openSystemSettings', { trigger: 'menu' });
         void perms.openSystemSettings();
       },
@@ -131,6 +137,13 @@ export function registerCoreIpc(
   );
 
   ipcMain.on(IPC_PERMS_OPEN_SYSTEM_SETTINGS, (): void => {
+    if (!isMac) {
+      log.info('perms.openSystemSettingsSkipped', {
+        trigger: 'rendererInvoke',
+        reason: 'not-macos',
+      });
+      return;
+    }
     log.info('perms.openSystemSettings', { trigger: 'rendererInvoke' });
     void perms.openSystemSettings();
   });

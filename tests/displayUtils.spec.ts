@@ -15,6 +15,7 @@ import {
   isRegionStillValid,
   logicalRectToPhysical,
   physicalRectToLogical,
+  resolveDisplayForRegion,
   type DisplayInfoFull,
 } from '../src/main/displayUtils';
 import type { CaptureRegion } from '../src/shared/types';
@@ -23,16 +24,19 @@ const display1x: DisplayInfoFull = {
   id: 1,
   scaleFactor: 1,
   bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  label: 'Built-in Display',
 };
 const display2x: DisplayInfoFull = {
   id: 2,
   scaleFactor: 2,
   bounds: { x: 0, y: 0, width: 1280, height: 720 },
+  label: 'Studio Display',
 };
 const display3x: DisplayInfoFull = {
   id: 3,
   scaleFactor: 3,
   bounds: { x: 0, y: 0, width: 800, height: 600 },
+  label: '',
 };
 
 describe('displayUtils — logicalRectToPhysical', () => {
@@ -109,6 +113,11 @@ describe('displayUtils — buildCaptureRegion', () => {
     expect(r.createdAt).toBe(1234);
     expect(r.id).toMatch(/^rg_/);
   });
+
+  it('stamps a displayFingerprint (label + bounds) for later fallback resolution (Chunk 7)', () => {
+    const r = buildCaptureRegion(display2x, { x: 0, y: 0, w: 10, h: 10 }, 0);
+    expect(r.displayFingerprint).toEqual({ label: display2x.label, bounds: { ...display2x.bounds } });
+  });
 });
 
 describe('displayUtils — hashRegionId', () => {
@@ -174,7 +183,101 @@ describe('displayUtils — isRegionStillValid (PRD D9)', () => {
     expect(isRegionStillValid(makeRegion({ scaleFactor: 2 }), [live])).toBe(false);
   });
 
-  it('returns false on negative coords (defensive)', () => {
-    expect(isRegionStillValid(makeRegion({ px: -1 }), [display2x])).toBe(false);
+  it('tolerates small negative coords within the ±2px rounding-noise tolerance', () => {
+    expect(isRegionStillValid(makeRegion({ px: -1 }), [display2x])).toBe(true);
+  });
+
+  it('still rejects coords beyond the ±2px tolerance', () => {
+    expect(isRegionStillValid(makeRegion({ px: -3 }), [display2x])).toBe(false);
+  });
+
+  it('accepts scaleFactor within the 1e-3 float tolerance', () => {
+    const live: DisplayInfoFull = { ...display2x, scaleFactor: 2.0005 };
+    expect(isRegionStillValid(makeRegion({ scaleFactor: 2 }), [live])).toBe(true);
+  });
+
+  it('still rejects scaleFactor 1 vs 2 (far beyond the tolerance)', () => {
+    const live: DisplayInfoFull = { ...display2x, scaleFactor: 1 };
+    expect(isRegionStillValid(makeRegion({ scaleFactor: 2 }), [live])).toBe(false);
+  });
+
+  it('returns false when displayId is gone and there is no fingerprint', () => {
+    expect(isRegionStillValid(makeRegion({ displayId: 999 }), [display1x, display2x])).toBe(false);
+  });
+
+  it('survives a displayId change when a matching fingerprint is present (fallback bounds match)', () => {
+    const region = makeRegion({
+      displayId: 999,
+      displayFingerprint: { label: display2x.label, bounds: { ...display2x.bounds } },
+    });
+    expect(isRegionStillValid(region, [display1x, display2x])).toBe(true);
+  });
+});
+
+describe('displayUtils — resolveDisplayForRegion (Chunk 7 B11/B12)', () => {
+  function makeRegion(overrides: Partial<CaptureRegion> = {}): CaptureRegion {
+    return {
+      id: 'rg_x',
+      displayId: 2,
+      scaleFactor: 2,
+      x: 100,
+      y: 100,
+      w: 200,
+      h: 200,
+      px: 200,
+      py: 200,
+      pw: 400,
+      ph: 400,
+      createdAt: 0,
+      ...overrides,
+    };
+  }
+
+  it('resolves by displayId when present', () => {
+    expect(resolveDisplayForRegion(makeRegion(), [display1x, display2x])).toBe(display2x);
+  });
+
+  it('returns null when displayId is gone and there is no fingerprint', () => {
+    expect(resolveDisplayForRegion(makeRegion({ displayId: 999 }), [display1x, display2x])).toBeNull();
+  });
+
+  it('falls back to the closest bounds match via fingerprint when displayId changed', () => {
+    const region = makeRegion({
+      displayId: 999,
+      displayFingerprint: { label: display2x.label, bounds: { ...display2x.bounds } },
+    });
+    expect(resolveDisplayForRegion(region, [display1x, display2x])).toBe(display2x);
+  });
+
+  it('rejects a fingerprint fallback whose bounds distance exceeds the tolerance', () => {
+    const region = makeRegion({
+      displayId: 999,
+      displayFingerprint: { label: '', bounds: { x: 0, y: 0, width: 50, height: 50 } },
+    });
+    expect(resolveDisplayForRegion(region, [display1x, display2x])).toBeNull();
+  });
+
+  it('prefers an exact label match over a closer-but-differently-labeled bounds candidate', () => {
+    // Both are within the ≤8 fallback tolerance, but closeButWrongLabel is
+    // numerically closer (distance 4 vs 8) — the label match must still win.
+    const closeButWrongLabel: DisplayInfoFull = {
+      id: 30,
+      scaleFactor: 2,
+      bounds: { x: 1, y: 1, width: 1281, height: 721 },
+      label: 'Other Monitor',
+    };
+    const exactLabelFartherBounds: DisplayInfoFull = {
+      id: 40,
+      scaleFactor: 2,
+      bounds: { x: 2, y: 2, width: 1282, height: 722 },
+      label: 'Studio Display',
+    };
+    const region = makeRegion({
+      displayId: 999,
+      displayFingerprint: { label: 'Studio Display', bounds: { ...display2x.bounds } },
+    });
+    expect(resolveDisplayForRegion(region, [closeButWrongLabel, exactLabelFartherBounds])).toBe(
+      exactLabelFartherBounds,
+    );
   });
 });

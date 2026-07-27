@@ -21,6 +21,8 @@ import PendingScreenshot from './PendingScreenshot';
 
 const MAX_ROWS = 6;
 const COUNTER_THRESHOLD = 500;
+const IS_MAC = /Mac|iPhone|iPad/i.test(navigator.userAgent);
+const SEND_MODIFIER_KEY = IS_MAC ? '⌘' : 'Ctrl';
 
 export interface InputBarProps {
   /** When `true`, send button + textarea are disabled. */
@@ -208,7 +210,7 @@ export default function InputBar(props: InputBarProps): ReactElement {
               <CameraIcon />
             </button>
             <span>
-              <kbd className="rounded bg-ap-elevated px-1 font-mono">⌘</kbd>{' '}
+              <kbd className="rounded bg-ap-elevated px-1 font-mono">{SEND_MODIFIER_KEY}</kbd>{' '}
               <kbd className="rounded bg-ap-elevated px-1 font-mono">↵</kbd> send ·{' '}
               <kbd className="rounded bg-ap-elevated px-1 font-mono">Esc</kbd> cancel
             </span>

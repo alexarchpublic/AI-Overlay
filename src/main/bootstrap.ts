@@ -10,11 +10,12 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { ulid } from 'ulid';
 import sharp from 'sharp';
-import { BrowserWindow, app } from 'electron';
+import { BrowserWindow, Menu, Tray, app, nativeImage } from 'electron';
 import type { AppContext } from './appContext';
 import { createAiStore } from './aiStore';
 import { createCaptureStore, migrateAutoCaptureKey } from './captureStore';
 import { closeChatWindow, createChatLifecycle } from './chatLifecycle';
+import { raiseChatWindow } from './chatWindow';
 import { createChatOrchestrator } from './chatOrchestrator';
 import { createConversationStore } from './conversationStore';
 import { createGeminiService } from './geminiService';
@@ -23,7 +24,10 @@ import { createKnowledgeStoreState } from './knowledgeStoreState';
 import { createAppLogger, registerRendererLogBridge, type AppLogger } from './logger';
 import { createPermissionSync, type PermissionSyncHandle } from './permissionSync';
 import { createPermissionsHelper } from './permissions';
+import { isWindows } from './platform';
 import { createScreenshotService } from './screenshotService';
+import { openSettingsWindow } from './settingsWindow';
+import { createTrayService, type TrayServiceHandle } from './trayService';
 import { createWidgetStateStore } from './widgetState';
 import { flashWidgetCapturing } from './widgetFlash';
 import { registerCoreIpc } from './ipc/registerCoreIpc';
@@ -36,6 +40,23 @@ import {
   IPC_WIDGET_STATUS_CHANGED,
 } from '../shared/ipcChannels';
 import type { WidgetStatus } from '../shared/types';
+
+let trayHandle: TrayServiceHandle | null = null;
+
+/**
+ * Resolve the tray icon path. Tries the packaged `build/icon.ico` relative
+ * to the app root first (works for `npm run dev` and a packaged app whose
+ * `app.getAppPath()` resolves correctly), then falls back to a path
+ * relative to this compiled file (`dist/main/trayService.js` → `../../build`)
+ * for alpha builds where `getAppPath()` may point inside an asar archive.
+ */
+function resolveTrayIconPath(): string {
+  const candidates = [
+    path.join(app.getAppPath(), 'build', 'icon.ico'),
+    path.join(__dirname, '..', '..', 'build', 'icon.ico'),
+  ];
+  return candidates.find((p) => fs.existsSync(p)) ?? path.join(app.getAppPath(), 'build', 'icon.ico');
+}
 
 export function registerProcessTraps(log: AppLogger): void {
   process.on('unhandledRejection', (reason) => {
@@ -58,7 +79,10 @@ export async function bootstrapApp(
   const devServerUrl =
     process.env.VITE_DEV_SERVER_URL ?? `http://localhost:${String(VITE_DEV_SERVER_PORT)}`;
 
-  const logger = createAppLogger({ baseDir: app.getPath('userData') });
+  const logger = createAppLogger({
+    baseDir: app.getPath('userData'),
+    pretty: !app.isPackaged,
+  });
   registerRendererLogBridge(logger);
   registerProcessTraps(logger);
 
@@ -195,6 +219,22 @@ export async function bootstrapApp(
       }
     }
   });
+  screenshotService.onCaptureHealthChanged((healthy) => {
+    const current = widgetState.getStatus();
+    if (!healthy) {
+      if (current !== 'captureUnhealthy' && current !== 'permDenied' && current !== 'paused') {
+        widgetState.setStatus('captureUnhealthy');
+        for (const w of BrowserWindow.getAllWindows()) {
+          w.webContents.send(IPC_WIDGET_STATUS_CHANGED, 'captureUnhealthy');
+        }
+      }
+    } else if (current === 'captureUnhealthy') {
+      widgetState.setStatus('ready');
+      for (const w of BrowserWindow.getAllWindows()) {
+        w.webContents.send(IPC_WIDGET_STATUS_CHANGED, 'ready');
+      }
+    }
+  });
 
   registerCoreIpc(ctx, permissionSync);
 
@@ -262,6 +302,30 @@ export async function bootstrapApp(
   conversationStore.startSession();
   chatLifecycle.setChatState('idle');
 
+  trayHandle = createTrayService({
+    Tray,
+    Menu,
+    nativeImage,
+    logger,
+    iconPath: resolveTrayIconPath(),
+    isWindows,
+    onShowOverlay: () => {
+      if (!raiseChatWindow()) {
+        chatLifecycle.launchChatWindow();
+      }
+    },
+    onToggleAutoCapture: () => {
+      if (screenshotService.getLoopState().running) screenshotService.stop();
+      else screenshotService.start();
+    },
+    onOpenSettings: () => {
+      openSettingsWindow({ logger, isDev, devServerUrl });
+    },
+    onExit: () => {
+      app.quit();
+    },
+  });
+
   if (
     !widgetState.getPermissionsPromptSeen() &&
     (initialPerm === 'not-determined' || initialPerm === 'denied')
@@ -307,5 +371,7 @@ export function shutdownApp(ctx: AppContext, permissionSync: PermissionSyncHandl
   ctx.geminiService?.cancelAll();
   ctx.conversationStore.endSession('shutdown');
   closeChatWindow('shutdown');
+  trayHandle?.destroy();
+  trayHandle = null;
   void ctx.screenshotService.shutdown();
 }
