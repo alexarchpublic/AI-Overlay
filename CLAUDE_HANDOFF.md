@@ -1188,3 +1188,71 @@ meaningful work. Entries are chronological, newest at the bottom.
 - Gate 0–4: PASS (prior)
 - Gate 5: **PARTIAL** — artifacts published; Windows update loop pending hardware
 - Gate 6: **PARTIAL** — tasks 6.1–6.4 + 6.6 done; 6.5/6.7 pending operator hardware + CS pilots
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-30-0945-RELEASES-VISIBLE
+**Timestamp:** 2026-07-30T09:45:00-05:00 (CDT)
+**Model:** Cursor Grok 4.5
+**Focus Area:** Make AI-Overlay-releases downloads discoverable as Latest
+
+### Decisions Made
+- Root cause: `v0.2.0-alpha.1` was GitHub-flagged **prerelease only**, so `/releases/latest` 404ed, the repo sidebar showed no Latest (only "Create a new release"), and electron-updater’s `…/releases/latest/download/latest.yml` path failed.
+- Unmarked the existing release as prerelease (kept version `0.2.0-alpha.1`). Alpha status stays in the semver suffix.
+- Changed `electron-builder.yml` `releaseType` from `prerelease` → `release` so future publishes stay visible as Latest.
+- Amended DISTRIBUTION.md / INSTALL_WINDOWS.md accordingly (D11 reinterpreted: version suffix carries alpha; do not use GitHub prerelease flag).
+
+### Files Modified / Created
+- `electron-builder.yml` — `releaseType: release`
+- `DISTRIBUTION.md` — version scheme + post-publish verification
+- `INSTALL_WINDOWS.md` — point at `/releases/latest`
+- GitHub: `AI-Overlay-releases` release `v0.2.0-alpha.1` unmarked prerelease → **Latest**
+
+### Open Questions / Risks
+- `gh` CLI token in keyring is invalid (`gh auth login` needed for API edits).
+- GitHub account has a 2FA-enable-by-2026-09-10 banner; may affect some UI loads.
+
+### Recommended Next Steps for Next Claude Instance
+1. Re-auth `gh auth login` if further release API work is needed.
+2. Optionally refresh the releases-repo README with direct download links.
+3. Continue Windows hardware acceptance / S1 pilot.
+
+### Key Context Delta
+- Verified: `/releases/latest` → `v0.2.0-alpha.1`; `latest.yml` and Setup `.exe` via `/releases/latest/download/…` return 302.
+- Assets still present: `.exe`, `.dmg`, `.zip`, `latest.yml`, `latest-mac.yml`.
+
+
+---
+
+## Session Handoff Log
+**Session ID:** 2026-07-30-1005-WIN-REGION-PICKER
+**Timestamp:** 2026-07-30T10:05:00-05:00 (CDT)
+**Model:** Cursor Grok 4.5
+**Focus Area:** Fix Windows region picker blocked by chat blur→moveTop; ship alpha.2
+
+### Decisions Made
+- Root cause: on Windows the chat window blur handler calls `moveTop()`, so opening *Set capture region…* blurs chat → chat raises above the fullscreen picker → drag/confirm never land on the picker.
+- Fix: `chatRaiseGate` suppresses raise-on-blur for the picker session; temporarily hide chat while drawing; re-assert picker z-order at 50ms/550ms; argv `displayId` fallback via preload if URL hash drops.
+- Bump to `0.2.0-alpha.2` and tag so Release CI publishes a new Windows `.exe`.
+
+### Files Modified / Created
+- `src/main/chatRaiseGate.ts` (new)
+- `src/main/chatWindow.ts` — gate blur keep-alive; hide/restore helpers
+- `src/main/regionPicker.ts` — suppress + hide chat; Windows reassertTop
+- `src/shared/pickerDisplayId.ts` (new) + preload/renderer fallback
+- `tests/chatRaiseGate.spec.ts`, `tests/pickerDisplayId.spec.ts`
+- Prior uncommitted: `electron-builder.yml` releaseType=release + INSTALL/DISTRIBUTION latest links
+
+### Open Questions / Risks
+- Transparent+alwaysOnTop black-rect on some Intel iGPUs (PRD risk) still possible; this fix targets the focus/z-order failure reported as "cannot set region".
+- Gate 6.5 hardware acceptance still needed after alpha.2 install.
+
+### Recommended Next Steps for Next Claude Instance
+1. Confirm Release workflow green and `AI-Overlay-releases` has `ArchPublicAIOverlay-Setup-0.2.0-alpha.2.exe`.
+2. Operator: install alpha.2 on Windows → WIN_ACCEPTANCE Phase D (region picker).
+3. If picker still fails on a specific GPU, consider freeze-frame (non-transparent) picker background.
+
+### Key Context Delta
+- `npm test` → 371/371 after fix.
+- Active branch: `chunk-7/packaging-windows`.

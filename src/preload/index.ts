@@ -81,6 +81,7 @@ import {
   IPC_UPDATE_STATE_CHANGED,
 } from '../shared/ipcChannels';
 import type { UpdateStateSnapshot } from '../shared/updateTypes';
+import { parsePickerDisplayIdFromArgv } from '../shared/pickerDisplayId';
 
 type LogFn = (event: string, context?: LogContext) => void;
 
@@ -196,7 +197,14 @@ interface RegionApi {
     rect: { x: number; y: number; w: number; h: number };
   }): void;
   _pickerCancel(): void;
+  /**
+   * Picker-internal: display id from `additionalArguments`, used when the
+   * URL hash/query does not carry `displayId`.
+   */
+  _getPickerDisplayId(): number | null;
 }
+
+const pickerDisplayIdFromArgv = parsePickerDisplayIdFromArgv(process.argv);
 
 const region: RegionApi = {
   getRegion: () => ipcRenderer.invoke(IPC_REGION_GET) as Promise<CaptureRegion | null>,
@@ -209,6 +217,7 @@ const region: RegionApi = {
   _pickerCancel: () => {
     ipcRenderer.send(IPC_REGION_PICKER_CANCEL);
   },
+  _getPickerDisplayId: () => pickerDisplayIdFromArgv,
 };
 
 interface ChatApi {

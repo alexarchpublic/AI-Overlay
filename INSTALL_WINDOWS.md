@@ -4,9 +4,9 @@ Arch Public AI Overlay is an always-on-top co-pilot for live client calls. This 
 
 Download the latest alpha installer from the internal link your lead sends, or from the team releases page:
 
-**https://github.com/alexarchpublic/AI-Overlay-releases/releases**
+**https://github.com/alexarchpublic/AI-Overlay-releases/releases/latest**
 
-Look for `ArchPublicAIOverlay-Setup-*.exe` (prerelease). Also download `team-config.json` from the **internal SharePoint / shared folder** (not from GitHub — that file holds the team API key).
+Download `ArchPublicAIOverlay-Setup-*.exe` from Assets. Also download `team-config.json` from the **internal SharePoint / shared folder** (not from GitHub — that file holds the team API key).
 
 Put **both** files in the same folder on your PC before installing.
 

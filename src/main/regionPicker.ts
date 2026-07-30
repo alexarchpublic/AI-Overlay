@@ -16,12 +16,22 @@
  * `CaptureRegion` or `null` on cancel. Internally a single in-flight picker
  * session is tracked so a second call while one is open is a no-op (the
  * second promise resolves with the first's result).
+ *
+ * Windows note (Chunk 7 / hardware feedback): the chat window's
+ * blur→moveTop keep-alive will yank the chat chrome above the picker unless
+ * we suppress it for the session and hide the chat while drawing. See
+ * `setChatRaiseSuppressed` in `chatWindow.ts`.
  */
 
 import path from 'node:path';
 import { BrowserWindow, app, ipcMain, screen, type IpcMainEvent } from 'electron';
 import type { AppLogger } from './logger';
 import { isWindows } from './platform';
+import {
+  hideChatWindowTemporarily,
+  restoreChatWindowAfterTemporaryHide,
+  setChatRaiseSuppressed,
+} from './chatWindow';
 import type { CaptureRegion } from '../shared/types';
 import {
   IPC_REGION_PICKER_CANCEL,
@@ -29,6 +39,7 @@ import {
 } from '../shared/ipcChannels';
 import { VITE_DEV_SERVER_PORT } from '../shared/constants';
 import { buildCaptureRegion, type DisplayInfoFull } from './displayUtils';
+import { parsePickerDisplayIdFromArgv } from '../shared/pickerDisplayId';
 
 export interface OpenRegionPickerDeps {
   logger: AppLogger;
@@ -75,6 +86,11 @@ export function openRegionPicker(deps: OpenRegionPickerDeps): Promise<CaptureReg
       return;
     }
 
+    // Keep the chat always-on-top keep-alive from covering the picker, and
+    // hide the chat frame for the duration of the draw session.
+    setChatRaiseSuppressed(true);
+    const chatWasHidden = hideChatWindowTemporarily();
+
     const windows = new Map<number, BrowserWindow>();
     const cleanup = (): void => {
       for (const w of windows.values()) {
@@ -84,6 +100,10 @@ export function openRegionPicker(deps: OpenRegionPickerDeps): Promise<CaptureReg
       ipcMain.removeListener(IPC_REGION_PICKER_CONFIRM, onConfirm);
       ipcMain.removeListener(IPC_REGION_PICKER_CANCEL, onCancel);
       activeSession = null;
+      setChatRaiseSuppressed(false);
+      if (chatWasHidden) {
+        restoreChatWindowAfterTemporaryHide();
+      }
     };
 
     function onConfirm(_event: IpcMainEvent, payload: unknown): void {
@@ -139,6 +159,19 @@ export function openRegionPicker(deps: OpenRegionPickerDeps): Promise<CaptureReg
       windows.set(d.id, win);
     }
 
+    if (isWindows) {
+      // Re-assert z-order after the context-menu / chat blur cascade settles.
+      const reassertTop = (): void => {
+        for (const w of windows.values()) {
+          if (w.isDestroyed()) continue;
+          w.setAlwaysOnTop(true);
+          w.moveTop();
+        }
+      };
+      setTimeout(reassertTop, 50);
+      setTimeout(reassertTop, 550);
+    }
+
     deps.logger.info('region.pickerOpened', { displayCount: displays.length });
   });
 }
@@ -147,8 +180,7 @@ export function openRegionPicker(deps: OpenRegionPickerDeps): Promise<CaptureReg
  * Build one transparent fullscreen frameless picker window for a single
  * display. Per PRD D6 the window is `'screen-saver'` level so it stays
  * above TradingView; click-through is OFF (the user must be able to draw),
- * so we rely on `kiosk: true` + transparency for the "dim everything but my
- * draw" effect.
+ * so we rely on transparency for the "dim everything but my draw" effect.
  */
 function createPickerWindow(
   display: Electron.Display,
@@ -163,6 +195,7 @@ function createPickerWindow(
     frame: false,
     transparent: true,
     alwaysOnTop: true,
+    focusable: true,
     resizable: false,
     movable: false,
     minimizable: false,
@@ -180,7 +213,8 @@ function createPickerWindow(
       sandbox: true,
       // Pass the displayId through so the renderer knows which window it is
       // when it calls `pickerConfirm`. additionalArguments are exposed on
-      // `process.argv` inside the preload sandbox.
+      // `process.argv` inside the preload sandbox (and as a fallback when
+      // the URL hash/query fails to round-trip on packaged Windows).
       additionalArguments: [`--region-picker-display-id=${String(display.id)}`],
     },
   });
@@ -271,3 +305,7 @@ export function __resetRegionPickerForTests(): void {
   }
   activeSession = null;
 }
+
+// Re-export for callers/tests that want the argv parser without importing
+// the dedicated module.
+export { parsePickerDisplayIdFromArgv };

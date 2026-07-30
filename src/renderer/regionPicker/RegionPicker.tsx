@@ -42,8 +42,15 @@ function readDisplayIdFromLocation(): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function resolvePickerDisplayId(): number | null {
+  const fromLocation = readDisplayIdFromLocation();
+  if (fromLocation !== null) return fromLocation;
+  // Packaged Windows can drop the loadFile hash; argv switch is authoritative.
+  return window.api.region._getPickerDisplayId();
+}
+
 export default function RegionPicker(): ReactElement {
-  const displayId = useRef<number | null>(readDisplayIdFromLocation());
+  const displayId = useRef<number | null>(resolvePickerDisplayId());
   const [drag, setDrag] = useState<DragState | null>(null);
   const [confirmedRect, setConfirmedRect] = useState<PickerRect | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);

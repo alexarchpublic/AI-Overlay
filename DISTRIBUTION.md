@@ -7,7 +7,11 @@ Operator guide for cutting releases, provisioning the shared Gemini key, and rol
 - Format: `MAJOR.MINOR.PATCH-alpha.N` (currently `0.2.0-alpha.1`).
 - Bump: `npm version prerelease --preid=alpha` → commit + tag → `git push --follow-tags`.
 - Single source of truth: `package.json`. Never hardcode a version in source.
-- Every GitHub release is a **prerelease**. Do not set an updater `channel` (see Chunk 7 D11).
+- Alpha status is carried by the **version suffix**, not the GitHub “prerelease” flag.
+  Publish with `releaseType: release` so `/releases/latest` and the repo sidebar
+  “Latest” widget resolve (GitHub-prerelease-only publishes hide Latest and 404
+  `…/releases/latest/download/latest.yml`). Do not set an updater `channel`
+  (see Chunk 7 D11).
 
 ## Cutting a release
 
@@ -15,7 +19,10 @@ Operator guide for cutting releases, provisioning the shared Gemini key, and rol
 2. Bump with `npm version prerelease --preid=alpha` (creates commit + `v*` tag).
 3. `git push --follow-tags`.
 4. Tag-triggered CI (`.github/workflows/release.yml`) builds on `macos-14` + `windows-latest` and publishes to the public binaries repo [`alexarchpublic/AI-Overlay-releases`](https://github.com/alexarchpublic/AI-Overlay-releases).
-5. Confirm the release page has: `.exe`, `.dmg`, `.zip`, `latest.yml`, `latest-mac.yml`.
+5. Confirm the release page shows **Latest** (not only Pre-release) and has:
+   `.exe`, `.dmg`, `.zip`, `latest.yml`, `latest-mac.yml`.
+   Also verify `https://github.com/alexarchpublic/AI-Overlay-releases/releases/latest`
+   resolves to the new tag.
 
 Local-only packaging (no publish): `npm run package:win` / `npm run package:mac` on native runners.
 

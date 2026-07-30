@@ -40,7 +40,12 @@ publish:
   provider: github
   owner: alexarchpublic
   repo: AI-Overlay-releases
-  releaseType: prerelease
+  # Published as a normal GitHub Release (not "prerelease") so /releases/latest
+  # and the repo sidebar "Latest" widget resolve. Alpha status is carried by the
+  # package.json version suffix (0.x.y-alpha.N), not the GitHub prerelease flag.
+  # GitHub-prerelease-only publishes hide Latest and 404 electron-updater's
+  # .../releases/latest/download/latest.yml path.
+  releaseType: release
 
 win:
   target:

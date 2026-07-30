@@ -12,6 +12,7 @@ import path from 'node:path';
 import { BrowserWindow, screen, type Display } from 'electron';
 import type { AppLogger } from './logger';
 import { isWindows } from './platform';
+import { isChatRaiseSuppressed } from './chatRaiseGate';
 import { buildRendererUrl } from './overlayWindow';
 import {
   clampPosition,
@@ -38,6 +39,10 @@ export interface OpenChatWindowDeps {
 }
 
 let existing: BrowserWindow | null = null;
+
+// Re-export so existing callers (regionPicker) can keep importing from here.
+export { setChatRaiseSuppressed, isChatRaiseSuppressed } from './chatRaiseGate';
+export { __resetChatRaiseSuppressedForTests } from './chatRaiseGate';
 
 /** Whether a chat window is currently open. Cheap read for IPC handlers. */
 export function isChatWindowOpen(): boolean {
@@ -68,6 +73,26 @@ export function raiseChatWindow(): boolean {
   existing.moveTop();
   existing.focus();
   return true;
+}
+
+/**
+ * Hide the live chat window without destroying it. Used while the region
+ * picker is fullscreen so the chat frame cannot sit above the draw surface.
+ * Returns true if a window was hidden.
+ */
+export function hideChatWindowTemporarily(): boolean {
+  if (!existing || existing.isDestroyed()) return false;
+  if (!existing.isVisible()) return false;
+  existing.hide();
+  return true;
+}
+
+/**
+ * Undo {@link hideChatWindowTemporarily} and re-assert always-on-top.
+ * No-op when no chat window exists.
+ */
+export function restoreChatWindowAfterTemporaryHide(): boolean {
+  return raiseChatWindow();
 }
 
 /** Idempotent close. No-op when no window is open. */
@@ -151,6 +176,7 @@ export function openChatWindow(deps: OpenChatWindowDeps): BrowserWindow {
   if (isWindows) {
     let lastMoveTop = 0;
     win.on('blur', () => {
+      if (isChatRaiseSuppressed()) return;
       const now = Date.now();
       if (now - lastMoveTop < 500) return;
       lastMoveTop = now;

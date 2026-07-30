@@ -66,6 +66,7 @@ declare global {
           rect: { x: number; y: number; w: number; h: number };
         }) => void;
         _pickerCancel: () => void;
+        _getPickerDisplayId: () => number | null;
       };
       chat: {
         open: () => Promise<void>;
