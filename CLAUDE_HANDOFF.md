@@ -1341,3 +1341,31 @@ B4 LATENCY GATE PASSED (p95 ≤ 12 s)
 - A1–A4 ✅ · B1–B5 ✅ (B4 now fully closed incl. live p95 evidence) · C ⬜ (Friday rule)
 
 ---
+
+## Session Handoff Log
+**Session ID:** 2026-08-14-1520-OPT-MCP-003
+**Timestamp:** 2026-08-14T15:20:00-05:00 (CDT)
+**Model:** Claude Fable 5 (Claude Code)
+**Focus Area:** Workstream C executed — v0.3.0-alpha.1 released.
+
+### Decisions Made
+- Operator explicitly directed the release on a Friday, overriding D-M10 ("you do it", 2026-08-14). Tag cut as `npm version 0.3.0-alpha.1` (explicit — `preminor` would have produced alpha.0) from green `main` @ 34b7514.
+
+### Files Modified / Created
+- `package.json`/`package-lock.json` (0.3.0-alpha.1, commit 9ffbcb8 + tag), `.gitignore` (real `team-config.json` now ignored), `project-state.md` (C closed).
+- `/Users/alex/Desktop/team-config.json` (mode 600, NOT in git): complete v2 pilot config — Gemini key + optimizer block with the production team key. Distribute to the S1 pair, then delete the Desktop copy.
+
+### Open Questions / Risks
+- Gemini team key transited a chat transcript during the latency-gate run — rotate in AI Studio at convenience (blast radius: shared alpha key, quota-capped).
+
+### Recommended Next Steps for Next Claude Instance
+1. Confirm a Windows 0.2.0-alpha.2 machine silently updates to 0.3.0-alpha.1 (DoD #5, Gate 5.7/5.8).
+2. Pilot per §8.4: both S1 users complete ≥1 real call using a tool-grounded answer or panel run; watch caddy logs for 429/503 storms.
+
+### Key Context Delta
+- Release verified: `v0.3.0-alpha.1` on AI-Overlay-releases with Setup exe + dmg + zip + blockmaps; `https://github.com/alexarchpublic/AI-Overlay-releases/releases/latest/download/latest.yml` serves `version: 0.3.0-alpha.1` (the exact electron-updater URL).
+
+### Phase Gate Status
+- A1–A4 ✅ · B1–B5 ✅ · C ✅ (released). Open: pilot + hardware gates (operator).
+
+---

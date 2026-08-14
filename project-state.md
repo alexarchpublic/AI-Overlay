@@ -113,11 +113,11 @@ Checkboxes (tick after DoD):
 | B3 | Job tracker + Optimizer panel; live e2e: done-with-card / cancel / expired-on-restart | ✅ complete |
 | B4 | Bounded Gemini tool loop (≤2 rounds, 15 s/tool, ≤2k-token summaries); disabled ⇒ byte-identical | ✅ complete — live gate 2026-08-14: p50 3.0 s / p95 3.7 s over 20 runs (evidence in CLAUDE_HANDOFF OPT-MCP-002) |
 | B5 | Grep contracts, acceptance rows (Phase I), docs fan-out | ✅ complete |
-| C | Merge → `v0.3.0-alpha.1` tag → CI publish → config-first rollout | ⬜ tag held (D-M10: never publish on a Friday — 2026-08-14 is one) |
+| C | Merge → `v0.3.0-alpha.1` tag → CI publish → config-first rollout | ✅ released 2026-08-14 (operator-directed Friday-rule override): all assets + `latest.yml`/`latest-mac.yml` on AI-Overlay-releases, updater feed verified. Remaining: distribute v2 `team-config.json` to the S1 pair; observe one Windows silent update (DoD #5 / Gate 5.7-5.8) |
 
 ## Current Focus
 
-1. **Optimizer release (C)** — tag `v0.3.0-alpha.1` on a non-Friday, verify `latest.yml` + installers, re-provision v2 `team-config.json` to the S1 pilot pair (config-first)
+1. **Pilot rollout** — distribute the v2 `team-config.json` (Desktop copy, keys included) to the S1 pilot pair; their 0.2.0-alpha.2 installs auto-update to 0.3.0-alpha.1 within ~4 h (Windows silent / macOS notify)
 2. **Gate 5.7/5.8** — Windows update loop verification on hardware (now via alpha.2 → 0.3.0-alpha.1)
 3. **Gate 6.5** — execute `WIN_ACCEPTANCE.md` A–I on two distinct Windows machines (iGPU + discrete ideally)
 4. **Gate 6.7 / S1** — two CS pilot users, one Slack thread, ≥1 real client call each (now doubles as the optimizer pilot gate, §8.4)
