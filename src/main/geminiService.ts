@@ -77,7 +77,29 @@ import {
   OUTPUT_SCHEMA,
   OUTPUT_SCHEMA_INSTRUCTIONS,
 } from '../shared/aiSchema';
+import {
+  OPTIMIZER_MAX_TOOL_ROUNDTRIPS,
+  type OptimizerToolCallSummary,
+  type OptimizerToolResult,
+} from '../shared/optimizerTypes';
+import type { OptimizerFunctionDeclaration } from './optimizerMcpService';
 import { truncateLogSnippet } from './logger';
+
+/**
+ * Appended to the system prompt ONLY when the optimizer tool loop is enabled
+ * (PRD_Optimizer_MCP_Integration D-M6/D-M7). With the feature disabled the
+ * composed prompt is byte-identical to the pre-integration app — enforced by
+ * the prompt-composition snapshot tests.
+ */
+export const OPTIMIZER_TOOL_INSTRUCTIONS = `
+
+### LIVE OPTIMIZER TOOLS
+
+You can call functions that run REAL computations on the Arch Public optimizer: single backtests, timeframe comparisons, market-regime detection, and a capability lookup. Use them whenever the employee asks what specific settings would have returned, how timeframes compare, or what regimes occurred — never guess numbers a tool can compute. Rules:
+- At most ${String(OPTIMIZER_MAX_TOOL_ROUNDTRIPS)} tool rounds per turn; prefer one.
+- Only call list_capabilities when you need the valid tickers/timeframes/objectives.
+- If a tool returns an error string, fix your arguments once or answer from the documentation without it.
+- After tool results arrive, give your final answer in the required JSON schema, citing the computed numbers, and note in risk_notes that backtested performance does not guarantee future results.`;
 
 // ---------------------------------------------------------------------------
 // Public surface
@@ -118,6 +140,9 @@ export interface GeminiSendOk {
   promptTokenEstimate: number;
   /** End-to-end latency including the retry path. */
   latencyMs: number;
+  /** Optimizer tool calls that grounded this answer (D-M6); absent/empty
+   *  when the loop is disabled or the model answered without tools. */
+  toolCalls?: readonly OptimizerToolCallSummary[];
 }
 
 export type GeminiSendError =
@@ -160,6 +185,20 @@ export interface GeminiServiceDeps {
    * narrow at the call site to avoid leaking SDK internals.
    */
   sdkFactory?: (apiKey: string) => GeminiSdkLike;
+  /**
+   * Optimizer tool-loop hooks (PRD_Optimizer_MCP_Integration D-M6/D-M7).
+   * Touching this file for a real tool loop is the sanctioned exception to
+   * the "only wrapper" rule (Chunk 7 §2 warning acknowledged). Absent — or
+   * declarations resolving to null/empty (unconfigured, endpoint down) —
+   * disables the loop and zero new tokens enter the prompt (D-M8).
+   */
+  optimizer?: {
+    getFunctionDeclarations(): Promise<readonly OptimizerFunctionDeclaration[] | null>;
+    callTool(
+      tool: string,
+      args: Record<string, unknown>,
+    ): Promise<OptimizerToolResult>;
+  };
 }
 
 /**
@@ -175,6 +214,9 @@ export interface GeminiSdkLike {
       responseSchema?: unknown;
       maxOutputTokens?: number;
     };
+    /** Gemini function declarations (tool-loop calls only — JSON mode and
+     *  tools are mutually exclusive in the API). Duck-typed like the schema. */
+    tools?: unknown;
   }): GeminiModelLike;
 }
 
@@ -476,7 +518,24 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
         ? { activeAlgorithm: args.activeAlgorithm }
         : {}),
     });
-    const promptHash = hashPrompt(systemPrompt);
+
+    // Optimizer tool loop (D-M6): resolve the cached declarations first — a
+    // null/empty result (feature unconfigured, endpoint unreachable) disables
+    // the loop, and everything below behaves exactly as the pre-integration
+    // single-shot path, including the composed prompt bytes (D-M8).
+    let declarations: readonly OptimizerFunctionDeclaration[] | null = null;
+    if (deps.optimizer !== undefined) {
+      try {
+        declarations = await deps.optimizer.getFunctionDeclarations();
+      } catch {
+        declarations = null;
+      }
+    }
+    const toolLoopEnabled = declarations !== null && declarations.length > 0;
+    const effectiveSystemPrompt = toolLoopEnabled
+      ? systemPrompt + OPTIMIZER_TOOL_INSTRUCTIONS
+      : systemPrompt;
+    const promptHash = hashPrompt(effectiveSystemPrompt);
     const model = deps.getModel();
 
     // Build the inlineData parts from disk reads. Missing files are logged
@@ -523,7 +582,7 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
     const sdk = sdkFactory(apiKey);
     const generativeModel = sdk.getGenerativeModel({
       model,
-      systemInstruction: { parts: [{ text: systemPrompt }] },
+      systemInstruction: { parts: [{ text: effectiveSystemPrompt }] },
       generationConfig: {
         responseMimeType: 'application/json',
         responseSchema: OUTPUT_SCHEMA,
@@ -637,8 +696,119 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
       }
     }
 
+    // ── Optimizer tool phase (D-M6/D-M7) ────────────────────────────────
+    // Bounded loop: generateContent with tools → execute via the optimizer
+    // service → append summarized results → re-call, at most
+    // OPTIMIZER_MAX_TOOL_ROUNDTRIPS times — then the final schema-mode call
+    // below produces the locked v3 JSON. Any failure inside the loop
+    // degrades to a docs-grounded answer instead of failing the turn (§6).
+    const toolCalls: OptimizerToolCallSummary[] = [];
+    let finalUserText = args.userText;
+    if (toolLoopEnabled && deps.optimizer !== undefined) {
+      const optimizer = deps.optimizer;
+      const toolModel = sdk.getGenerativeModel({
+        model,
+        systemInstruction: { parts: [{ text: effectiveSystemPrompt }] },
+        // No JSON mode here — responseSchema and tools are mutually
+        // exclusive in the Gemini API.
+        tools: [{ functionDeclarations: declarations }],
+      });
+      const toolContents: Content[] = [];
+      for (let round = 0; round < OPTIMIZER_MAX_TOOL_ROUNDTRIPS; round++) {
+        if (args.signal.aborted) break;
+        let roundResult: GenerateContentResult;
+        const ctrl = new AbortController();
+        const onAbort = (): void => {
+          ctrl.abort();
+        };
+        args.signal.addEventListener('abort', onAbort);
+        inflight.add(ctrl);
+        try {
+          roundResult = await withTimeout(
+            toolModel.generateContent(
+              {
+                contents: [
+                  ...baseContents,
+                  buildUserContent(args.userText),
+                  ...toolContents,
+                ],
+              },
+              { signal: ctrl.signal },
+            ),
+            ctrl,
+          );
+        } catch (err) {
+          deps.logger.warn('optimizer.loop.roundFailed', {
+            round,
+            message: err instanceof Error ? err.message : String(err),
+          });
+          break;
+        } finally {
+          inflight.delete(ctrl);
+          args.signal.removeEventListener('abort', onAbort);
+        }
+        const calls = functionCallsOf(roundResult);
+        if (calls.length === 0) break;
+
+        const responseParts: Part[] = [];
+        for (const call of calls) {
+          const execution = await optimizer.callTool(call.name, call.args);
+          if (execution.ok) {
+            toolCalls.push(execution.summary);
+            responseParts.push({
+              functionResponse: {
+                name: call.name,
+                response: { result: execution.summary.resultSummary },
+              },
+            });
+          } else {
+            // Engine 422s carry a readable detail the model can self-correct
+            // from — feed it back once within the round cap (§6 risk table).
+            const detail =
+              execution.kind === 'engine'
+                ? execution.detail
+                : `optimizer unavailable (${execution.kind})`;
+            toolCalls.push({
+              tool: call.name,
+              label: call.name,
+              resultSummary: detail,
+              durationMs: 0,
+              ok: false,
+            });
+            responseParts.push({
+              functionResponse: {
+                name: call.name,
+                response: { error: detail },
+              },
+            });
+          }
+        }
+        toolContents.push({
+          role: 'model',
+          parts: calls.map((c) => ({ functionCall: { name: c.name, args: c.args } })),
+        });
+        toolContents.push({ role: 'user', parts: responseParts });
+        if (round === OPTIMIZER_MAX_TOOL_ROUNDTRIPS - 1) {
+          deps.logger.info('optimizer.loop.capped', {
+            rounds: OPTIMIZER_MAX_TOOL_ROUNDTRIPS,
+            toolCallCount: toolCalls.length,
+          });
+        }
+      }
+      if (toolCalls.length > 0) {
+        // D-M7: summarized results ride the final schema-mode call as plain
+        // text — functionResponse parts are invalid without declared tools,
+        // and text survives the JSON-retry path unchanged.
+        const resultsBlock = toolCalls
+          .map((c) => `- ${c.label}${c.ok ? '' : ' (FAILED)'}: ${c.resultSummary}`)
+          .join('\n');
+        finalUserText =
+          `${args.userText}\n\n[COMPUTED OPTIMIZER RESULTS — ground your answer in these real numbers]\n${resultsBlock}`;
+      }
+    }
+
     // First attempt + transient retry policy.
-    const firstResult = await runWithRetry(args.userText);
+    const firstResult = await runWithRetry(finalUserText);
     if (!isContentResult(firstResult)) {
       // Some non-success path won — record stats with `jsonOk: false`
       // so the rolling rate captures it accurately.
@@ -667,7 +837,7 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
         attempt: 1,
         rawSnippet: truncateLogSnippet(firstRawText),
       });
-      const reminderText = `${args.userText}\n\n${JSON_RETRY_REMINDER}`;
+      const reminderText = `${finalUserText}\n\n${JSON_RETRY_REMINDER}`;
       const second = await runWithRetry(reminderText);
       if (!isContentResult(second)) {
         deps.recordCall({
@@ -742,6 +912,7 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
       promptHash,
       promptTokenEstimate,
       latencyMs,
+      ...(toolCalls.length > 0 ? { toolCalls } : {}),
     };
   }
 
@@ -836,6 +1007,30 @@ function isContentResult(
   v: GenerateContentResult | GeminiSendError,
 ): v is GenerateContentResult {
   return (v as { ok?: boolean }).ok !== false;
+}
+
+/**
+ * Pull well-formed functionCall parts from a tool-round response. Malformed
+ * entries (missing name, non-object args) are dropped — a round with zero
+ * usable calls ends the loop and the turn degrades to a docs-grounded answer.
+ */
+function functionCallsOf(
+  result: GenerateContentResult,
+): { name: string; args: Record<string, unknown> }[] {
+  const cand = result.response.candidates?.[0];
+  const parts = cand?.content.parts ?? [];
+  const out: { name: string; args: Record<string, unknown> }[] = [];
+  for (const p of parts) {
+    const fc = (p as { functionCall?: { name?: unknown; args?: unknown } }).functionCall;
+    if (fc !== undefined && typeof fc.name === 'string' && fc.name.length > 0) {
+      const fnArgs =
+        typeof fc.args === 'object' && fc.args !== null && !Array.isArray(fc.args)
+          ? (fc.args as Record<string, unknown>)
+          : {};
+      out.push({ name: fc.name, args: fnArgs });
+    }
+  }
+  return out;
 }
 
 function sleep(ms: number): Promise<void> {

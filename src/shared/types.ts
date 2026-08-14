@@ -246,6 +246,13 @@ export interface ChatTurn {
   latencyMs?: number;
   modelUsed?: string;
   promptTokenEstimate?: number;
+  /**
+   * Compact labels of optimizer tool calls that grounded this turn, e.g.
+   * `backtest: NVDA 1d` (PRD_Optimizer_MCP_Integration D-M6 — the chat
+   * attribution chip, so a tester knows an answer is computed, not
+   * recalled). Not part of the schema v3 output contract (Non-Goal 3).
+   */
+  toolAttributions?: readonly string[];
 }
 
 /**

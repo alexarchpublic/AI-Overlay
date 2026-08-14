@@ -49,6 +49,12 @@ export interface ChatOrchestratorDeps {
   chatInflight: { current: AbortController | null };
   /** Persisted algorithm picker value (D-P10). */
   getActiveAlgorithm: () => ActiveAlgorithm;
+  /**
+   * One-shot read of a completed optimizer run queued via the panel's
+   * "use in chat" (PRD_Optimizer_MCP_Integration D-M6). Absent or returning
+   * null ⇒ nothing injected — zero prompt delta (D-M8).
+   */
+  consumeOptimizerGrounding?: () => string | null;
 }
 
 export interface ChatOrchestrator {
@@ -202,13 +208,24 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
       chartContext,
     );
 
+    // Panel "use in chat" grounding rides the model-facing text only — the
+    // displayed/persisted user turn stays what the employee typed.
+    const grounding = deps.consumeOptimizerGrounding?.() ?? null;
+    if (grounding !== null) {
+      log.info('chat.optimizerGroundingInjected', { chars: grounding.length });
+    }
+    const groundedUserText =
+      grounding === null
+        ? modelUserText
+        : `${modelUserText}\n\n[COMPLETED OPTIMIZER RUN — the employee wants to discuss this result]\n${grounding}`;
+
     const ctrl = new AbortController();
     chatInflight.current = ctrl;
 
     let result;
     try {
       result = await gemini.send({
-        userText: modelUserText,
+        userText: groundedUserText,
         history: fitResult.history,
         screenshots: fitResult.screenshots,
         knowledgeBlocks,
@@ -230,6 +247,9 @@ export function createChatOrchestrator(deps: ChatOrchestratorDeps): ChatOrchestr
       const assistantTurn = conv.appendAssistant({
         text: result.turn.text,
         ...(result.turn.structured !== undefined ? { structured: result.turn.structured } : {}),
+        ...(result.toolCalls !== undefined && result.toolCalls.length > 0
+          ? { toolAttributions: result.toolCalls.map((c) => c.label) }
+          : {}),
         latencyMs: result.latencyMs,
         modelUsed: result.turn.modelUsed ?? '',
       });

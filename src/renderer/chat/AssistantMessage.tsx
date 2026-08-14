@@ -123,6 +123,17 @@ export default function AssistantMessage(props: AssistantMessageProps): ReactEle
           {typeof turn.latencyMs === 'number' && (
             <span>{(turn.latencyMs / 1000).toFixed(1)}s</span>
           )}
+          {(turn.toolAttributions ?? []).map((label) => (
+            // Attribution chip (PRD_Optimizer_MCP_Integration D-M6): this
+            // answer was computed by the optimizer, not recalled from docs.
+            <span
+              key={label}
+              className="rounded bg-ap-gold/20 px-1.5 py-0.5 font-medium text-ap-gold"
+              data-testid="tool-attribution"
+            >
+              ran {label}
+            </span>
+          ))}
         </div>
       </div>
     </div>

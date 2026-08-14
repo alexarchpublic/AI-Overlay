@@ -59,6 +59,7 @@ export interface ConversationStore {
     structured?: ChatTurn['structured'];
     latencyMs: number;
     modelUsed: string;
+    toolAttributions?: readonly string[];
   }): ChatTurn;
   /**
    * Drop the most recently appended turn whose `id` matches. Used to
@@ -132,10 +133,13 @@ export function createConversationStore(
         promptTokenEstimate,
       });
     },
-    appendAssistant({ text, structured, latencyMs, modelUsed }) {
+    appendAssistant({ text, structured, latencyMs, modelUsed, toolAttributions }) {
       return appendTurn('assistant', {
         text,
         ...(structured !== undefined ? { structured } : {}),
+        ...(toolAttributions !== undefined && toolAttributions.length > 0
+          ? { toolAttributions }
+          : {}),
         latencyMs,
         modelUsed,
       });
