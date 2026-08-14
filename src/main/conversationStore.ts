@@ -98,6 +98,9 @@ export function createConversationStore(
       ...(base.promptTokenEstimate !== undefined
         ? { promptTokenEstimate: base.promptTokenEstimate }
         : {}),
+      ...(base.toolAttributions !== undefined
+        ? { toolAttributions: base.toolAttributions }
+        : {}),
     };
     turns.push(turn);
     return turn;

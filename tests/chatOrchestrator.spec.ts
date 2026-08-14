@@ -138,6 +138,7 @@ function makeHarness(overrides: {
   sendResult?: GeminiSendResult | ((args: GeminiSendArgs) => Promise<GeminiSendResult>);
   summarize?: (turns: readonly ChatTurn[]) => Promise<string | null>;
   screenshots?: readonly Screenshot[];
+  consumeOptimizerGrounding?: () => string | null;
 } = {}): Harness {
   const logger = makeLogger();
   const conversationStore = createConversationStore({ logger });
@@ -175,6 +176,9 @@ function makeHarness(overrides: {
     } as ChatOrchestratorDeps['screenshotService'],
     chatInflight: { current: null },
     getActiveAlgorithm: overrides.getActiveAlgorithm ?? (() => 'market-wave'),
+    ...(overrides.consumeOptimizerGrounding !== undefined
+      ? { consumeOptimizerGrounding: overrides.consumeOptimizerGrounding }
+      : {}),
     emit: {
       turnAppended: (t) => {
         turns.push(t);
@@ -203,6 +207,48 @@ function makeHarness(overrides: {
 describe('chatOrchestrator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('optimizer integration (PRD_Optimizer_MCP_Integration D-M6)', () => {
+    it('injects queued grounding into the model text, not the displayed turn', async () => {
+      const h = makeHarness({
+        consumeOptimizerGrounding: () => 'NVDA 1d, objective max_sharpe = 1.87',
+      });
+      await h.run('walk me through this result');
+      expect(h.sendCalls[0]?.userText).toContain('COMPLETED OPTIMIZER RUN');
+      expect(h.sendCalls[0]?.userText).toContain('max_sharpe = 1.87');
+      // The persisted/displayed user turn stays what the employee typed.
+      const userTurn = h.turns.find((t) => t.role === 'user');
+      expect(userTurn?.text).toBe('walk me through this result');
+    });
+
+    it('sends plainly when no grounding is queued', async () => {
+      const h = makeHarness({ consumeOptimizerGrounding: () => null });
+      await h.run('hello');
+      expect(h.sendCalls[0]?.userText).not.toContain('COMPLETED OPTIMIZER RUN');
+    });
+
+    it('attributes tool-grounded answers on the assistant turn', async () => {
+      const ok = makeSuccessSendResult('computed answer');
+      const h = makeHarness({
+        sendResult: {
+          ...ok,
+          toolCalls: [
+            { tool: 'backtest', label: 'backtest: NVDA 1d', resultSummary: '{}', durationMs: 5, ok: true },
+          ],
+        },
+      });
+      await h.run('backtest NVDA');
+      const assistant = h.turns.find((t) => t.role === 'assistant');
+      expect(assistant?.toolAttributions).toEqual(['backtest: NVDA 1d']);
+    });
+
+    it('omits attributions when the loop made no calls', async () => {
+      const h = makeHarness({ sendResult: makeSuccessSendResult() });
+      await h.run('hello');
+      const assistant = h.turns.find((t) => t.role === 'assistant');
+      expect(assistant?.toolAttributions).toBeUndefined();
+    });
   });
 
   it('surfaces no-api-key when the key is unset', async () => {
