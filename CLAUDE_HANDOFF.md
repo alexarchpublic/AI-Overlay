@@ -1301,3 +1301,43 @@ meaningful work. Entries are chronological, newest at the bottom.
 - C ⬜ — tag held per D-M10 Friday rule; everything staged.
 
 ---
+
+## Session Handoff Log
+**Session ID:** 2026-08-14-1500-OPT-MCP-002
+**Timestamp:** 2026-08-14T15:00:00-05:00 (CDT)
+**Model:** Claude Fable 5 (Claude Code)
+**Focus Area:** Close the B4 latency gate; fix the Gemini 3.x thoughtSignature defect the live run exposed.
+
+### Decisions Made
+- The first operator latency run 400'd on round 2: Gemini 3.x attaches a `thoughtSignature` to every functionCall part and rejects follow-ups that echo the call reconstructed from name + args. The tool loop (geminiService.ts) and scripts/tool-loop-latency.mjs now replay the model's parts VERBATIM; the scripted-SDK fake stamps signatures so the regression is unit-covered. Commit on `main`, CI green.
+
+### Files Modified / Created
+- `src/main/geminiService.ts` (functionCallsOf returns the original Part; replay uses it), `scripts/tool-loop-latency.mjs`, `tests/geminiToolLoop.spec.ts`.
+
+### Open Questions / Risks
+- None new. Workstream C (tag on a non-Friday + config rollout) remains the only open item.
+
+### Recommended Next Steps for Next Claude Instance
+- Unchanged from OPT-MCP-001: tag `v0.3.0-alpha.1` on a non-Friday, verify assets, config-first rollout to the S1 pair.
+
+### Key Context Delta — B4 latency evidence (§7.3, 20 scripted runs, production endpoint + live Gemini)
+```
+run  1: 3282 ms (1 tool round)    run 11: 3745 ms (1 tool round)
+run  2: 2768 ms (1 tool round)    run 12: 3112 ms (1 tool round)
+run  3: 2628 ms (2 tool rounds)   run 13: 3604 ms (1 tool round)
+run  4: 3635 ms (2 tool rounds)   run 14: 3108 ms (1 tool round)
+run  5: 3211 ms (1 tool round)    run 15: 2606 ms (2 tool rounds)
+run  6: 3011 ms (1 tool round)    run 16: 3006 ms (1 tool round)
+run  7: 2654 ms (2 tool rounds)   run 17: 3020 ms (1 tool round)
+run  8: 2773 ms (2 tool rounds)   run 18: 2691 ms (2 tool rounds)
+run  9: 3705 ms (1 tool round)    run 19: 2931 ms (1 tool round)
+run 10: 2846 ms (1 tool round)    run 20: 2415 ms (2 tool rounds)
+
+runs=20  p50=3011 ms  p95=3745 ms  max=3745 ms
+B4 LATENCY GATE PASSED (p95 ≤ 12 s)
+```
+
+### Phase Gate Status
+- A1–A4 ✅ · B1–B5 ✅ (B4 now fully closed incl. live p95 evidence) · C ⬜ (Friday rule)
+
+---

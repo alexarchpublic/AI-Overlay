@@ -22,7 +22,7 @@ Branch: `pivot/internal-copilot` · one commit per phase · see
 **Corpus stats (Phase 6 ingest refresh):** 13 pages, 89 chunks, ~28.7k tokens →
 `USE_FULL_CORPUS_INJECTION=true` (≤ 50k threshold). Bundle: `docs-bbfecbdd4e1d.json`.
 
-**Test count (optimizer integration):** 416 Vitest cases + 2 env-gated live
+**Test count (optimizer integration):** 420 Vitest cases + 2 env-gated live
 e2e (Chunk 7 baseline was 371; pivot baseline 280).
 
 ### Pivot acceptance (Phase 6)
@@ -111,18 +111,17 @@ Checkboxes (tick after DoD):
 | B1 | Shared types, `optimizer.*` config store, team-config v2, `optimizer:` IPC | ✅ complete |
 | B2 | `optimizerMcpService` (D-M5) + production smoke (11 tools, backtest 491 ms) | ✅ complete |
 | B3 | Job tracker + Optimizer panel; live e2e: done-with-card / cancel / expired-on-restart | ✅ complete |
-| B4 | Bounded Gemini tool loop (≤2 rounds, 15 s/tool, ≤2k-token summaries); disabled ⇒ byte-identical | ✅ code + tests complete; **live p95 ≤ 12 s evidence pending** (`node scripts/tool-loop-latency.mjs`, needs `GEMINI_API_KEY`) |
+| B4 | Bounded Gemini tool loop (≤2 rounds, 15 s/tool, ≤2k-token summaries); disabled ⇒ byte-identical | ✅ complete — live gate 2026-08-14: p50 3.0 s / p95 3.7 s over 20 runs (evidence in CLAUDE_HANDOFF OPT-MCP-002) |
 | B5 | Grep contracts, acceptance rows (Phase I), docs fan-out | ✅ complete |
 | C | Merge → `v0.3.0-alpha.1` tag → CI publish → config-first rollout | ⬜ tag held (D-M10: never publish on a Friday — 2026-08-14 is one) |
 
 ## Current Focus
 
 1. **Optimizer release (C)** — tag `v0.3.0-alpha.1` on a non-Friday, verify `latest.yml` + installers, re-provision v2 `team-config.json` to the S1 pilot pair (config-first)
-2. **B4 latency evidence** — operator runs `scripts/tool-loop-latency.mjs` with a Gemini key; paste distribution into `CLAUDE_HANDOFF.md`
-3. **Gate 5.7/5.8** — Windows update loop verification on hardware (now via alpha.2 → 0.3.0-alpha.1)
-4. **Gate 6.5** — execute `WIN_ACCEPTANCE.md` A–I on two distinct Windows machines (iGPU + discrete ideally)
-5. **Gate 6.7 / S1** — two CS pilot users, one Slack thread, ≥1 real client call each (now doubles as the optimizer pilot gate, §8.4)
-6. Mac acceptance remains open (D14 — not a hard gate for Chunk 7)
+2. **Gate 5.7/5.8** — Windows update loop verification on hardware (now via alpha.2 → 0.3.0-alpha.1)
+3. **Gate 6.5** — execute `WIN_ACCEPTANCE.md` A–I on two distinct Windows machines (iGPU + discrete ideally)
+4. **Gate 6.7 / S1** — two CS pilot users, one Slack thread, ≥1 real client call each (now doubles as the optimizer pilot gate, §8.4)
+5. Mac acceptance remains open (D14 — not a hard gate for Chunk 7)
 
 Quick verification inside the repo:
 
