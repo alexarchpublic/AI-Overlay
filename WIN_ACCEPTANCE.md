@@ -128,6 +128,21 @@ This is the live Gate 5.7 / 5.8 proof on operator hardware.
 
 ---
 
+## Phase I — Optimizer integration (PRD_Optimizer_MCP_Integration)
+
+Needs a v2 `team-config.json` (with the `optimizer` block) provisioned.
+
+| # | Action | Pass when |
+|---|--------|-----------|
+| I1 | Provision v2 config → launch | Log has `provisioning.optimizerApplied` with `mcpUrl` — **never** the team key; Settings shows the Optimizer panel populated with server tickers/timeframes |
+| I2 | Chat: “backtest NVDA on 1d with default settings and tell me if it beat buy-and-hold” | Answer cites computed numbers; “ran backtest: NVDA 1d” chip on the turn; log has `optimizer.tool.call` with `durationMs`/`resultTokensEst` |
+| I3 | Panel: start a 50-trial NVDA 1d optimization | Progress advances on ~2 s polls (`optimizer.job.poll`); `optimizer.job.done`; TradingView card renders exact Pine input labels |
+| I4 | Copy settings card → paste into TradingView Inputs | Labels match the TV dialog; values apply cleanly |
+| I5 | “Use in chat” → ask “walk me through this result” | Answer references the run’s numbers (`chat.optimizerGroundingInjected` logged) |
+| I6 | Remove the `optimizer` block → re-provision → relaunch | Panel shows “not provisioned”; chat behaves exactly as v1 (no tool chips, no optimizer log events) |
+
+---
+
 ## Sign-off matrix (Gate 6.5)
 
 | Machine | GPU | Scaling | Phases A–H | Owner | Date |

@@ -195,6 +195,20 @@ talk track, and make no performance promises. Log results in `CLAUDE_HANDOFF.md`
 
 ---
 
+## Phase I — Optimizer integration (PRD_Optimizer_MCP_Integration)
+
+Needs a v2 `team-config.json` with the `optimizer` block (or the block pasted
+into `/Library/Application Support/ArchPublic/team-config.json`).
+
+| # | Action | Pass when |
+|---|--------|-----------|
+| I1 | Provision v2 config → launch | `provisioning.optimizerApplied` logged with `mcpUrl`, never the key; Optimizer panel in Settings lists server tickers |
+| I2 | Demo prompt: “backtest NVDA on 1d with default settings and tell me if it beat buy-and-hold” | Computed numbers + “ran backtest: NVDA 1d” chip; `optimizer.tool.call` logged |
+| I3 | Panel run (50 trials, NVDA 1d) → copy card into TradingView | Progress → done → card with exact Pine input labels; paste matches TV Inputs |
+| I4 | “Use in chat” follow-up question | Answer grounds in the run (`chat.optimizerGroundingInjected`) |
+
+---
+
 ## Sign-off
 
 When a chunk or pivot phase passes, tick its box in `project-state.md` and append

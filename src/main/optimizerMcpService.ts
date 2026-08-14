@@ -161,7 +161,9 @@ function pruneForSummary(value: unknown, depth = 0): unknown {
   if (depth > 6) return '…';
   if (Array.isArray(value)) {
     const kept = value.slice(0, MAX_ARRAY_ITEMS).map((v) => pruneForSummary(v, depth + 1));
-    if (value.length > MAX_ARRAY_ITEMS) kept.push(`…(${value.length - MAX_ARRAY_ITEMS} more)`);
+    if (value.length > MAX_ARRAY_ITEMS) {
+      kept.push(`…(${String(value.length - MAX_ARRAY_ITEMS)} more)`);
+    }
     return kept;
   }
   if (typeof value === 'object' && value !== null) {
@@ -371,7 +373,7 @@ export function createOptimizerMcpService(deps: OptimizerMcpServiceDeps): Optimi
     const t = now();
     if (t < nextAttemptAt) {
       throw new Error(
-        `optimizer reconnect backing off (${Math.ceil((nextAttemptAt - t) / 1000)}s)`);
+        `optimizer reconnect backing off (${String(Math.ceil((nextAttemptAt - t) / 1000))}s)`);
     }
 
     connecting = (async () => {
@@ -531,9 +533,10 @@ export function createOptimizerMcpService(deps: OptimizerMcpServiceDeps): Optimi
       return cachedCapabilities;
     },
 
-    async dispose() {
+    dispose() {
       disposed = true;
       dropClient();
+      return Promise.resolve();
     },
   };
 }

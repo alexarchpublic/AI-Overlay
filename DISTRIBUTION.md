@@ -67,8 +67,14 @@ If the file is absent or invalid, the app falls through to Settings → AI (past
 | `captureIntervalMs` | no | Finite number; clamped by the capture store |
 | `provisionedBy` | no | Logged on apply — never the key |
 | `provisionedAt` | no | Free-form date string |
+| `optimizer` | no | v2 (PRD_Optimizer_MCP_Integration D-M8): `{ "mcpUrl": "https://optimize.archpublic.com/mcp", "teamKey": "…" }`. Absent ⇒ the optimizer feature stays fully hidden. `teamKey` goes to DPAPI/Keychain like the Gemini key and is never logged. |
 
-Unknown keys are rejected (`provisioning.invalid`).
+Unknown keys are **tolerated with a warning** (`provisioning.unknownKeys`) as of v2 — v1 clients (≤ 0.2.0-alpha.2) hard-reject them, so a v2 config file on a NOT-yet-provisioned v1 install invalidates the whole file (already-provisioned v1 installs never re-read it and are unaffected). For fresh installs, install the ≥ 0.3.0 build before dropping a v2 config.
+
+The `optimizer` block re-applies whenever its content changes, even after
+`provisioning.completed` — refreshing the file is all it takes to light the
+feature up on an existing machine or to rotate the optimizer team key. The
+Gemini-key rotation flags below are NOT needed for optimizer rotation.
 
 ## Key Rotation
 

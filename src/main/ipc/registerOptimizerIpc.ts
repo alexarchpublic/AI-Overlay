@@ -34,7 +34,7 @@ export function registerOptimizerIpc(ctx: AppContext): void {
 
   ipcMain.handle(IPC_OPTIMIZER_GET_STATUS, (): OptimizerStatus => {
     const store = ctx.optimizerStore;
-    if (!store || !store.isConfigured()) {
+    if (!store?.isConfigured()) {
       // Absent config ⇒ the feature is hidden everywhere (D-M8).
       return { configured: false, connected: false, mcpUrl: null };
     }
