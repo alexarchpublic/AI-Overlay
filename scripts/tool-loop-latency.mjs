@@ -62,20 +62,22 @@ for (let i = 0; i < RUNS; i += 1) {
   const contents = [{ role: 'user', parts: [{ text: PROMPT }] }];
   while (rounds < 2) {
     const res = await toolModel.generateContent({ contents });
-    const calls = (res.response.candidates?.[0]?.content?.parts ?? [])
-      .map((p) => p.functionCall)
-      .filter(Boolean);
-    if (calls.length === 0) break;
+    // Keep the model's parts VERBATIM for the replay turn — Gemini 3.x
+    // attaches thoughtSignature to functionCall parts and 400s any echo
+    // that reconstructs them from name + args alone.
+    const fcParts = (res.response.candidates?.[0]?.content?.parts ?? [])
+      .filter((p) => p.functionCall);
+    if (fcParts.length === 0) break;
     rounds += 1;
     const parts = [];
-    for (const call of calls) {
+    for (const { functionCall: call } of fcParts) {
       const out = await mcp.callTool({ name: call.name, arguments: call.args ?? {} });
       const text = (out.content ?? []).find((p) => p.type === 'text')?.text ?? '';
       const trimmed = text.length > 7_000 ? `${text.slice(0, 7_000)}…` : text;
       toolText += `\n- ${call.name}: ${trimmed}`;
       parts.push({ functionResponse: { name: call.name, response: { result: trimmed } } });
     }
-    contents.push({ role: 'model', parts: calls.map((c) => ({ functionCall: c })) });
+    contents.push({ role: 'model', parts: fcParts });
     contents.push({ role: 'user', parts });
   }
   const finalModel = sdk.getGenerativeModel({

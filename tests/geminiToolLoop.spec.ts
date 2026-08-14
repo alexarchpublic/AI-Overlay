@@ -96,7 +96,12 @@ function makeScriptedSdk(script: Scripted[]): {
           const next = queue.shift() ?? { text: v3() };
           const parts: Array<Record<string, unknown>> = [];
           for (const fc of next.functionCalls ?? []) {
-            parts.push({ functionCall: fc });
+            // Real Gemini 3.x responses carry a thoughtSignature on each
+            // functionCall part; the loop must echo it back verbatim.
+            parts.push({
+              functionCall: fc,
+              thoughtSignature: `sig-${typeof fc.name === 'string' ? fc.name : 'x'}`,
+            });
           }
           if (next.text !== undefined) parts.push({ text: next.text });
           return {
@@ -296,9 +301,12 @@ describe('gemini tool loop', () => {
     const result = await svc.send({ ...SEND_ARGS });
     expect(result.ok).toBe(true);
     // Both rounds executed; the second round's request contents carry the
-    // error string from the first.
+    // error string from the first — AND the replayed model turn preserves
+    // the functionCall part verbatim, thoughtSignature included (Gemini 3.x
+    // rejects reconstructed parts with a 400).
     const round2 = JSON.stringify(sdk.requests[1]?.contents);
     expect(round2).toContain("Unknown ticker 'ZZZ'");
+    expect(round2).toContain('sig-backtest');
     if (result.ok) {
       expect(result.toolCalls?.some((c) => !c.ok)).toBe(true);
     }

@@ -783,9 +783,11 @@ export function createGeminiService(deps: GeminiServiceDeps): GeminiService {
             });
           }
         }
+        // Replay the model's own parts verbatim (thoughtSignature included —
+        // Gemini 3.x 400s if it's stripped from an echoed functionCall).
         toolContents.push({
           role: 'model',
-          parts: calls.map((c) => ({ functionCall: { name: c.name, args: c.args } })),
+          parts: calls.map((c) => c.part),
         });
         toolContents.push({ role: 'user', parts: responseParts });
         if (round === OPTIMIZER_MAX_TOOL_ROUNDTRIPS - 1) {
@@ -1013,13 +1015,19 @@ function isContentResult(
  * Pull well-formed functionCall parts from a tool-round response. Malformed
  * entries (missing name, non-object args) are dropped — a round with zero
  * usable calls ends the loop and the turn degrades to a docs-grounded answer.
+ *
+ * `part` is the ORIGINAL response part, kept verbatim for the replay turn:
+ * Gemini 3.x attaches a `thoughtSignature` to functionCall parts and rejects
+ * follow-up requests that echo the call without it (400, "missing a
+ * thought_signature"), so the model turn must be rebuilt from these exact
+ * parts, never reconstructed from name + args.
  */
 function functionCallsOf(
   result: GenerateContentResult,
-): { name: string; args: Record<string, unknown> }[] {
+): { name: string; args: Record<string, unknown>; part: Part }[] {
   const cand = result.response.candidates?.[0];
   const parts = cand?.content.parts ?? [];
-  const out: { name: string; args: Record<string, unknown> }[] = [];
+  const out: { name: string; args: Record<string, unknown>; part: Part }[] = [];
   for (const p of parts) {
     const fc = (p as { functionCall?: { name?: unknown; args?: unknown } }).functionCall;
     if (fc !== undefined && typeof fc.name === 'string' && fc.name.length > 0) {
@@ -1027,7 +1035,7 @@ function functionCallsOf(
         typeof fc.args === 'object' && fc.args !== null && !Array.isArray(fc.args)
           ? (fc.args as Record<string, unknown>)
           : {};
-      out.push({ name: fc.name, args: fnArgs });
+      out.push({ name: fc.name, args: fnArgs, part: p });
     }
   }
   return out;
