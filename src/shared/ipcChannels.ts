@@ -8,8 +8,9 @@
  * everywhere else.
  *
  * Naming rule: `'{namespace}:{verb}'`. Namespaces so far: `log`, `widget`,
- * `perms`, `capture`, `region`, `chat`, `ai`, `app`. Keep verbs imperative
- * (`get`, `set`, `open`, `emit`, `report`).
+ * `perms`, `capture`, `region`, `chat`, `ai`, `app`, `update`, `knowledge`,
+ * `optimizer`. Keep verbs imperative (`get`, `set`, `open`, `emit`,
+ * `report`).
  */
 
 export const IPC_LOG_MESSAGE = 'log:message';
@@ -141,6 +142,27 @@ export const IPC_AI_GET_STATS = 'ai:getStats';
 export const IPC_KNOWLEDGE_GET_ACTIVE_ALGORITHM = 'knowledge:getActiveAlgorithm';
 export const IPC_KNOWLEDGE_SET_ACTIVE_ALGORITHM = 'knowledge:setActiveAlgorithm';
 export const IPC_KNOWLEDGE_GET_BUNDLE_INFO = 'knowledge:getBundleInfo';
+
+// ---------------------------------------------------------------------------
+// Optimizer channels (PRD_Optimizer_MCP_Integration D-M5/D-M6)
+// ---------------------------------------------------------------------------
+
+/** Feature status: configured/connected/mcpUrl — never the team key. */
+export const IPC_OPTIMIZER_GET_STATUS = 'optimizer:getStatus';
+/** Tool names + the panel's capability lists (tickers/timeframes/objectives). */
+export const IPC_OPTIMIZER_LIST_TOOLS = 'optimizer:listTools';
+/** One synchronous backtest round-trip; returns a summarized tool result. */
+export const IPC_OPTIMIZER_RUN_BACKTEST = 'optimizer:runBacktest';
+/** Start a panel job (single-window or regime); returns the first snapshot. */
+export const IPC_OPTIMIZER_START_OPTIMIZATION = 'optimizer:startOptimization';
+export const IPC_OPTIMIZER_GET_JOB_STATE = 'optimizer:getJobState';
+export const IPC_OPTIMIZER_CANCEL_JOB = 'optimizer:cancelJob';
+/** main → renderer push: OptimizerJobSnapshot changed (poll tick / terminal). */
+export const IPC_OPTIMIZER_JOB_STATE_CHANGED = 'optimizer:jobStateChanged';
+/** Copy the completed job's TradingView settings card to the clipboard. */
+export const IPC_OPTIMIZER_COPY_SETTINGS_CARD = 'optimizer:copySettingsCard';
+/** Queue a completed job's summary as grounding for the next chat turn. */
+export const IPC_OPTIMIZER_USE_IN_CHAT = 'optimizer:useInChat';
 
 // ---------------------------------------------------------------------------
 // Menu action identifiers (strings sent over IPC_WIDGET_MENU_ACTION)

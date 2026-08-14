@@ -3,5 +3,9 @@
   "defaultAlgorithm": "market-wave",
   "captureIntervalMs": 5000,
   "provisionedBy": "ops@archpublic.com",
-  "provisionedAt": "2026-07-27"
+  "provisionedAt": "2026-07-27",
+  "optimizer": {
+    "mcpUrl": "https://optimize.archpublic.com/mcp",
+    "teamKey": "PASTE_OPTIMIZER_TEAM_KEY_HERE"
+  }
 }

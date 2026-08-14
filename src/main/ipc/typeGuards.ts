@@ -5,6 +5,7 @@
  */
 
 import type { SuggestedParameterChange, WidgetPosition } from '../../shared/types';
+import type { OptimizerJobRequest } from '../../shared/optimizerTypes';
 
 export function isPoint(v: unknown): v is { x: number; y: number } {
   if (typeof v !== 'object' || v === null) return false;
@@ -18,6 +19,19 @@ export function isWidgetPosition(v: unknown): v is WidgetPosition {
   if (typeof o.x !== 'number' || typeof o.y !== 'number') return false;
   if (o.displayId !== null && typeof o.displayId !== 'number') return false;
   return true;
+}
+
+export function isOptimizerJobRequest(v: unknown): v is OptimizerJobRequest {
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as Record<string, unknown>;
+  if (o.kind !== 'single' && o.kind !== 'regime') return false;
+  if (o.kind === 'regime' && typeof o.regime !== 'string') return false;
+  return (
+    typeof o.ticker === 'string' && o.ticker.length > 0 &&
+    typeof o.timeframe === 'string' &&
+    typeof o.objective === 'string' &&
+    typeof o.trials === 'number' && Number.isFinite(o.trials) && o.trials > 0
+  );
 }
 
 export function isSuggestedChange(v: unknown): v is SuggestedParameterChange {
