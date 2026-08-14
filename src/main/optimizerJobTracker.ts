@@ -95,7 +95,11 @@ function cardFromBacktest(
   objectiveValue: number | null,
   zeroTrades: boolean,
 ): OptimizerResultCard | null {
-  const paramsUsed = asRecord(backtest.params_used);
+  // params_tradingview carries the exact PineScript input labels (engine
+  // to_tradingview_dict); params_used is the engine-keyed fallback for an
+  // engine that predates the field.
+  const paramsUsed =
+    asRecord(backtest.params_tradingview) ?? asRecord(backtest.params_used);
   if (!paramsUsed) return null;
   const paramsTradingview: Record<string, string | number | boolean> = {};
   for (const [k, v] of Object.entries(paramsUsed)) {
@@ -130,7 +134,10 @@ export function createOptimizerJobTracker(deps: OptimizerJobTrackerDeps): Optimi
   const pollIntervalMs = deps.pollIntervalMs ?? OPTIMIZER_JOB_POLL_INTERVAL_MS;
   const schedule = deps.schedule ?? ((fn: () => void, ms: number) => setTimeout(fn, ms));
   const cancelScheduled =
-    deps.cancelScheduled ?? ((h: unknown) => clearTimeout(h as NodeJS.Timeout));
+    deps.cancelScheduled ??
+    ((h: unknown) => {
+      clearTimeout(h as NodeJS.Timeout);
+    });
   const nowIso = deps.nowIso ?? (() => new Date().toISOString());
 
   let snapshot: OptimizerJobSnapshot | null = null;
@@ -182,29 +189,30 @@ export function createOptimizerJobTracker(deps: OptimizerJobTrackerDeps): Optimi
     const result = asRecord(payload.result);
     if (!result) return null;
 
+    // Both job kinds report the winning params ENGINE-keyed (verified live:
+    // the optimize result's embedded backtest uses engine field names). Only
+    // /api/backtest emits `to_tradingview_dict()` labels, so the card is
+    // always built from one fast follow-up backtest with the best params —
+    // reusing the engine's own conversion, never reimplementing it (§3.5).
+    let engineParams: Record<string, unknown> | null = null;
+    let objectiveValue: number | null = null;
+    let knownZeroTrades = false;
     if (request.kind === 'single') {
       const best = asRecord(result.best);
-      const backtest = best ? asRecord(best.backtest) : null;
-      if (!best || !backtest) return null;
-      return cardFromBacktest(
-        request,
-        backtest,
-        numberOrNull(best.value),
-        best.zero_trades === true,
-      );
+      engineParams = best ? asRecord(best.params) : null;
+      objectiveValue = best ? numberOrNull(best.value) : null;
+      knownZeroTrades = best?.zero_trades === true;
+    } else {
+      engineParams = asRecord(result.best_params);
+      const composite = asRecord(result.composite);
+      objectiveValue = composite ? numberOrNull(composite.score) : null;
     }
+    if (!engineParams) return null;
 
-    // Regime results carry engine-keyed best_params and no full backtest.
-    // One fast follow-up backtest turns them into TV-keyed params + metrics
-    // for the card — reusing the engine's own conversion, not reimplementing
-    // it (§3.5: respect constraints, don't re-implement).
-    const bestParams = asRecord(result.best_params);
-    const composite = asRecord(result.composite);
-    if (!bestParams) return null;
     const followUp = await deps.service.callTool('backtest', {
       ticker: request.ticker,
       timeframe: request.timeframe,
-      params: bestParams,
+      params: engineParams,
     });
     if (!followUp.ok) {
       log.warn('optimizer.job.cardBacktestFailed', {
@@ -220,8 +228,8 @@ export function createOptimizerJobTracker(deps: OptimizerJobTrackerDeps): Optimi
     return cardFromBacktest(
       request,
       backtest,
-      composite ? numberOrNull(composite.score) : null,
-      totalTrades === 0,
+      objectiveValue,
+      knownZeroTrades || totalTrades === 0,
     );
   }
 
@@ -230,7 +238,11 @@ export function createOptimizerJobTracker(deps: OptimizerJobTrackerDeps): Optimi
     const jobId = snapshot.jobId;
     const result = await deps.service.callTool('get_optimization_status', { job_id: jobId });
 
-    if (!snapshot || snapshot.jobId !== jobId || !polling) return;
+    // A new job may have started — or cancel/dispose stopped polling —
+    // while the poll round-trip was in flight (reads via a function call so
+    // the linter doesn't narrow the mutable closure state across the await).
+    const stillCurrent = (): boolean => polling && snapshot?.jobId === jobId;
+    if (!stillCurrent()) return;
 
     if (!result.ok) {
       if (result.kind === 'engine' && isUnknownJobDetail(result.detail)) {
@@ -358,7 +370,7 @@ export function createOptimizerJobTracker(deps: OptimizerJobTrackerDeps): Optimi
       const metricsLine = Object.entries(card.metrics)
         .filter(([, v]) => v !== null)
         .slice(0, 8)
-        .map(([k, v]) => `${k}=${typeof v === 'number' ? Number(v.toFixed ? v.toFixed(3) : v) : String(v)}`)
+        .map(([k, v]) => `${k}=${typeof v === 'number' ? v.toFixed(3) : String(v)}`)
         .join(', ');
       pendingGrounding = [
         `Completed optimizer run (${snapshot.kind === 'regime' ? `regime: ${snapshot.request.regime ?? ''}` : 'single window'})`,

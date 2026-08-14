@@ -82,6 +82,8 @@ const REQUEST: OptimizerJobRequest = {
   trials: 50,
 };
 
+// As observed live: the optimize result reports best params ENGINE-keyed;
+// only the follow-up /api/backtest returns TV-keyed params_used.
 const DONE_PAYLOAD = {
   status: 'done',
   done: 50,
@@ -92,18 +94,25 @@ const DONE_PAYLOAD = {
       value: 1.87,
       zero_trades: false,
       backtest: {
-        params_used: { iLongThreshold: 431, trade_size_type_perc: true, iLookBackLengthSpeed: 1.55 },
-        metrics: { sharpe_ratio: 1.87, total_return_pct: 212.4, total_trades: 38 },
+        params_used: { long_threshold: 431 },
+        metrics: { sharpe_ratio: 1.87 },
       },
     },
   },
 };
 
+const FOLLOWUP_BACKTEST = {
+  params_used: { long_threshold: 431 },
+  params_tradingview: { iLongThreshold: 431, trade_size_type_perc: true, iLookBackLengthSpeed: 1.55 },
+  metrics: { sharpe_ratio: 1.87, total_return_pct: 212.4, total_trades: 38 },
+};
+
 describe('optimizerJobTracker', () => {
   it('runs start → poll progress → done with a settings card', async () => {
     let status: Record<string, unknown> = { status: 'queued', done: 0, total: 50, queue_position: 2 };
-    const { tracker, tick } = build((tool) => {
+    const { tracker, calls, tick } = build((tool) => {
       if (tool === 'start_optimization') return okResult(tool, { job_id: 'job-1', total: 50 });
+      if (tool === 'backtest') return okResult(tool, FOLLOWUP_BACKTEST);
       return okResult(tool, status);
     });
     const snapshots: string[] = [];
@@ -129,6 +138,9 @@ describe('optimizerJobTracker', () => {
     expect(done?.result?.metrics.sharpe_ratio).toBe(1.87);
     expect(done?.result?.objectiveValue).toBe(1.87);
     expect(snapshots.at(-1)).toBe('done:12');
+    // The card comes from a follow-up backtest with the engine-keyed params.
+    const followUp = calls.find((c) => c.tool === 'backtest');
+    expect(followUp?.args.params).toEqual({ long_threshold: 431 });
   });
 
   it('maps engine 404 to the terminal expired state', async () => {
@@ -177,7 +189,8 @@ describe('optimizerJobTracker', () => {
       if (tool === 'start_regime_optimization') return okResult(tool, { job_id: 'job-5' });
       if (tool === 'backtest') {
         return okResult(tool, {
-          params_used: { iLongThreshold: 200, trade_size_type_perc: true },
+          params_used: { long_threshold: 200 },
+          params_tradingview: { iLongThreshold: 200, trade_size_type_perc: true },
           metrics: { sharpe_ratio: 2.1, total_trades: 12 },
         });
       }
@@ -205,11 +218,13 @@ describe('optimizerJobTracker', () => {
     let status: Record<string, unknown> = { status: 'queued', done: 0, total: 50 };
     const { tracker, tick } = build((tool) => {
       if (tool === 'start_optimization') return okResult(tool, { job_id: 'job-6' });
+      if (tool === 'backtest') return okResult(tool, FOLLOWUP_BACKTEST);
       return okResult(tool, status);
     });
     await tracker.start(REQUEST);
     expect(tracker.queueResultAsGrounding()).toBe(false);
     status = DONE_PAYLOAD;
+    await tick();
     await tick();
     expect(tracker.queueResultAsGrounding()).toBe(true);
     const grounding = tracker.consumeGrounding();
