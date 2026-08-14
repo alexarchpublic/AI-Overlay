@@ -47,3 +47,7 @@ coverage/
 # iCloud Drive sync-collision duplicates (Chunk 7 task 0.2)
 *\ 2.*
 *\ 2/
+
+# Real provisioning configs carry the Gemini + optimizer team keys —
+# only the .example file belongs in git.
+team-config.json
