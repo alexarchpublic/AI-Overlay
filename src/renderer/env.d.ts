@@ -24,6 +24,13 @@ import type {
 } from '../shared/types';
 import type { ActiveAlgorithm, KnowledgeBundleInfo } from '../shared/knowledgeTypes';
 import type { UpdateStateSnapshot } from '../shared/updateTypes';
+import type {
+  OptimizerJobRequest,
+  OptimizerJobSnapshot,
+  OptimizerStatus,
+  OptimizerToolResult,
+  OptimizerToolsInfo,
+} from '../shared/optimizerTypes';
 
 declare global {
   interface Window {
@@ -109,6 +116,19 @@ declare global {
         install: () => Promise<void>;
         openReleasePage: () => Promise<void>;
         onStateChanged: (cb: (snapshot: UpdateStateSnapshot) => void) => () => void;
+      };
+      optimizer: {
+        getStatus: () => Promise<OptimizerStatus>;
+        listTools: () => Promise<OptimizerToolsInfo>;
+        runBacktest: (args: Record<string, unknown>) => Promise<OptimizerToolResult>;
+        startOptimization: (
+          request: OptimizerJobRequest,
+        ) => Promise<OptimizerJobSnapshot | null>;
+        getJobState: () => Promise<OptimizerJobSnapshot | null>;
+        cancelJob: () => Promise<boolean>;
+        copySettingsCard: () => Promise<boolean>;
+        useInChat: () => Promise<boolean>;
+        onJobStateChanged: (cb: (snapshot: OptimizerJobSnapshot) => void) => () => void;
       };
     };
   }

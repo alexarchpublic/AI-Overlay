@@ -32,6 +32,7 @@ import { REDACT_PLACEHOLDER } from '../src/shared/constants';
 import type { StoreLike } from '../src/main/widgetState';
 import { AI_STORE_KEY_API_KEY } from '../src/shared/aiConstants';
 import { isEncryptedSecret } from '../src/main/secretsStore';
+import { wrapOptimizerStore } from '../src/main/optimizerStore';
 
 function fakeLogger(): AppLogger {
   return {
@@ -83,6 +84,7 @@ function buildDeps(
   store: StoreLike;
   logger: AppLogger;
   aiStore: ReturnType<typeof wrapAiStore>;
+  optimizerStore: ReturnType<typeof wrapOptimizerStore>;
 } {
   const store = memoryStore();
   const safeStorage = createTestSafeStorage();
@@ -92,11 +94,14 @@ function buildDeps(
   const logger = fakeLogger();
   const { files, ...rest } = overrides;
 
+  const optimizerStore = wrapOptimizerStore(store, { safeStorage });
+
   const deps: ProvisioningDeps = {
     store,
     aiStore,
     knowledgeStore,
     captureStore,
+    optimizerStore,
     logger,
     getExecDir: () => 'C:\\Apps\\Overlay',
     getUserDataPath: () => 'C:\\Users\\cs\\AppData\\Roaming\\arch-public-ai-overlay',
@@ -106,7 +111,7 @@ function buildDeps(
     ...rest,
   };
 
-  return { deps, store, logger, aiStore };
+  return { deps, store, logger, aiStore, optimizerStore };
 }
 
 describe('parseTeamConfig', () => {
@@ -134,10 +139,41 @@ describe('parseTeamConfig', () => {
     }
   });
 
-  it('rejects unknown keys', () => {
+  it('tolerates unknown keys and reports them (v2 forward-compat)', () => {
+    // v1 hard-rejected unknown keys, which meant any future config addition
+    // invalidated the whole file on older clients. v2 tolerates and surfaces
+    // them instead (D-M8).
     const result = parseTeamConfig({ geminiApiKey: 'key', extra: true });
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toContain('unknown key');
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.unknownKeys).toEqual(['extra']);
+  });
+
+  it('parses the v2 optimizer block', () => {
+    const result = parseTeamConfig({
+      geminiApiKey: 'key',
+      optimizer: {
+        mcpUrl: 'https://optimize.archpublic.com/mcp',
+        teamKey: 'abc123',
+      },
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.config.optimizer).toEqual({
+        mcpUrl: 'https://optimize.archpublic.com/mcp',
+        teamKey: 'abc123',
+      });
+    }
+  });
+
+  it('rejects a malformed optimizer block', () => {
+    expect(parseTeamConfig({ geminiApiKey: 'k', optimizer: { mcpUrl: 'nope' } }).ok).toBe(false);
+    expect(
+      parseTeamConfig({
+        geminiApiKey: 'k',
+        optimizer: { mcpUrl: 'https://x.example/mcp', teamKey: '' },
+      }).ok,
+    ).toBe(false);
+    expect(parseTeamConfig({ geminiApiKey: 'k', optimizer: 'yes' }).ok).toBe(false);
   });
 
   it('rejects empty geminiApiKey', () => {
@@ -308,7 +344,7 @@ describe('runProvisioning', () => {
     const execPath = path.win32.join('C:\\Apps\\Overlay', TEAM_CONFIG_FILENAME);
     const { deps, store, logger } = buildDeps({
       files: {
-        [execPath]: JSON.stringify({ geminiApiKey: 'ok', unexpected: 1 }),
+        [execPath]: JSON.stringify({ geminiApiKey: '   ' }),
       },
     });
     const result = runProvisioning(deps);
@@ -316,8 +352,101 @@ describe('runProvisioning', () => {
     expect(store.get(PROVISIONING_COMPLETED_KEY)).toBeUndefined();
     expect(logger.warn).toHaveBeenCalledWith(
       'provisioning.invalid',
-      expect.objectContaining({ reason: expect.stringContaining('unknown key') }),
+      expect.objectContaining({ reason: expect.stringContaining('geminiApiKey') }),
     );
+  });
+
+  it('applies with a warning when the config carries unknown keys', () => {
+    const execPath = path.win32.join('C:\\Apps\\Overlay', TEAM_CONFIG_FILENAME);
+    const { deps, store, logger } = buildDeps({
+      files: {
+        [execPath]: JSON.stringify({ geminiApiKey: 'ok', unexpected: 1 }),
+      },
+    });
+    const result = runProvisioning(deps);
+    expect(result.status).toBe('applied');
+    expect(store.get(PROVISIONING_COMPLETED_KEY)).toBe(true);
+    expect(logger.warn).toHaveBeenCalledWith(
+      'provisioning.unknownKeys',
+      expect.objectContaining({ unknownKeys: ['unexpected'] }),
+    );
+  });
+
+  it('provisions the optimizer block into the optimizer store', () => {
+    const execPath = path.win32.join('C:\\Apps\\Overlay', TEAM_CONFIG_FILENAME);
+    const { deps, store, optimizerStore } = buildDeps({
+      files: {
+        [execPath]: JSON.stringify({
+          geminiApiKey: 'key',
+          optimizer: { mcpUrl: 'https://optimize.archpublic.com/mcp', teamKey: 'tk-1' },
+        }),
+      },
+    });
+    const result = runProvisioning(deps);
+    expect(result.status).toBe('applied');
+    expect(optimizerStore.getConfig()).toEqual({
+      mcpUrl: 'https://optimize.archpublic.com/mcp',
+      teamKey: 'tk-1',
+    });
+    expect(store.get(PROVISIONING_COMPLETED_KEY)).toBe(true);
+  });
+
+  it('re-applies a rotated optimizer block after provisioning completed', () => {
+    const execPath = path.win32.join('C:\\Apps\\Overlay', TEAM_CONFIG_FILENAME);
+    const v2 = (teamKey: string): string =>
+      JSON.stringify({
+        geminiApiKey: 'key',
+        optimizer: { mcpUrl: 'https://optimize.archpublic.com/mcp', teamKey },
+      });
+    const files: Record<string, string> = { [execPath]: v2('tk-old') };
+    const { deps, optimizerStore } = buildDeps({ files });
+
+    expect(runProvisioning(deps).status).toBe('applied');
+    // Same file again: nothing to re-apply.
+    expect(runProvisioning(deps).status).toBe('skipped');
+    // Rotated key: applied even though provisioning.completed is set.
+    files[execPath] = v2('tk-new');
+    expect(runProvisioning(deps).status).toBe('optimizer-updated');
+    expect(optimizerStore.getConfig()?.teamKey).toBe('tk-new');
+  });
+
+  it('lights up the optimizer on an already-provisioned v1 machine', () => {
+    // The §3.3 rollout path: a tester provisioned long ago (v1, completed)
+    // gets a refreshed v2 config file — the optimizer block must apply.
+    const execPath = path.win32.join('C:\\Apps\\Overlay', TEAM_CONFIG_FILENAME);
+    const files: Record<string, string> = {
+      [execPath]: JSON.stringify({ geminiApiKey: 'key' }),
+    };
+    const { deps, optimizerStore } = buildDeps({ files });
+    expect(runProvisioning(deps).status).toBe('applied');
+    expect(optimizerStore.isConfigured()).toBe(false);
+
+    files[execPath] = JSON.stringify({
+      geminiApiKey: 'key',
+      optimizer: { mcpUrl: 'https://optimize.archpublic.com/mcp', teamKey: 'tk-2' },
+    });
+    expect(runProvisioning(deps).status).toBe('optimizer-updated');
+    expect(optimizerStore.isConfigured()).toBe(true);
+  });
+
+  it('never logs the optimizer team key', () => {
+    const execPath = path.win32.join('C:\\Apps\\Overlay', TEAM_CONFIG_FILENAME);
+    const { deps, logger } = buildDeps({
+      files: {
+        [execPath]: JSON.stringify({
+          geminiApiKey: 'key',
+          optimizer: { mcpUrl: 'https://optimize.archpublic.com/mcp', teamKey: 'SECRET-TK' },
+        }),
+      },
+    });
+    runProvisioning(deps);
+    const allCalls = [
+      ...vi.mocked(logger.debug).mock.calls,
+      ...vi.mocked(logger.info).mock.calls,
+      ...vi.mocked(logger.warn).mock.calls,
+      ...vi.mocked(logger.error).mock.calls,
+    ];
+    expect(JSON.stringify(allCalls)).not.toContain('SECRET-TK');
   });
 
   it('applies optional defaultAlgorithm and captureIntervalMs', () => {

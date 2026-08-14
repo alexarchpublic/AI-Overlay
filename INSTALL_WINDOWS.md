@@ -88,6 +88,20 @@ Type in the input bar (or use a quick prompt). Answers include suggestions and a
 
 ---
 
+## Backtests and the Optimizer (if your team config includes it)
+
+When your `team-config.json` includes optimizer access, two things light up.
+First, chat can run **real backtests**: ask "what would default settings have
+returned on NVDA daily?" and the answer is computed, not recalled — you'll see
+a small "ran backtest" tag on those answers. Second, **Settings** gains an
+Optimizer section where you can run a full parameter optimization and copy the
+resulting TradingView settings as a ready-to-paste table. Optimizations run on
+our server and can take a few minutes; if the panel says the server restarted,
+just start the run again. Backtested performance is never a promise of future
+results — say so on calls.
+
+---
+
 ## Updates
 
 On Windows, updates download in the background. You may see a slim banner:

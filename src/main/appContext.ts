@@ -7,6 +7,9 @@
 
 import type { ChatOrchestrator } from './chatOrchestrator';
 import type { AiStateStore } from './aiStore';
+import type { OptimizerConfigStore } from './optimizerStore';
+import type { OptimizerMcpService } from './optimizerMcpService';
+import type { OptimizerJobTracker } from './optimizerJobTracker';
 import type { CaptureStateStore } from './captureStore';
 import type { ConversationStore } from './conversationStore';
 import type { GeminiService } from './geminiService';
@@ -41,4 +44,9 @@ export interface AppContext {
   userDataPath: string;
   /** Chunk 7 Phase 3 — null only before the updater is wired. */
   updaterService: UpdaterServiceHandle | null;
+  /** Optimizer MCP integration (PRD_Optimizer_MCP_Integration D-M5/D-M8) —
+   * all three are null when the feature is unwired or unconfigured. */
+  optimizerStore: OptimizerConfigStore | null;
+  optimizerService: OptimizerMcpService | null;
+  optimizerJobTracker: OptimizerJobTracker | null;
 }

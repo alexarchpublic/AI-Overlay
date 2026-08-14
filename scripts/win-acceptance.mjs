@@ -33,6 +33,8 @@ const ALLOWED_API_KEYS = new Set([
   'ai',
   'app',
   'updates',
+  // PRD_Optimizer_MCP_Integration D-M5 — the optimizer: namespace.
+  'optimizer',
 ]);
 
 const PLATFORM_PROCESS_EXEMPT = new Set([

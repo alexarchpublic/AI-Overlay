@@ -1256,3 +1256,48 @@ meaningful work. Entries are chronological, newest at the bottom.
 ### Key Context Delta
 - `npm test` → 371/371 after fix.
 - Active branch: `chunk-7/packaging-windows`.
+
+## Session Handoff Log
+**Session ID:** 2026-08-14-1325-OPT-MCP-001
+**Timestamp:** 2026-08-14T13:25:00-05:00 (CDT)
+**Model:** Claude Fable 5 (Claude Code)
+**Focus Area:** PRD_Optimizer_MCP_Integration executed end-to-end — Workstream A deployed + verified in production, Workstream B complete on `feat/optimizer-mcp`, release tag held for the Friday rule.
+
+### Decisions Made
+- D-M1/D-M3 resolved: streamable HTTP works against both SDKs at `mcp==1.29.0` (Python) and `@modelcontextprotocol/sdk@1.30.0` (TS, CJS build — no `importESM` needed). SSE fallback never required.
+- Pre-deploy adversarial review caught and fixed 5 production defects in Workstream A: (P0) FastMCP DNS-rebinding protection locked to localhost would have 421'd every proxied request — host now passed at construction; (P0) sync tools froze the event loop — all 11 tools now async with thread-offloaded I/O (verified: /health answers in ~0 ms during a 6 s tool call); (P1) empty `ARCH_MCP_TEAM_KEY` failed open for empty-valued headers — server now refuses to start non-loopback without a key; (P1) Caddy access logs wrote the team key — log filter deletes the header; (P2) bytes-compare in the middleware (non-ASCII 500→401); deploy health gate now waits on `mcp` too.
+- Engine gap found by the live B3 gate: no API surface carried `to_tradingview_dict()` labels (CLI-only). Added additive `params_tradingview` to `/api/backtest` (optimizer repo; Non-Goal 6 untouched). The tracker always builds the card via one follow-up backtest with the winning engine-keyed params — both job kinds, one conversion authority.
+- team-config v2 (D-M8, Q4 names as specified): parse is now unknown-key-TOLERANT (v1 strictness meant any addition invalidated the file on old clients), and the `optimizer` block re-applies on fingerprint change even after `provisioning.completed` — initial rollout and key rotation are the same path. Caveat documented in DISTRIBUTION.md: a v2 file on a NOT-yet-provisioned v1 install rejects wholesale; already-provisioned v1 machines are unaffected.
+- D-M6 enforced structurally: the MCP service allowlists the 4 Gemini + 4 panel tools; the three excluded tool names appear nowhere in overlay `src/` (§5 grep contract verified).
+- Tool loop (D-M7): tools and JSON mode are mutually exclusive in the Gemini API, so the loop runs ≤2 tool rounds without a response schema, then a final schema-v3 call with summarized results injected as text. Disabled ⇒ byte-identical prompt + single call (test-proven; snapshots untouched).
+
+### Files Modified / Created
+- **optimizer repo** (`alexarchpublic/optimizer`, merged dev→main, deployed twice): `src/mcp_server/server.py` (transport, TeamKeyMiddleware, async tools, fail-closed guard), `src/mcp_server/__init__.py` (0.2.0), `pyproject.toml`, `requirements.txt` (mcp==1.29.0), `docker-compose.yml` (`mcp` service), `Caddyfile` (`/mcp*` auth + 60/min zone + log filter), `.env.example`, `.github/workflows/deploy.yml` (dual health gate), `server.py` (`params_tradingview`), `tests/test_mcp_server.py` (+11 tests incl. locked §3.5 contract), `tests/test_output.py`, `DEPLOY.md` ("Remote MCP endpoint" runbook), `README.md`. 316 pytest green.
+- **overlay repo** (`feat/optimizer-mcp`, 6 commits): new `src/shared/optimizerTypes.ts`, `src/main/optimizerStore.ts`, `src/main/optimizerMcpService.ts`, `src/main/optimizerJobTracker.ts`, `src/main/ipc/registerOptimizerIpc.ts`, `src/renderer/optimizer/{OptimizerPanel.tsx,optimizerStore.ts}`, `scripts/optimizer-smoke.mjs`, `scripts/tool-loop-latency.mjs`, `tests/{optimizerStore,optimizerMcpService,optimizerJobTracker,geminiToolLoop}.spec.ts`, `tests/optimizerPanel.smoke.spec.tsx`, `tests/e2e/optimizerLive.e2e.spec.ts`; amended `ipcChannels.ts`, `provisioning.ts`, `typeGuards.ts`, `appContext.ts`, `bootstrap.ts`, `geminiService.ts`, `chatOrchestrator.ts`, `conversationStore.ts`, `types.ts` (ChatTurn.toolAttributions), `AssistantMessage.tsx` (chip), `SettingsShell.tsx`, preload + env.d.ts, `team-config.example.json`, `win-acceptance.mjs` (namespace), README/DISTRIBUTION/INSTALL_WINDOWS/WIN_ACCEPTANCE (Phase I)/MAC_ACCEPTANCE (Phase I)/project-state. 416 Vitest green + 2 env-gated live e2e.
+- Droplet: `ARCH_MCP_TEAM_KEY` generated into `/opt/arch-algo-optimizer/.env` (**operator: record it in the team password manager** — readable via `grep ARCH_MCP_TEAM_KEY /opt/arch-algo-optimizer/.env` over SSH).
+
+### Open Questions / Risks
+- **B4 latency evidence pending**: the only Gemini key on this machine is keychain-encrypted under the packaged app's ACL; extraction would have required a keychain prompt, declined on principle. Operator: `GEMINI_API_KEY=... OPTIMIZER_MCP_URL=https://optimize.archpublic.com/mcp OPTIMIZER_TEAM_KEY=... node scripts/tool-loop-latency.mjs` and paste the distribution here (gate: p95 ≤ 12 s over 20 runs).
+- **Friday rule (D-M10)**: 2026-08-14 is a Friday — `v0.3.0-alpha.1` is NOT tagged. Everything through B5 is merged-ready; C is one `npm version preminor --preid=alpha && git push --follow-tags` away.
+- §10 Context.md amendments not yet applied (file lives in the iCloud workspace; git/FS ops there were timing out). Text to add is specified in PRD §10.
+- Q5 resolution taken as default: `chunk-7/packaging-windows` was fast-forwarded into `main` before branching (it was strictly ahead and already shipped as alpha.2). Chunk 7's own operator gates (5.7/5.8, 6.5, 6.7) remain open and untouched.
+- DoD #5 (Windows silent auto-update from 0.2.0-alpha.2 observed on one machine) is inherently post-release; folds into Gate 5.7/5.8.
+
+### Recommended Next Steps for Next Claude Instance
+1. On a non-Friday: on `main`, run `npm version preminor --preid=alpha` (→ 0.3.0-alpha.1), `git push --follow-tags`, watch release.yml, verify `latest.yml` + both installers on `AI-Overlay-releases`.
+2. Config-first rollout (§3.3): regenerate v2 `team-config.json` for the S1 pilot pair with the optimizer block (endpoint + key from the droplet `.env`).
+3. Run the B4 latency script and the live eval bank with the operator's Gemini key; paste evidence here.
+4. Execute WIN/MAC Phase I rows during Gate 6.5.
+
+### Key Context Delta
+- `https://optimize.archpublic.com/mcp` is LIVE and authenticated: keyless/wrong-key → 401, real key → 11 tools, 60/min per IP (429 at 60 with legible body), key filtered from caddy logs, `mcp` container health-gated in deploy.
+- Live-verified flows against production: MCP smoke (connect 463 ms, backtest 491 ms), panel job start→done with exact-Pine-label card, cancel, and expired-on-restart ("Unknown job — it may have expired." → terminal `expired`).
+- Overlay `main` == chunk-7 tip + the full optimizer integration (feat/optimizer-mcp merged post-B5; only the release tag is held).
+- Optimizer repo `main` deployed at `params_tradingview` commit; `dev` == `main`.
+
+### Phase Gate Status
+- A1 ✅ A2 ✅ A3 ✅ A4 ✅ (production-verified 2026-08-14)
+- B1 ✅ B2 ✅ B3 ✅ B4 ✅ (code+tests; live p95 evidence pending) B5 ✅
+- C ⬜ — tag held per D-M10 Friday rule; everything staged.
+
+---

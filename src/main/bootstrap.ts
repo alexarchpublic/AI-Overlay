@@ -31,8 +31,12 @@ import { createTrayService, type TrayServiceHandle } from './trayService';
 import { createUpdaterService, type UpdaterServiceHandle } from './updaterService';
 import { createWidgetStateStore } from './widgetState';
 import { flashWidgetCapturing } from './widgetFlash';
+import { createOptimizerStore } from './optimizerStore';
+import { createOptimizerMcpService } from './optimizerMcpService';
+import { createOptimizerJobTracker } from './optimizerJobTracker';
 import { registerCoreIpc } from './ipc/registerCoreIpc';
 import { registerChatAiIpc } from './ipc/registerChatAiIpc';
+import { registerOptimizerIpc } from './ipc/registerOptimizerIpc';
 import { registerUpdateIpc } from './ipc/registerUpdateIpc';
 import { getCurrentDisplays, isRegionStillValid } from './displayUtils';
 import {
@@ -133,6 +137,7 @@ export async function bootstrapApp(
   const chatInflight = { current: null as AbortController | null };
   const conversationStore = createConversationStore({ logger });
   const { wrapper: aiStore } = await createAiStore();
+  const optimizerStore = await createOptimizerStore();
 
   const capturesDir = path.join(app.getPath('temp'), CAPTURE_TEMP_SUBDIR);
   fs.mkdirSync(capturesDir, { recursive: true });
@@ -202,6 +207,9 @@ export async function bootstrapApp(
     appVersion: app.getVersion(),
     userDataPath: app.getPath('userData'),
     updaterService: null,
+    optimizerStore,
+    optimizerService: null,
+    optimizerJobTracker: null,
   };
 
   const permissionSync = createPermissionSync(ctx);
@@ -248,6 +256,21 @@ export async function bootstrapApp(
 
   registerCoreIpc(ctx, permissionSync);
 
+  // Optimizer MCP integration (PRD_Optimizer_MCP_Integration D-M5/D-M6).
+  // Constructed before geminiService so the tool loop can hook in; the
+  // service reads config lazily, so an unconfigured install carries inert
+  // objects and a hidden feature (D-M8).
+  ctx.optimizerService = createOptimizerMcpService({
+    logger,
+    getConfig: () => optimizerStore.getConfig(),
+  });
+  ctx.optimizerJobTracker = createOptimizerJobTracker({
+    logger,
+    service: ctx.optimizerService,
+  });
+  const optimizerService = ctx.optimizerService;
+  const optimizerJobTracker = ctx.optimizerJobTracker;
+
   try {
     ctx.knowledgeStore = await createKnowledgeStore({
       backend: knowledgeStoreWrapper.getBackend(),
@@ -270,6 +293,10 @@ export async function bootstrapApp(
       recordCall: (rec) => {
         aiStore.appendCall(rec);
       },
+      optimizer: {
+        getFunctionDeclarations: () => optimizerService.getFunctionDeclarations(),
+        callTool: (tool, toolArgs) => optimizerService.callTool(tool, toolArgs),
+      },
     });
   } else {
     logger.warn('gemini.knowledgeStoreMissing', {
@@ -289,6 +316,7 @@ export async function bootstrapApp(
       screenshotService,
       chatInflight,
       getActiveAlgorithm: () => knowledgeStoreWrapper.getActiveAlgorithm(),
+      consumeOptimizerGrounding: () => optimizerJobTracker.consumeGrounding(),
       emit: {
         turnAppended: (turn) => {
           chatLifecycle.emitTurnAppended(turn);
@@ -317,6 +345,7 @@ export async function bootstrapApp(
     aiStore,
     knowledgeStore: knowledgeStoreWrapper,
     captureStore: capture,
+    optimizerStore,
     logger,
     getExecDir: () => path.dirname(process.execPath),
     getUserDataPath: () => app.getPath('userData'),
@@ -326,6 +355,15 @@ export async function bootstrapApp(
       readFileSync: (p, encoding) => fs.readFileSync(p, encoding),
     },
   });
+
+  // Registered after provisioning so a just-dropped team-config v2 reads as
+  // configured on this very boot (the service reads config lazily either way).
+  registerOptimizerIpc(ctx);
+  if (optimizerStore.isConfigured()) {
+    // D-M6: Gemini function declarations derive from the server's tool list,
+    // cached at startup — warm it without blocking boot.
+    void optimizerService.getFunctionDeclarations();
+  }
 
   // electron-updater is a runtime dependency; require here (not at module
   // scope of updaterService) so the service stays Vitest-friendly.
@@ -413,6 +451,8 @@ export function shutdownApp(ctx: AppContext, permissionSync: PermissionSyncHandl
     ctx.chatInflight.current = null;
   }
   ctx.geminiService?.cancelAll();
+  ctx.optimizerJobTracker?.dispose();
+  void ctx.optimizerService?.dispose();
   ctx.conversationStore.endSession('shutdown');
   closeChatWindow('shutdown');
   trayHandle?.destroy();

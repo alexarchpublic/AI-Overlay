@@ -79,8 +79,24 @@ import {
   IPC_UPDATE_INSTALL,
   IPC_UPDATE_OPEN_RELEASE_PAGE,
   IPC_UPDATE_STATE_CHANGED,
+  IPC_OPTIMIZER_CANCEL_JOB,
+  IPC_OPTIMIZER_COPY_SETTINGS_CARD,
+  IPC_OPTIMIZER_GET_JOB_STATE,
+  IPC_OPTIMIZER_GET_STATUS,
+  IPC_OPTIMIZER_JOB_STATE_CHANGED,
+  IPC_OPTIMIZER_LIST_TOOLS,
+  IPC_OPTIMIZER_RUN_BACKTEST,
+  IPC_OPTIMIZER_START_OPTIMIZATION,
+  IPC_OPTIMIZER_USE_IN_CHAT,
 } from '../shared/ipcChannels';
 import type { UpdateStateSnapshot } from '../shared/updateTypes';
+import type {
+  OptimizerJobRequest,
+  OptimizerJobSnapshot,
+  OptimizerStatus,
+  OptimizerToolResult,
+  OptimizerToolsInfo,
+} from '../shared/optimizerTypes';
 import { parsePickerDisplayIdFromArgv } from '../shared/pickerDisplayId';
 
 type LogFn = (event: string, context?: LogContext) => void;
@@ -377,6 +393,43 @@ const updates: UpdatesApi = {
   },
 };
 
+interface OptimizerApi {
+  getStatus(): Promise<OptimizerStatus>;
+  listTools(): Promise<OptimizerToolsInfo>;
+  runBacktest(args: Record<string, unknown>): Promise<OptimizerToolResult>;
+  startOptimization(request: OptimizerJobRequest): Promise<OptimizerJobSnapshot | null>;
+  getJobState(): Promise<OptimizerJobSnapshot | null>;
+  cancelJob(): Promise<boolean>;
+  copySettingsCard(): Promise<boolean>;
+  useInChat(): Promise<boolean>;
+  onJobStateChanged(cb: (snapshot: OptimizerJobSnapshot) => void): () => void;
+}
+
+const optimizer: OptimizerApi = {
+  getStatus: () => ipcRenderer.invoke(IPC_OPTIMIZER_GET_STATUS) as Promise<OptimizerStatus>,
+  listTools: () => ipcRenderer.invoke(IPC_OPTIMIZER_LIST_TOOLS) as Promise<OptimizerToolsInfo>,
+  runBacktest: (args) =>
+    ipcRenderer.invoke(IPC_OPTIMIZER_RUN_BACKTEST, args) as Promise<OptimizerToolResult>,
+  startOptimization: (request) =>
+    ipcRenderer.invoke(
+      IPC_OPTIMIZER_START_OPTIMIZATION, request) as Promise<OptimizerJobSnapshot | null>,
+  getJobState: () =>
+    ipcRenderer.invoke(IPC_OPTIMIZER_GET_JOB_STATE) as Promise<OptimizerJobSnapshot | null>,
+  cancelJob: () => ipcRenderer.invoke(IPC_OPTIMIZER_CANCEL_JOB) as Promise<boolean>,
+  copySettingsCard: () =>
+    ipcRenderer.invoke(IPC_OPTIMIZER_COPY_SETTINGS_CARD) as Promise<boolean>,
+  useInChat: () => ipcRenderer.invoke(IPC_OPTIMIZER_USE_IN_CHAT) as Promise<boolean>,
+  onJobStateChanged: (cb) => {
+    const listener = (_e: Electron.IpcRendererEvent, snapshot: OptimizerJobSnapshot): void => {
+      cb(snapshot);
+    };
+    ipcRenderer.on(IPC_OPTIMIZER_JOB_STATE_CHANGED, listener);
+    return () => {
+      ipcRenderer.removeListener(IPC_OPTIMIZER_JOB_STATE_CHANGED, listener);
+    };
+  },
+};
+
 const api = {
   log: {
     debug: emit('debug'),
@@ -393,6 +446,7 @@ const api = {
   ai,
   app: appApi,
   updates,
+  optimizer,
 } as const;
 
 contextBridge.exposeInMainWorld('api', api);

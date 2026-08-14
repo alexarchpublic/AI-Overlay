@@ -12,9 +12,15 @@ approved product direction.
 **Current status:** Internal co-pilot pivot complete in code. Chunk 7 packaging
 ships Windows 10/11 x64 + macOS arm64 alphas via
 [`AI-Overlay-releases`](https://github.com/alexarchpublic/AI-Overlay-releases)
-(`v0.2.0-alpha.1`). Windows hardware acceptance + S1 pilot remain. See
-[`project-state.md`](project-state.md), [`WIN_ACCEPTANCE.md`](WIN_ACCEPTANCE.md),
-[`INSTALL_WINDOWS.md`](INSTALL_WINDOWS.md), and [`DISTRIBUTION.md`](DISTRIBUTION.md).
+(`v0.2.0-alpha.2`). The optimizer MCP integration
+(PRD_Optimizer_MCP_Integration) adds computed backtests to chat via a bounded
+Gemini tool loop plus an Optimizer panel in Settings, against the hosted
+endpoint at `optimize.archpublic.com/mcp` — hidden unless `team-config.json`
+carries the v2 `optimizer` block. Windows hardware acceptance + S1 pilot
+remain. See [`project-state.md`](project-state.md),
+[`WIN_ACCEPTANCE.md`](WIN_ACCEPTANCE.md),
+[`INSTALL_WINDOWS.md`](INSTALL_WINDOWS.md), and
+[`DISTRIBUTION.md`](DISTRIBUTION.md).
 
 ## Prerequisites
 
@@ -58,7 +64,7 @@ corpus layout.
 ```bash
 npm run typecheck   # strict TS on main, preload, renderer
 npm run lint        # ESLint (src + scripts)
-npm test            # Vitest (256 cases)
+npm test            # Vitest (416 cases)
 npm run test:coverage  # branch thresholds on chatOrchestrator
 ```
 
@@ -84,6 +90,8 @@ Coverage stays macOS-only.
 | `npm run lint` | ESLint — `@typescript-eslint/strict-type-checked` + scripts |
 | `node scripts/win-acceptance.mjs` | Windows automated acceptance slice + Chunk 7 grep contracts |
 | `node scripts/mac-acceptance.mjs` | macOS automated acceptance slice |
+| `node scripts/optimizer-smoke.mjs` | Hosted-optimizer MCP smoke: connect → 11 tools → one backtest (needs `OPTIMIZER_MCP_URL` + `OPTIMIZER_TEAM_KEY`) |
+| `node scripts/tool-loop-latency.mjs` | B4 latency evidence: N demo-prompt tool-loop runs, p50/p95 (needs `GEMINI_API_KEY` too) |
 
 ## Where things live
 
